@@ -11,6 +11,7 @@ KYM (Know Your Mandate) is an experimental proof of concept for governing the fi
 | Assess security | [Security review](security/security-review.md), [threat model](threat-model/threat-model.md), [red-team results](redteam/latest.md) |
 | Implement or integrate | [Mandate spec](specifications/mandate-spec.md), [KYM-CNL](specifications/kym-cnl-spec.md), [ledger spec](specifications/evidence-ledger-spec.md), [OpenAPI](specifications/openapi.json), [architecture](architecture/README.md) |
 | Check standards and regulation | [Standards matrix](research/standards-mapping.md), [AP2 mapping](research/ap2-mapping.md), [regulatory mapping](regulatory-mapping/README.md) |
+| Understand how KYM catches agents that hide or lie | [Agent transparency](specifications/agent-transparency.md) |
 | Look up an endpoint or reason code | [HTTP API reference](reference/api.md), [reason codes](reference/reason-codes.md) |
 | Run, extend or trust the tests | [Testing and coverage](testing.md), [benchmarks](benchmarks/README.md), [CONTRIBUTING](../CONTRIBUTING.md) |
 | Demo it | [5-minute script](specifications/demo-script-5-min.md), [10-minute walkthrough](specifications/walkthrough-10-min.md) |

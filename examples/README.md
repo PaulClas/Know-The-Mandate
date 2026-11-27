@@ -6,6 +6,7 @@ Runnable, synthetic-data examples. Every example is exercised by [tests/integrat
 |---|---|---|
 | [01_quickstart_bill_payment.py](01_quickstart_bill_payment.py) | End to end: compile a mandate, activate it, obtain a DPoP-bound OAuth token, then make four payments. Shows that a valid token is not enough: one payment is allowed, one needs a human, two are denied. Uses a throwaway data directory | `PYTHONPATH=apps/api .venv/bin/python examples/01_quickstart_bill_payment.py` |
 | [02_http_walkthrough.sh](02_http_walkthrough.sh) | The same API over plain HTTP with `curl`: health, demo session, compile KYM-CNL, verify the evidence ledger | `make api` in one terminal, then `bash examples/02_http_walkthrough.sh` |
+| [03_agent_transparency.py](03_agent_transparency.py) | An agent hides a payment from its own signed log and later swaps its reasoning log; the bank catches both by reconciling against its own records, restricts the agent, and a human clears it. Shows the limits too | `PYTHONPATH=apps/api .venv/bin/python examples/03_agent_transparency.py` |
 | [mandates/](mandates) | Library of KYM-CNL mandates. `{{EXPIRES_AT}}` is replaced by a timestamp 30 days ahead | `make api`, then paste into **Mandate Studio** at <http://localhost:3000/studio>, or use the walkthrough |
 
 ## Mandate library

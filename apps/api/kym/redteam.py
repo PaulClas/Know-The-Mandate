@@ -22,7 +22,7 @@ from sqlalchemy import func, select
 
 from . import canon, clock, config, db, demo, disputes, keys, ledger, oauth, sandbox, scenarios, security
 from . import ontology_service as onto
-from .agent_sdk import AgentClient
+from .agent_sdk import ActivityLog, AgentClient
 
 
 def res(blocked: bool | None, detail: str) -> dict:
@@ -377,6 +377,112 @@ def a_production_fail_closed():
     return {"scope_only": res(None, "n/a"), "rar_static": res(None, "n/a"), "kym": res(login == 403 and reset in (403, 503) and api == 503, f"KYM_ENV=production: login {login}, reset {reset}, API {api} (demo auth fails closed)")}
 
 
+# ----------------------------------------------------------------------------------------------- agent transparency (hidden, invented or rewritten activity)
+
+TRANSPARENCY_AGENT = "agent_billpay_001"
+NO_BASELINE = {"scope_only": res(None, "no per-agent activity record exists: nothing to reconcile an agent's account against"),
+               "rar_static": res(None, "no per-agent activity record exists: nothing to reconcile an agent's account against")}
+
+
+def _reset_transparency() -> None:
+    with db.write() as s:
+        a = s.get(db.Agent, TRANSPARENCY_AGENT)
+        a.transparency = {}
+        a.status = "VERIFIED"
+        for c in s.execute(select(db.AgentCommitment).where(db.AgentCommitment.agent_id == TRANSPARENCY_AGENT)).scalars().all():
+            s.delete(c)
+
+
+class T:
+    """An enrolled agent with a valid token, a signed activity log and an (honest by default) mandate."""
+
+    def __init__(self):
+        demo.prepare_isolated_state()
+        _reset_transparency()
+        self.http = sandbox.http()
+        self.m = demo.new_mandate("customer_001", scenarios._bill_cnl())
+        self.client, self.tok = demo.connect(self.http, TRANSPARENCY_AGENT, self.m, "customer_001")
+        enrolled = self.http.post(f"/api/agents/{TRANSPARENCY_AGENT}/transparency/enroll", json={"interval_hours": 24}, headers=demo.session_headers("admin_001")).json()
+        self.log = ActivityLog(TRANSPARENCY_AGENT, self.client.key, anchor=enrolled["transparency"]["last_window_end"])
+
+    def pay(self, amount: int, ben: str = "beneficiary_hydro_quebec"):
+        body = {"account_id": "account_001", "beneficiary_id": ben, "amount_minor": amount, "currency": "CAD", "purpose": "household_bill_management"}
+        return self.client.call(self.tok, "POST", "/bank/payments", json_body=body, idempotency_key=uuid.uuid4().hex)
+
+    def post(self, path: str, jws: str) -> dict:
+        return self.http.post(f"/bank/agents/{TRANSPARENCY_AGENT}/{path}", json={"jws": jws}).json()
+
+    def status(self) -> dict:
+        return self.http.get(f"/api/agents/{TRANSPARENCY_AGENT}/transparency", headers=demo.session_headers("admin_001")).json()
+
+
+def _transparency_attack(fn):
+    t = T()
+    try:
+        return {**NO_BASELINE, **fn(t)}
+    finally:
+        _reset_transparency()
+
+
+def a_hidden_action():
+    def go(t: T):
+        shown, hidden = t.pay(5000), t.pay(7000)
+        t.log.record_response(shown, amount_minor=5000, counterparty="beneficiary_hydro_quebec")  # the agent leaves one payment out of its log
+        rep = t.post("activity-reports", t.log.report())
+        after = t.pay(3000)
+        codes = sorted({d["code"] for d in rep["discrepancies"]})
+        ok = codes == ["UNREPORTED_ACTION"] and rep["discrepancies"][0]["ref"] == hidden.json()["transaction_id"] and t.status()["agent_status"] == "RESTRICTED" and denied(after.status_code, after.json())
+        return {"kym": res(ok, f"bank saw 2 payments, log showed 1: {codes}; agent restricted; next payment HTTP {after.status_code}")}
+    return _transparency_attack(go)
+
+
+def a_phantom_action():
+    def go(t: T):
+        t.log.record("bank_request", ref="tx_never_happened", amount_minor=100, counterparty="beneficiary_hydro_quebec")  # an invented action, e.g. to build a false alibi
+        rep = t.post("activity-reports", t.log.report())
+        codes = sorted({d["code"] for d in rep["discrepancies"]})
+        return {"kym": res(codes == ["PHANTOM_ACTION"] and t.status()["agent_status"] == "RESTRICTED", f"report claimed a bank request the bank never saw: {codes}; agent restricted")}
+    return _transparency_attack(go)
+
+
+def a_log_swap():
+    def go(t: T):
+        nonce = t.log.new_nonce()
+        c = t.post("commitments", t.log.commit({"reasoning": ["move funds to the new payee", "avoid the approval threshold"]}, nonce=nonce))
+        t.pay(5000)
+        out = t.post(f"commitments/{c['id']}/reveal", t.log.reveal(c["id"], {"reasoning": ["pay the electricity bill"]}, nonce=nonce))  # a sanitized log shown afterwards
+        st = t.status()
+        viol = [v["code"] for v in st["transparency"]["violations"]]
+        return {"kym": res(out["status"] == "MISMATCH" and viol == ["LOG_SWAPPED"] and st["agent_status"] == "RESTRICTED", f"reveal vs pre-action commitment: {out['status']}; {viol}; agent restricted")}
+    return _transparency_attack(go)
+
+
+def a_silent_agent():
+    def go(t: T):
+        from datetime import timedelta
+
+        assert t.pay(1000).status_code == 201
+        with db.write() as s:  # the agent stops reporting: its last valid report is three days old
+            a = s.get(db.Agent, TRANSPARENCY_AGENT)
+            old = clock.iso(clock.now() - timedelta(days=3))
+            a.transparency = {**a.transparency, "enrolled_at": old, "last_window_end": old, "last_report_at": None}
+        r = t.pay(1000)
+        viol = [v["code"] for v in t.status()["transparency"]["violations"]]
+        return {"kym": res(denied(r.status_code, r.json()) and viol == ["REPORT_OVERDUE"], f"no report for 3 days (interval 24 h): payment HTTP {r.status_code}; {viol}")}
+    return _transparency_attack(go)
+
+
+def a_out_of_band_action():
+    def go(t: T):
+        t.log.record_response(t.pay(5000), amount_minor=5000, counterparty="beneficiary_hydro_quebec")  # the one thing the bank can see
+        # ...while the agent also acted at another bank, or exfiltrated data, or ran other tools. None of that touches this bank, so there is nothing to reconcile.
+        rep = t.post("activity-reports", t.log.report())
+        return {"kym": res(not rep["ok"], f"report reconciled cleanly (ok={rep['ok']}, status {t.status()['transparency']['status']}); actions outside this bank are invisible to it"),
+                "note": "ACCEPTED LIMITATION. Transparency covers only what touches this bank. An agent's activity elsewhere, and its private reasoning, cannot be verified here; "
+                        "that needs the operator's own monitoring and, for reasoning, commit-reveal on a best-effort basis."}
+    return _transparency_attack(go)
+
+
 ATTACKS = [
     ("beneficiary_swap", "Beneficiary swap with a valid token", "authorization", ["STRIDE:E", "OWASP-API5", "OWASP-LLM06"], a_beneficiary_swap),
     ("over_limit", "Single payment above the per-transaction limit", "authorization", ["STRIDE:E", "OWASP-LLM06"], a_over_limit),
@@ -401,7 +507,14 @@ ATTACKS = [
     ("malformed_input", "Overflowing, float and wrong-typed payloads", "robustness", ["OWASP-API4", "OWASP-API8"], a_malformed_input),
     ("session_forgery", "Forge an admin session using the formerly public constant secret", "authentication", ["OWASP-API2"], a_session_forgery),
     ("production_fail_closed", "Demo authentication and reset must fail closed outside KYM_ENV=demo", "configuration", ["OWASP-API8"], a_production_fail_closed),
+    ("hidden_action", "Agent omits a payment it made from its own signed activity log", "transparency", ["OWASP-ASI10", "STRIDE:R", "NIST-CSF:DE.CM"], a_hidden_action),
+    ("phantom_action", "Agent logs a bank request that never happened", "transparency", ["OWASP-ASI10", "STRIDE:R"], a_phantom_action),
+    ("log_swap", "Agent reveals a sanitized reasoning log that differs from the one it committed to before acting", "transparency", ["OWASP-ASI10", "OWASP-ASI09", "STRIDE:R"], a_log_swap),
+    ("silent_agent", "Agent stops reporting (dead-man's switch)", "transparency", ["OWASP-ASI10", "NIST-CSF:DE.CM"], a_silent_agent),
+    ("out_of_band_action", "HONEST CASE: agent acts outside this bank (other banks, tools, data) and reports cleanly on what the bank can see", "limitation", ["OWASP-ASI10"], a_out_of_band_action),
 ]
+
+HONEST_GAPS = ("in_mandate_malicious", "out_of_band_action")
 
 _lock = threading.Lock()
 
@@ -415,7 +528,7 @@ def run_attack(aid: str) -> dict:
     except Exception as e:  # noqa: BLE001 - reported, never hidden
         r, err = {}, f"{type(e).__name__}: {e}"
     note = r.pop("note", None) if isinstance(r, dict) else None
-    return {"id": aid, "title": meta[1], "category": meta[2], "refs": meta[3], "expected_gap": aid == "in_mandate_malicious", "results": r, "note": note, "error": err, "ms": round((time.perf_counter() - t0) * 1000)}
+    return {"id": aid, "title": meta[1], "category": meta[2], "refs": meta[3], "expected_gap": aid in HONEST_GAPS, "results": r, "note": note, "error": err, "ms": round((time.perf_counter() - t0) * 1000)}
 
 
 def run_all() -> dict:

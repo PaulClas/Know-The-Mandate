@@ -4,7 +4,7 @@ import { DEFINITION } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About KYM: what it is, its philosophy, risks and critics",
-  description: `${DEFINITION} Read the principles, the risks the authors disclose, and twelve critic objections with where the critics are right.`,
+  description: `${DEFINITION} Read the principles, the risks the authors disclose, and thirteen critic objections with where the critics are right.`,
   alternates: { canonical: "/about" },
 };
 
@@ -86,7 +86,7 @@ export default function AboutPage() {
         <CardHeader title="Philosophy" description="Why KYM is built this way" />
         <CardBody>
           <ol className="list-decimal space-y-1 pl-5 text-[13px]">{PRINCIPLES.map((p) => <li key={p}>{p}</li>)}</ol>
-          <p className="mt-3 text-[13px]">Full argument with twelve steelmanned critic objections and where each critic is right: <a className="text-accent underline" href={`${REPO}/docs/philosophy/README.md`}>docs/philosophy</a>.</p>
+          <p className="mt-3 text-[13px]">Full argument with thirteen steelmanned critic objections and where each critic is right: <a className="text-accent underline" href={`${REPO}/docs/philosophy/README.md`}>docs/philosophy</a>.</p>
         </CardBody>
       </Card>
 

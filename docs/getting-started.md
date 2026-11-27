@@ -18,11 +18,11 @@ git clone https://github.com/PaulClas/Know-The-Mandate.git
 cd Know-The-Mandate
 make install                 # .venv with pinned dependencies
 make scenarios               # scenarios A-M against a real SQLite database
-make redteam                 # 23 attacks vs scope-only, OAuth+static-RAR and KYM
+make redteam                 # 28 attacks vs scope-only, OAuth+static-RAR and KYM
 PYTHONPATH=apps/api .venv/bin/python examples/01_quickstart_bill_payment.py
 ```
 
-You should see 13 scenarios pass, `KYM 22/22` in the red-team summary, and the quickstart's four payments (allow, approval needed, two denials). Run `make reset-demo` afterwards, because `make redteam` writes to the demo database.
+You should see 13 scenarios pass, `KYM 26/26` in the red-team summary, and the quickstart's four payments (allow, approval needed, two denials). Run `make reset-demo` afterwards, because `make redteam` writes to the demo database.
 
 ## 2. Run the full demo with the UI
 

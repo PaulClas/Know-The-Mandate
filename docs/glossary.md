@@ -42,6 +42,15 @@
 
 **Know Your Transaction (KYT).** Transaction risk assessment. In KYM it is synthetic and separate from mandate authorization.
 
-**Honest gap.** An attack KYM does not stop: payments that stay inside the mandate (`in_mandate_malicious`).
+**Honest gap.** An attack or limitation KYM documents instead of hiding: payments that stay inside the mandate (`in_mandate_malicious`) and activity outside the bank (`out_of_band_action`).
 
 **Baseline (red-team).** Deliberately simple models used for comparison: *scope-only* and *OAuth + static RAR*.
+
+## Agent transparency terms
+
+**Activity report.** A compact JWS signed with an agent's registered key, covering a contiguous time window and carrying the agent's hash-chained log entries. The bank reconciles it against its own records; it is never taken on trust.
+
+**Commit-reveal.** The agent commits to a digest of its reasoning/decision log before acting; the bank can demand the reveal later. A reveal that differs from the commitment proves the log was altered; a refusal is a violation. It proves consistency, not honesty.
+
+**Dead-man's switch.** The rule that an enrolled agent that files no valid report within its interval (plus grace) is restricted before its next decision.
+

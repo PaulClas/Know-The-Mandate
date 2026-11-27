@@ -9,7 +9,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **It closes the gap between "this client holds a valid token" and "the customer actually authorized this specific action".** KYC identifies the customer, authentication verifies the caller, OAuth grants API access, KYA identifies the agent, KYT scores transactions. None records the delegated authority itself. Without it, a bank cannot easily answer who authorized what, within which limits, and whether those limits were honoured.
 
 ## How is KYM different from OAuth and OAuth Rich Authorization Requests (RAR)?
-**OAuth/RAR is the carrier; KYM supplies the state and the decision.** RAR (RFC 9396) can express account, beneficiary and maximum amount inside a token, and KYM uses it. But a static grant cannot track cumulative budgets, instant mandate revocation, single-use approvals or delegation lineage. In KYM's red-team comparison, a stateless design with scopes plus static RAR stopped 3 of the 10 attacks it can model; KYM blocked all 10 of those and 22 of 22 applicable attacks overall (and documents one it cannot stop). The baseline is deliberately stateless, so this shows what needs state, not that no other design could add it. See [philosophy](philosophy/README.md#1-oauth-with-rich-authorization-requests-already-does-this).
+**OAuth/RAR is the carrier; KYM supplies the state and the decision.** RAR (RFC 9396) can express account, beneficiary and maximum amount inside a token, and KYM uses it. But a static grant cannot track cumulative budgets, instant mandate revocation, single-use approvals or delegation lineage. In KYM's red-team comparison, a stateless design with scopes plus static RAR stopped 3 of the 10 attacks it can model; KYM blocked all 10 of those and 26 of 26 applicable attacks overall (and documents two it cannot stop). The baseline is deliberately stateless, so this shows what needs state, not that no other design could add it. See [philosophy](philosophy/README.md#1-oauth-with-rich-authorization-requests-already-does-this).
 
 ## Does a valid access token authorize a payment in KYM?
 **No.** A valid token is only technical permission. Scenario C demonstrates it: the token passes OAuth verification (including `payments.initiate`), the mandate does not permit the beneficiary, and the payment is denied.
@@ -42,7 +42,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **No.** It attributes who did what and which party controlled which system. It distinguishes factual responsibility, contractual responsibility, potential legal liability and final adjudicated liability, and decides none of the last three. A valid signature shows integrity and key control, not legally effective consent.
 
 ## Is it ready for production?
-**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (24 findings fixed, 22 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
+**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (24 findings fixed, 26 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
 
 ## What are the biggest risks of KYM?
 **Approval fatigue, customers misreading mandates, overly broad mandates, coverage gaps when payments bypass the bank, in-mandate harm, insider abuse, and standards absorbing the idea.** Full list with likelihood and impact: [risk register](risk/risk-register.md).
@@ -51,7 +51,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **When agents only read data, when a single static per-transaction cap suffices, or when you cannot run a highly available enforcement point.** See [risk register §E](risk/risk-register.md#e-when-you-should-not-use-kym).
 
 ## How can I verify the claims myself?
-**Run `make redteam`.** It executes 23 attacks against three designs with the same real token and writes [docs/redteam/latest.md](redteam/latest.md). Also `make test` (208 tests incl. property-based), `make scenarios` (13 demonstration scenarios A–M), and `make verify-ledger`.
+**Run `make redteam`.** It executes 28 attacks against three designs with the same real token and writes [docs/redteam/latest.md](redteam/latest.md). Also `make test` (256 tests incl. property-based), `make scenarios` (13 demonstration scenarios A–M), and `make verify-ledger`.
 
 ## How do I run it?
 `make install && make install-web && make demo`; API docs at http://127.0.0.1:8000/docs, UI at http://localhost:3000. Demo users and details: [README](../README.md#run-it).
@@ -63,3 +63,7 @@ KYM is an independent project by Paul Clas, a machine learning developer; he is 
 ## Has KYM been independently audited?
 
 No. All evidence is self-assessed, plus one AI-assisted hostile review whose findings were fixed. See [external review status](security/external-review.md) and the [media guide](media-guide.md) for what may be claimed.
+
+## Can an AI agent hide or fake its own logs and reasoning?
+
+Yes, and KYM assumes it can. It never trusts an agent's account of itself: the ledger records what the bank observed. Enrolled agents file signed, hash-chained activity reports that the bank reconciles against its own transactions (hidden, invented or altered actions restrict the agent), reasoning logs can be committed to before acting and revealed on demand (a swapped log is provable, a refusal is a violation), and silence trips a dead-man's switch. It cannot see what an agent does outside the bank or verify its reasoning. See the [agent transparency specification](specifications/agent-transparency.md).

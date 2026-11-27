@@ -17,7 +17,7 @@ import jwt
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from . import agents as agents_mod
-from . import config
+from . import clock, config, transparency
 from .canon import b64u
 
 
@@ -97,3 +97,52 @@ class AuthorizationFailed(Exception):
     def __init__(self, status: int, body: dict):
         super().__init__(f"authorization failed ({status}): {json.dumps(body)[:200]}")
         self.status, self.body = status, body
+
+
+class ActivityLog:
+    """Agent-side, append-only, hash-chained log of what the agent did, plus the signing helpers for the bank's transparency endpoints.
+
+    An honest agent records every bank request here (with the transaction id the bank returned) and submits signed reports. The bank
+    reconciles them against its own records: it never takes this log on trust, it checks it."""
+
+    def __init__(self, agent_id: str, key: ec.EllipticCurvePrivateKey, *, anchor: str, head: str = transparency.GENESIS, seq: int = 0):
+        self.agent_id, self.key, self.window_start, self.prev, self.seq = agent_id, key, anchor, head, seq
+        self.entries: list[dict] = []
+
+    def record(self, kind: str, *, ref: str | None = None, amount_minor: int | None = None, counterparty: str | None = None, note: str | None = None) -> dict:
+        e = {"seq": self.seq + 1, "ts": clock.iso(), "kind": kind, "ref": ref, "prev_hash": self.prev}
+        if amount_minor is not None:
+            e["amount_minor"] = amount_minor
+        if counterparty is not None:
+            e["counterparty"] = counterparty
+        if note is not None:
+            e["note_digest"] = "sha256:" + hashlib.sha256(note.encode()).hexdigest()  # the note stays private; only its digest is logged
+        e["entry_hash"] = transparency.entry_hash(e)
+        self.entries.append(e)
+        self.prev, self.seq = e["entry_hash"], e["seq"]
+        return e
+
+    def record_response(self, response, *, amount_minor: int | None = None, counterparty: str | None = None) -> dict:
+        """Log a bank response by the transaction id the bank assigned (also for denied requests)."""
+        tid = (response.json() or {}).get("transaction_id")
+        return self.record("bank_request", ref=tid, amount_minor=amount_minor, counterparty=counterparty)
+
+    def _sign(self, typ: str, claims: dict) -> str:
+        return jwt.encode({"agent_id": self.agent_id, "iat": int(time.time()), **claims}, self.key, algorithm="ES256", headers={"typ": typ})
+
+    def report(self, *, window_end: str | None = None) -> str:
+        end = window_end or clock.iso()
+        token = self._sign(transparency.REPORT_TYP, {"window": {"start": self.window_start, "end": end}, "prev_head": self.entries[0]["prev_hash"] if self.entries else self.prev,
+                                                  "entries": self.entries, "head": self.prev})
+        self.window_start, self.entries = end, []
+        return token
+
+    @staticmethod
+    def new_nonce() -> str:
+        return secrets.token_hex(16)
+
+    def commit(self, blob, *, nonce: str, ref: str | None = None) -> str:
+        return self._sign(transparency.COMMIT_TYP, {"commitment": transparency.commitment_digest(blob, nonce), "ref": ref})
+
+    def reveal(self, commitment_id: str, blob, *, nonce: str) -> str:
+        return self._sign(transparency.REVEAL_TYP, {"commitment_id": commitment_id, "nonce": nonce, "blob": blob})

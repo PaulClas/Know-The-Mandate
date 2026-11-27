@@ -37,8 +37,9 @@ Everything else (ontology, CNL, delegation graphs, dashboards) serves or illustr
 | A child can't exceed its parent | Create a wider child by any dimension | `tests/unit/test_properties.py` (Hypothesis); Scenario G |
 | Evidence tampering is detectable | Alter, delete or re-hash an event without detection | Scenario L; `redteam: ledger_tamper` |
 | Decisions can be reconstructed | Fail to reproduce a decision from stored inputs | Scenario M; `tests/integration` replay tests |
-| KYM is more than OAuth + static RAR | Show a static design stopping the stateful attacks | `redteam` comparison (stateless static RAR 3/10 vs KYM 10/10 on the same attacks, 22/22 overall; the baseline is deliberately stateless) |
+| KYM is more than OAuth + static RAR | Show a static design stopping the stateful attacks | `redteam` comparison (stateless static RAR 3/10 vs KYM 10/10 on the same attacks, 26/26 overall; the baseline is deliberately stateless) |
 | **KYM cannot stop in-mandate misuse** (negative claim) | Show a mandate-level control that does | `redteam: in_mandate_malicious` (honest gap) |
+| **KYM cannot see what an agent does outside the bank, or verify its reasoning** (negative claim) | Show a bank-side control that does | `redteam: out_of_band_action` (honest gap) |
 
 Run `make redteam`. Results are written to [docs/redteam/latest.md](../redteam/latest.md).
 
@@ -93,6 +94,9 @@ Each objection is stated at its strongest, answered, and then we say **where the
 
 ### 12. "Too complex for the benefit."
 *Answer:* It need not be adopted whole.
+
+### 13. "Agents can hide or fake their own logs and reasoning, so your evidence is worthless."
+*Answer:* Partly right, and the design assumes it. KYM never relies on an agent's account of itself: the ledger records what the **bank** observed, signed by the bank. Transparency adds a check on the agent's own claims: signed, hash-chained activity reports are reconciled against the bank's records (hidden, invented or altered actions are flagged and the agent is restricted), reasoning logs can be committed to before acting and revealed on demand (a swapped log is provable, a refusal is a violation), and silence trips a dead-man's switch. *Where the critic is right:* the bank cannot see what an agent does elsewhere, cannot verify reasoning, and cannot tell that a log committed before acting was sanitized from the start. Those are documented honest gaps (`out_of_band_action`, open findings O-23 and O-24). See the [agent transparency specification](../specifications/agent-transparency.md).
 
 ## Adoption ladder
 

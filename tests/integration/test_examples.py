@@ -32,3 +32,12 @@ def test_quickstart_runs_and_shows_token_is_not_enough(tmp_path):
     assert r.returncode == 0, r.stderr
     for expected in ("HTTP 201", "HTTP 202", "TRANSACTION_LIMIT_EXCEEDED", "BENEFICIARY_NOT_AUTHORIZED"):
         assert expected in r.stdout
+
+
+def test_transparency_example_detects_a_hidden_payment_and_a_swapped_log(tmp_path):
+    env = {**os.environ, "KYM_DATA_DIR": str(tmp_path), "PYTHONPATH": str(ROOT / "apps" / "api"), "PYTHONWARNINGS": "ignore"}
+    env.pop("KYM_DATABASE_URL", None)
+    r = subprocess.run([sys.executable, str(ROOT / "examples" / "03_agent_transparency.py")], env=env, capture_output=True, text=True, timeout=180)
+    assert r.returncode == 0, r.stderr
+    for expected in ("UNREPORTED_ACTION", "RESTRICTED", "LOG_SWAPPED", "HTTP 403 DENY"):
+        assert expected in r.stdout

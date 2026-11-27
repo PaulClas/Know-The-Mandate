@@ -2,7 +2,7 @@
 
 **Scope:** the full repository as of 2026-11-26 (backend `apps/api/kym`, web `apps/web`, infrastructure files). **Type:** self-assessment by the authors of the code, with executable regression proofs. **This is not an independent penetration test, audit or certification.** Self-review is biased toward finding what the reviewer already thought of; external review is listed as required work.
 
-Machine-checkable evidence: `make redteam` (23 attacks, 3 designs), `tests/security/`, `tests/integration/`. Generated results: [docs/redteam/latest.md](../redteam/latest.md).
+Machine-checkable evidence: `make redteam` (28 attacks, 3 designs), `tests/security/`, `tests/integration/`. Generated results: [docs/redteam/latest.md](../redteam/latest.md).
 
 ## 1. Method
 
@@ -72,6 +72,10 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | O-20 | Time-window logic (day/month in IANA zones) is property-tested across DST transitions, a 30-minute-DST zone, leap years and year ends (`tests/unit/test_time_windows.py`), but not for zones whose DST change falls at local midnight. | Budget miscounts at those boundaries. | Extend the zone list; test against a second implementation. |
 | O-21 | No external penetration test, no fuzzing campaign, no formal verification, no real-world pilot. | Unknown unknowns. | All of the above. |
 | O-22 | Replay re-runs the **current** engine. Each signed decision now records an engine fingerprint, so a changed engine is reported as `engine_changed` (a warning) rather than as tampering, but past engine versions are not archived, so an old decision cannot be re-run with its original code from this repository alone. | Historical replay is verifiable only while the engine is unchanged. | Tag and archive engine builds by `policy_version`; replay in a pinned container. |
+| O-23 | The bank cannot see what an agent does **outside this bank**, nor verify its reasoning; transparency reconciles only what touches the bank. | A rogue agent can act elsewhere and report cleanly here (`out_of_band_action`). | Operator-side monitoring, cross-institution signals, constrained tool environments. |
+| O-24 | Commit-reveal proves a log was not changed after commitment, not that it was honest: an agent can commit to a sanitized log before acting. | Consistency, not truth. | Independent tool-call traces from the agent platform; spot audits. |
+| O-25 | Reconciliation covers payment and transfer attempts only (not reads or delegation) and depends on the agent logging the bank's `transaction_id`. | Reads and delegation can be hidden from reports; an agent that discards ids is flagged (fails safe). | Extend reconciliation to all bank interactions; report on a per-request receipt. |
+| O-26 | Clearing a transparency violation is a single-operator action, and enrolment is opt-in per agent. | An insider could clear a real violation; un-enrolled agents are not monitored. | Maker-checker on clearance; enrolment required by bank policy. |
 
 ## 3. OWASP API Security Top 10 (2023) mapping
 
@@ -104,6 +108,7 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | Risk | How KYM treats it |
 |---|---|
 | Prompt injection / excessive agency (OWASP LLM01/LLM06 in the 2025 list) | Capability is bounded by the mandate; injected content cannot widen it (`prompt_injection` proof). It cannot stop injected requests that stay **inside** the mandate (`in_mandate_malicious`). |
+| Agent hides, invents or rewrites its activity or reasoning (OWASP ASI10 Rogue Agents; ASI09) | The bank does not trust self-reports: signed, hash-chained activity reports are reconciled against the bank's own transactions; reasoning logs use commit-reveal; silence trips a dead-man's switch; violations restrict the agent (`hidden_action`, `phantom_action`, `log_swap`, `silent_agent`). Cannot see activity outside the bank or verify reasoning (`out_of_band_action`, O-23 to O-26). |
 | Confused deputy / token sharing | Actor binding (`act`), DPoP key binding, per-request mandate lookup. |
 | Compromised agent runtime | Blast radius = the mandate (amounts, beneficiaries, budget, expiry) plus approvals. The agent's own key can still be used by the attacker within those bounds. |
 | Non-human-identity sprawl | Registry with status/attestation; no expiry/recertification (open). |

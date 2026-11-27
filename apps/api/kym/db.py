@@ -100,6 +100,36 @@ class Agent(Base):
     security_posture: Mapped[dict] = j(default=dict)
     incidents: Mapped[list] = j(default=list)
     stats: Mapped[dict] = j(default=dict)
+    transparency: Mapped[dict] = j(default=dict)  # enrolment, report anchors and violations; see transparency.py
+
+
+class ActivityReport(Base):
+    """An agent-signed, hash-chained activity report and the bank's reconciliation of it against what the bank itself observed."""
+    __tablename__ = "activity_reports"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    agent_id: Mapped[str] = mapped_column(String, index=True)
+    window_start: Mapped[str] = mapped_column(String)
+    window_end: Mapped[str] = mapped_column(String)
+    head: Mapped[str] = mapped_column(String)
+    entry_count: Mapped[int] = mapped_column(Integer, default=0)
+    discrepancies: Mapped[list] = j(default=list)
+    jws: Mapped[str] = mapped_column(Text)
+    received_at: Mapped[str] = mapped_column(String)
+
+
+class AgentCommitment(Base):
+    """A commit-reveal record: the agent committed to a digest of its reasoning/decision log BEFORE acting; the bank can demand the reveal later."""
+    __tablename__ = "agent_commitments"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    agent_id: Mapped[str] = mapped_column(String, index=True)
+    commitment: Mapped[str] = mapped_column(String)
+    ref: Mapped[str | None] = mapped_column(String, nullable=True)
+    jws: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String)
+    due_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    status: Mapped[str] = mapped_column(String, default="COMMITTED")  # COMMITTED | REVEALED | MISMATCH | WAIVED
+    revealed: Mapped[dict | None] = j(nullable=True)  # agent-supplied, UNTRUSTED content
+    revealed_at: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class MandateRow(Base):

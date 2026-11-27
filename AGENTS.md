@@ -21,7 +21,8 @@ KYM is a security-sensitive proof of concept. Preserve these invariants when cha
 14. **Fail closed outside the demo.** `KYM_ENV != demo` disables no-password sessions, reset and red-team runs. Never ship a constant secret; the session secret is per-install (`config.session_secret`).
 15. **Verifiers pin keys.** `disputes.verify_package` must be given trusted keys by the caller; embedded keys prove only internal consistency.
 16. **Identifiers are validated at the boundary** (`schemas.ID_RE`, `agents.AGENT_ID_RE`) because they become file names and RDF IRIs. Money is capped (`money.MAX_MINOR`).
-17. **Keep the proof honest.** `redteam.py` compares KYM with scope-only and OAuth+static-RAR baselines. Do not weaken a baseline to flatter KYM (`tests/security/test_redteam.py` pins expectations) and do not remove the documented honest gap (`in_mandate_malicious`). Add attacks KYM fails rather than hiding them. When counts change, update `README.md`, `docs/faq.md`, `llms.txt`, then run `make llms-full`; `tests/unit/test_docs_consistency.py` checks them.
+18. **Never trust an agent's account of itself.** Agent-supplied logs, reasoning, rationales and reports are untrusted content: store them labelled, never use them as an input to any authorization decision, and reconcile them against what the bank observed (`transparency.py`). Transparency findings restrict the agent through the existing status machinery; do not add a second enforcement path.
+17. **Keep the proof honest.** `redteam.py` compares KYM with scope-only and OAuth+static-RAR baselines. Do not weaken a baseline to flatter KYM (`tests/security/test_redteam.py` pins expectations) and do not remove the documented honest gaps (`redteam.HONEST_GAPS`: `in_mandate_malicious`, `out_of_band_action`). Add attacks KYM fails rather than hiding them. When counts change, update `README.md`, `docs/faq.md`, `llms.txt`, then run `make llms-full`; `tests/unit/test_docs_consistency.py` checks them.
 
 ## Module map (modular monolith, `apps/api/kym`)
 
@@ -30,7 +31,8 @@ KYM is a security-sensitive proof of concept. Preserve these invariants when cha
 | Semantic | `ontology_service` (graph, SHACL, JSON-LD, safe SPARQL) · `cnl` (grammar/compile) · `schemas` · `taxonomy` |
 | Identity | `kyc` · `agents` (KYA, attestation, trust) · `auth` (demo sessions/RBAC) |
 | Authority | `mandates` (lifecycle, delegation) · `policy` (PDP) · `risk` · `approvals` |
-| Credentials | `oauth` (sandbox AS, DPoP) · `agent_sdk` (agent-side client) |
+| Credentials | `oauth` (sandbox AS, DPoP) · `agent_sdk` (agent-side client, `ActivityLog`) |
+| Transparency | `transparency` (signed activity reports, commit-reveal, dead-man's switch) |
 | Enforcement | `gateway` (PEP) · `bank` (accounts, double-entry, payment engine) |
 | Evidence | `ledger` · `disputes` · `responsibility` · `redteam` (executable proof) |
 | Hardening | `security` (rate limits, headers, body cap) · `sparql_worker` (killable SPARQL child) |

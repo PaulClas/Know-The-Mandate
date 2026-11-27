@@ -17,6 +17,8 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Token exchange now requires the parent's co-signed proof of possession; decision certificates carry `tx_id`; signed decisions record an engine fingerprint so replay can report `engine_changed`.
 - `transactions.executed_at` (migration `0002`); budgets are counted by execution time. Property tests for day/month windows across DST.
 
+- **Agent transparency** (`transparency.py`, [spec](docs/specifications/agent-transparency.md)): signed, hash-chained activity reports reconciled against the bank's own transactions; commit-reveal for reasoning logs; dead-man's switch; violations restrict the agent. Migration `0003`. Five red-team attacks (`hidden_action`, `phantom_action`, `log_swap`, `silent_agent`, and the honest gap `out_of_band_action`), 13 tests, an example, open findings O-23 to O-26. Existing demo databases need `make reset-demo`.
+
 ### Changed
 - README: badges, contents, quickstart, documentation map, contributing, security, citation and license sections.
 - Docker Compose verified end to end (PostgreSQL 16 + API + web); `.dockerignore` files added.
@@ -29,7 +31,7 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Deterministic policy decision point, mandate lifecycle with cascading revocation, delegation with strict attenuation.
 - Sandbox OAuth server (PAR, PKCE, RFC 9396 RAR, DPoP, introspection, revocation, token exchange); policy enforcement point and simulated open-banking gateway; double-entry payment engine requiring signed single-use decision certificates.
 - Signed hash-chained evidence ledger with checkpoints; dispute reconstruction and offline-verifiable evidence packages; responsibility mapping.
-- Web UI (13+ pages), scenarios A-M, agent sandbox, red-team harness comparing scope-only, OAuth+static-RAR and KYM (23 attacks).
+- Web UI (13+ pages), scenarios A-M, agent sandbox, red-team harness comparing scope-only, OAuth+static-RAR and KYM (23 attacks at 0.1.0; 28 after transparency).
 - Regulatory control mappings (CA, CA-QC, US), standards matrix, AP2 conceptual mapping, threat model, security review, risk register, philosophy, FAQ, glossary, `llms.txt`.
 
 ### Security

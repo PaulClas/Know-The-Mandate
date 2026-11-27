@@ -18,7 +18,7 @@ def test_no_harness_errors(report):
 
 
 def test_kym_blocks_every_attack_except_the_documented_honest_case(report):
-    assert report["summary"]["kym_not_blocked"] == ["in_mandate_malicious"]
+    assert report["summary"]["kym_not_blocked"] == list(redteam.HONEST_GAPS) == ["in_mandate_malicious", "out_of_band_action"]
     assert report["summary"]["kym"]["blocked"] == report["summary"]["kym"]["applicable"]
 
 
@@ -91,3 +91,14 @@ def test_a_block_requires_an_explicit_denial_with_the_expected_reason_code():
     assert not d(403, {"reason_codes": ["SOMETHING_ELSE"]}, "BENEFICIARY_NOT_AUTHORIZED")  # wrong reason: not credited
     assert not d(500, {"reason_codes": ["BENEFICIARY_NOT_AUTHORIZED"]}, "BENEFICIARY_NOT_AUTHORIZED")  # outage is not a block
     assert not d(403, {"status": "EXECUTED", "reason_codes": []})
+
+
+@pytest.mark.parametrize("aid", ["hidden_action", "phantom_action", "log_swap", "silent_agent"])
+def test_transparency_attacks_are_detected_and_have_no_baseline_equivalent(report, aid):
+    assert tier(report, aid, "kym") is True
+    assert tier(report, aid, "scope_only") is None and tier(report, aid, "rar_static") is None  # baselines keep no activity record: not applicable, not "failed"
+
+
+def test_out_of_band_activity_is_an_honest_gap(report):
+    row = next(a for a in report["attacks"] if a["id"] == "out_of_band_action")
+    assert row["expected_gap"] and row["results"]["kym"]["blocked"] is False and "outside this bank" in row["results"]["kym"]["detail"]

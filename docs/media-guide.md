@@ -6,9 +6,9 @@ KYM is one person's experimental proof of concept. This page exists so that cove
 
 * KYM is an **experimental, open-source proof of concept** that explores how a bank could represent, enforce and prove the financial authority a customer delegates to an AI agent.
 * It **adds state to OAuth**: it uses OAuth 2.0 (PKCE, PAR, DPoP, RFC 9396 Rich Authorization Requests) and layers a revocable mandate, cumulative budgets, single-use approvals, delegation lineage and a signed evidence ledger on top.
-* In its own red-team harness, KYM blocked 22 of 22 applicable attacks. On the same ten attacks the baselines could model, a stateless scope-only design blocked 0 and a stateless OAuth+static-RAR design blocked 3. These results are **self-assessed** and the baselines are deliberately simple.
+* In its own red-team harness, KYM blocked 26 of 26 applicable attacks. On the same ten attacks the baselines could model, a stateless scope-only design blocked 0 and a stateless OAuth+static-RAR design blocked 3. These results are **self-assessed** and the baselines are deliberately simple.
 * It documents what it **cannot** stop: a wrong-but-permitted payment inside a mandate.
-* It has been tested on SQLite and PostgreSQL 16, with 237 automated tests and about 82% line-and-branch coverage.
+* It has been tested on SQLite and PostgreSQL 16, with 256 automated tests and about 83% line-and-branch coverage.
 
 ## You cannot say
 
@@ -29,8 +29,8 @@ KYM is one person's experimental proof of concept. This page exists so that cove
 |---|---|---|
 | License | Apache-2.0 | [LICENSE](../LICENSE) |
 | Maintainer | One person, a machine learning developer, not a bank, payments-security or legal professional | [README](../README.md#contact) |
-| Red-team | 23 attacks, 22 applicable to KYM, 1 documented gap | [docs/redteam/latest.md](redteam/latest.md) |
-| Findings | 24 fixed, 22 open or accepted | [security review](security/security-review.md) |
+| Red-team | 28 attacks, 26 applicable to KYM, 2 documented gaps | [docs/redteam/latest.md](redteam/latest.md) |
+| Findings | 24 fixed, 26 open or accepted | [security review](security/security-review.md) |
 | Not related to | "Know Your Meme" | |
 
 ## Citing

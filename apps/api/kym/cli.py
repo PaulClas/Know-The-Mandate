@@ -75,7 +75,7 @@ def cmd_redteam(a):
         print(f"{'BLOCKED  ' if k else ('GAP      ' if r['expected_gap'] else 'FAILED   ')}{r['id']:28s} {r['results'].get('kym', {}).get('detail', r['error'])}")
     print(f"\nblocked (excl. honest case): scope-only {sm['scope_only']['blocked']}/{sm['scope_only']['applicable']}  OAuth+static-RAR {sm['rar_static']['blocked']}/{sm['rar_static']['applicable']}  KYM {sm['kym']['blocked']}/{sm['kym']['applicable']}")
     print(f"KYM not blocked: {sm['kym_not_blocked']}  errors: {sm['errors']}")
-    return 0 if not sm["errors"] and sm["kym_not_blocked"] == ["in_mandate_malicious"] else 1
+    return 0 if not sm["errors"] and sm["kym_not_blocked"] == list(redteam.HONEST_GAPS) else 1
 
 
 def cmd_verify_package(a):

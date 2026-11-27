@@ -45,9 +45,9 @@ def test_llms_full_is_current():
 def test_committed_redteam_results_match_the_harness_and_claims():
     rep = json.loads(read("docs/redteam/latest.json"))
     assert {a["id"] for a in rep["attacks"]} == {a[0] for a in redteam.ATTACKS}
-    assert rep["summary"]["kym_not_blocked"] == ["in_mandate_malicious"] and rep["summary"]["errors"] == []
+    assert rep["summary"]["kym_not_blocked"] == ["in_mandate_malicious", "out_of_band_action"] and rep["summary"]["errors"] == []
     s = rep["summary"]
-    assert f"{s['kym']['blocked']}/{s['kym']['applicable']}" == "22/22"
+    assert f"{s['kym']['blocked']}/{s['kym']['applicable']}" == "26/26"
     assert s["kym_on_baseline_attacks"] == {"blocked": 10, "applicable": 10}
     assert f"{s['rar_static']['blocked']}/{s['rar_static']['applicable']}" == "3/10" and f"{s['scope_only']['blocked']}/{s['scope_only']['applicable']}" == "0/10"
 

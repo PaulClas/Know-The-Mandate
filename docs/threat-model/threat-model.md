@@ -48,6 +48,7 @@ OWASP API Security Top 10 2023 (https://owasp.org/API-Security/editions/2023/en/
 | T21 | Policy downgrade | T, E | Medium |
 | T22 | Stale policy evaluation | T | Low-Medium |
 | T23 | Supply-chain compromise | T, E | Medium-High |
+| T24 | Agent conceals, falsifies or rewrites its own activity record | R, T, S | Medium |
 
 Residual ratings are qualitative judgments by the KYM authors for the demo design, not measured values.
 
@@ -191,6 +192,12 @@ Residual ratings are qualitative judgments by the KYM authors for the demo desig
 - **KYM mitigation:** Small set of well-known libraries (e.g. PyJWT, rfc8785, rdflib, pySHACL). **[partially implemented]** dependency versions are pinned in `pyproject.toml`; **[not implemented]** hash-locking, SBOM, vulnerability scanning, signed releases.
 - **Residual risk:** Compromise of a cryptographic or JWT library defeats most controls. The demo has no supply-chain attestation.
 
+### T24 Agent conceals, falsifies or rewrites its own activity record
+- **STRIDE:** Repudiation, Tampering, Spoofing.
+- **Attack:** A misaligned, compromised or malicious agent hides an action from its logs, invents an alibi, edits its reasoning log after the fact, or goes silent (OWASP ASI10 Rogue Agents; ASI09 Human-Agent Trust Exploitation).
+- **KYM mitigation:** **[implemented]** KYM never trusts the agent's account: the ledger records what the bank observed. Enrolled agents file signed, hash-chained activity reports that are reconciled against the bank's own transactions (`UNREPORTED_ACTION`, `PHANTOM_ACTION`, `DECLARATION_MISMATCH`, `LOG_CHAIN_BREAK`, `WINDOW_GAP`); reasoning logs can be committed to before acting and revealed on demand (`LOG_SWAPPED`, `REVEAL_REFUSED`); silence trips `REPORT_OVERDUE` before the next decision. A violation restricts the agent and is a signed event; only an operator can clear it. See [agent-transparency.md](../specifications/agent-transparency.md). Red-team: `hidden_action`, `phantom_action`, `log_swap`, `silent_agent`.
+- **Residual risk:** Actions outside this bank and private reasoning are invisible (`out_of_band_action`, O-23); a sanitized log committed before acting is undetectable (O-24); only payment and transfer attempts are reconciled (O-25); clearing is single-operator (O-26).
+
 ## 4. Demo-only security limitations
 
 These are deliberate simplifications of the proof-of-concept and must not be carried into any real deployment:
@@ -226,4 +233,4 @@ Replace demo agent keys with platform-attested workload identity: SPIFFE/SPIRE, 
 
 ## Addendum (2026-11-26): implementation review
 
-A code-level review against this model found and fixed 24 weaknesses (evidence verification trusting embedded keys, unauthenticated ledger flooding, scrypt under the global write lock, unkillable SPARQL, path traversal, constant session secret, and others) and recorded 22 open or accepted items. See [../security/security-review.md](../security/security-review.md), the [risk register](../risk/risk-register.md) and the executable [red-team results](../redteam/latest.md). Mitigation tags in this document describe the *design*; the review document is authoritative for the *implementation* status.
+A code-level review against this model found and fixed 24 weaknesses (evidence verification trusting embedded keys, unauthenticated ledger flooding, scrypt under the global write lock, unkillable SPARQL, path traversal, constant session secret, and others) and recorded 26 open or accepted items. See [../security/security-review.md](../security/security-review.md), the [risk register](../risk/risk-register.md) and the executable [red-team results](../redteam/latest.md). Mitigation tags in this document describe the *design*; the review document is authoritative for the *implementation* status.

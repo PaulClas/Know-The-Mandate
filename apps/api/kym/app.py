@@ -30,6 +30,7 @@ from . import (
     security,
     seed,
     taxonomy,
+    transparency,
 )
 from .auth import User, current_user, require_role
 from .metrics import METRICS
@@ -78,6 +79,11 @@ async def _approval_err(_, e: approvals.ApprovalError):
 @app.exception_handler(agents_mod.AgentError)
 async def _agent_err(_, e: agents_mod.AgentError):
     return JSONResponse({"error": "AGENT_ERROR", "message": str(e)}, status_code=422)
+
+
+@app.exception_handler(transparency.TransparencyError)
+async def _transparency_err(_, e: transparency.TransparencyError):
+    return JSONResponse({"error": "TRANSPARENCY_ERROR", "message": str(e)}, status_code=422)
 
 
 @app.exception_handler(oauth.OAuthError)
@@ -195,6 +201,68 @@ def verify_agent(agent_id: str, user: User = Depends(require_role("admin"))):
 
 class StatusBody(BaseModel):
     reason: str = "operator action"
+
+
+class EnrollBody(BaseModel):
+    interval_hours: int = 24
+    grace_minutes: int = 60
+
+
+class JwsBody(BaseModel):
+    jws: str
+
+
+class DemandBody(BaseModel):
+    within_hours: int = 24
+    reason: str
+
+
+@app.post("/api/agents/{agent_id}/transparency/enroll", tags=["transparency"])
+def transparency_enroll(agent_id: str, body: EnrollBody, user: User = Depends(require_role("admin"))):
+    """Require this agent to submit signed activity reports on a schedule. Silence or a mismatch with the bank's own records restricts the agent."""
+    with db.write() as s:
+        return transparency.enroll(s, agent_id, interval_hours=body.interval_hours, grace_minutes=body.grace_minutes, actor_id=user.id)
+
+
+@app.get("/api/agents/{agent_id}/transparency", tags=["transparency"])
+def transparency_status(agent_id: str, user: User = Depends(require_role("admin", "investigator"))):
+    with db.write() as s:  # enforcement (overdue reports, missed reveals) is evaluated on read too, so a status page can never show a stale CLEAR
+        transparency.enforce(s, s.get(db.Agent, agent_id))
+        return transparency.status(s, agent_id)
+
+
+@app.post("/api/agents/{agent_id}/transparency/clear", tags=["transparency"])
+def transparency_clear(agent_id: str, body: StatusBody, user: User = Depends(require_role("admin"))):
+    """Close a violation after human review (recorded in the ledger) and re-verify the agent."""
+    with db.write() as s:
+        return transparency.clear(s, agent_id, reason=body.reason, actor_id=user.id)
+
+
+@app.post("/api/commitments/{commitment_id}/demand-reveal", tags=["transparency"])
+def transparency_demand(commitment_id: str, body: DemandBody, user: User = Depends(require_role("admin", "investigator"))):
+    """Demand that the agent reveal the log it committed to. A mismatch proves tampering; silence past the deadline is a violation."""
+    with db.write() as s:
+        return transparency.demand_reveal(s, commitment_id, within_hours=body.within_hours, reason=body.reason, actor_id=user.id)
+
+
+@app.post("/bank/agents/{agent_id}/activity-reports", tags=["transparency"])
+def submit_activity_report(agent_id: str, body: JwsBody):
+    """Agent-signed (ES256, registered key), hash-chained report. The bank reconciles it against the transactions it observed itself."""
+    with db.write() as s:
+        return transparency.submit_report(s, agent_id, body.jws)
+
+
+@app.post("/bank/agents/{agent_id}/commitments", tags=["transparency"])
+def submit_commitment(agent_id: str, body: JwsBody):
+    """Commit (before acting) to a digest of the agent's reasoning/decision log."""
+    with db.write() as s:
+        return transparency.commit(s, agent_id, body.jws)
+
+
+@app.post("/bank/agents/{agent_id}/commitments/{commitment_id}/reveal", tags=["transparency"])
+def submit_reveal(agent_id: str, commitment_id: str, body: JwsBody):
+    with db.write() as s:
+        return transparency.reveal(s, agent_id, commitment_id, body.jws)
 
 
 @app.post("/api/agents/{agent_id}/suspend", tags=["agents"])

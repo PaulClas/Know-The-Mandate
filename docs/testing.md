@@ -8,13 +8,13 @@ KYM's central claim is testable, so the test suite is part of the product. All n
 |---|---|---|---|---|
 | Unit | [tests/unit](../tests/unit) | 100 | Policy decision point as a pure function, CNL compiler, ontology/SHACL, ledger primitives, docs-consistency | `make test-unit` |
 | Property-based | [tests/unit/test_properties.py](../tests/unit/test_properties.py) (Hypothesis) | 5 (in unit) | Money arithmetic and attenuation invariants hold for generated inputs | `make test-unit` |
-| Integration | [tests/integration](../tests/integration) | 87 | Real FastAPI app and database: OAuth/DPoP flow, enforcement, scenarios A to M, migrations, examples | `make test` |
-| Security / red-team | [tests/security](../tests/security) | 51 | Regression tests for fixed findings F-01 to F-21 and the 23-attack harness | `make test` |
+| Integration | [tests/integration](../tests/integration) | 88 | Real FastAPI app and database: OAuth/DPoP flow, enforcement, scenarios A to M, migrations, examples | `make test` |
+| Security / red-team | [tests/security](../tests/security) | 69 | Regression tests for fixed findings F-01 to F-24, agent transparency, and the 28-attack harness | `make test` |
 | End to end (browser) | [apps/web/e2e](../apps/web/e2e) | 30 Playwright specs | UI pages, scenario runner, customer approval flow, discoverability metadata | `make test-e2e` (needs `make demo` running) |
 | Multi-process | [scripts/concurrency_check.py](../scripts/concurrency_check.py) | 1 SQLite test (+1 PostgreSQL, opt-in) | Four OS processes race one budget; the limit must hold and some payments must execute | `make concurrency` |
 | Docker smoke | [.github/workflows/ci.yml](../.github/workflows/ci.yml) | CI job | Compose stack builds, becomes healthy, passes scenarios and red-team | `docker compose up --build` |
 
-Total backend: **238 tests** (237 run by default; the PostgreSQL multi-process test is skipped unless `KYM_TEST_PG_URL` points at an empty database) (`make test`).
+Total backend: **257 tests** (256 run by default; the PostgreSQL multi-process test is skipped unless `KYM_TEST_PG_URL` points at an empty database) (`make test`).
 
 ## Coverage
 
@@ -22,13 +22,13 @@ Total backend: **238 tests** (237 run by default; the PostgreSQL multi-process t
 make coverage
 ```
 
-Measured: **82% of statements and branches** across `apps/api/kym` (5,638 statements, 1,620 branches), excluding `cli.py` and `sparql_worker.py`, which run as subprocesses and are exercised by CLI runs instead of in-process.
+Measured: **83% of statements and branches** across `apps/api/kym` (6,043 statements, 1,720 branches), excluding `cli.py` and `sparql_worker.py`, which run as subprocesses and are exercised by CLI runs instead of in-process.
 
 Highest value modules are well covered: `policy.py` 88%, `ledger.py` 84%, `security.py` 96%, `ontology_service.py` 94%, `db.py` 97%. Weakest: `sandbox.py` 55% (the demo agent simulator), `bank.py` 67%, `adapters.py` 68%. Coverage is a floor for what ran, not proof of correctness. Many important behaviours (for example the red-team checks) are asserted by outcome, not by line.
 
 ## The red-team harness is also a test
 
-`make redteam` runs 23 attacks against three designs (a scope-only bank, OAuth with static RAR, and KYM) and writes [redteam/latest.md](redteam/latest.md). [tests/security/test_redteam.py](../tests/security/test_redteam.py) asserts that KYM blocks every applicable attack, that the baselines fail where claimed, and that the one in-mandate malicious action is documented as unstoppable. It is self-assessed: the attacks were written by the author of the defence.
+`make redteam` runs 28 attacks against three designs (a scope-only bank, OAuth with static RAR, and KYM) and writes [redteam/latest.md](redteam/latest.md). [tests/security/test_redteam.py](../tests/security/test_redteam.py) asserts that KYM blocks every applicable attack, that the baselines fail where claimed, and that the two unstoppable cases (in-mandate misuse, activity outside the bank) are documented as gaps. It is self-assessed: the attacks were written by the author of the defence.
 
 ## Determinism
 

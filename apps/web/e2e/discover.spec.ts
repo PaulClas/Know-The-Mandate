@@ -20,11 +20,13 @@ test("robots, sitemap and llms.txt are served", async ({ request }) => {
   expect(llms).toContain("does NOT prevent harm from actions that stay inside the mandate");
 });
 
-test("proof page runs the red-team harness; KYM blocks everything except the documented honest gap", async ({ page }) => {
+test("proof page runs the red-team harness; KYM blocks everything except the documented honest gaps", async ({ page }) => {
   await page.goto("/proof");
   await page.getByTestId("run-redteam").click();
   await expect(page.getByTestId("redteam-report")).toBeVisible({ timeout: 90_000 });
-  await expect(page.getByTestId("tally-kym")).toHaveText("22/22");
+  await expect(page.getByTestId("tally-kym")).toHaveText("26/26");
   await expect(page.getByTestId("tally-scope_only")).toHaveText("0/10");
   await expect(page.getByTestId("attack-in_mandate_malicious")).toContainText("succeeded");
+  await expect(page.getByTestId("attack-out_of_band_action")).toContainText("succeeded");
+  await expect(page.getByTestId("attack-hidden_action")).toContainText("blocked");
 });

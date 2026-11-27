@@ -150,3 +150,15 @@ Auth: `/bank/*` calls need a DPoP-bound access token (`Authorization: DPoP <toke
 | `GET` | `/api/transactions/{tx_id}/evidence/download` | Transaction Evidence Download |
 | `POST` | `/api/transactions/{tx_id}/reverse` | Reverse Tx |
 | `POST` | `/api/transactions/{tx_id}/risk-review` | Risk Review |
+
+## transparency
+
+| Method | Path | Summary |
+|---|---|---|
+| `GET` | `/api/agents/{agent_id}/transparency` | Transparency Status |
+| `POST` | `/api/agents/{agent_id}/transparency/clear` | Transparency Clear |
+| `POST` | `/api/agents/{agent_id}/transparency/enroll` | Transparency Enroll |
+| `POST` | `/api/commitments/{commitment_id}/demand-reveal` | Transparency Demand |
+| `POST` | `/bank/agents/{agent_id}/activity-reports` | Submit Activity Report |
+| `POST` | `/bank/agents/{agent_id}/commitments` | Submit Commitment |
+| `POST` | `/bank/agents/{agent_id}/commitments/{commitment_id}/reveal` | Submit Reveal |

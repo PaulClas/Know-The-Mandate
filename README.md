@@ -26,7 +26,7 @@
 | What does it add to OAuth? | State and per-request decisions: cumulative budgets, instant revocation, single-use approvals, delegation lineage, evidence. It *uses* OAuth (PKCE, PAR, DPoP, RFC 9396 RAR) |
 | Is it a standard? | No. The namespace (`https://example.org/kym/v1#`), KYM-CNL and the `kym_financial_mandate` RAR type are experimental proposals |
 | What can it NOT do? | Stop wrong-but-permitted actions inside a mandate; make agents safe; decide legal liability; guarantee compliance |
-| What is the evidence? | `make redteam`: 23 attacks against a scope-only bank, an OAuth+static-RAR bank and KYM. KYM blocks 22/22 applicable attacks; on the 10 attacks the baselines can model: scope-only 0/10, stateless static RAR 3/10, KYM 10/10. One attack is documented as unstoppable. Self-assessed, written by the author, baselines are deliberately stateless |
+| What is the evidence? | `make redteam`: 28 attacks against a scope-only bank, an OAuth+static-RAR bank and KYM. KYM blocks 26/26 applicable attacks; on the 10 attacks the baselines can model: scope-only 0/10, stateless static RAR 3/10, KYM 10/10. Two attacks are documented as unstoppable (in-mandate misuse, and activity outside the bank). Self-assessed, written by the author, baselines are deliberately stateless |
 | Is it production-ready? | No: see [security review](docs/security/security-review.md) and [risk register](docs/risk/risk-register.md) |
 | Where do I learn more? | [FAQ](docs/faq.md) · [Philosophy and critics](docs/philosophy/README.md) · [Glossary](docs/glossary.md) · [Docs index](docs/README.md) · [llms.txt](llms.txt) |
 
@@ -69,6 +69,7 @@ Same agent, same valid OAuth token, four different outcomes: the **mandate** dec
 | KYM-CNL controlled language (Lark grammar) + deterministic compiler | [packages/controlled-language](packages/controlled-language), [cnl.py](apps/api/kym/cnl.py) | Inspired by ASD-STE100; makes no conformance claim |
 | Canonical mandate model (Pydantic + generated JSON Schema) | [schemas.py](apps/api/kym/schemas.py), [packages/mandate-schema](packages/mandate-schema) | Integer minor units; explicit timezones |
 | Deterministic Policy Decision Point | [policy.py](apps/api/kym/policy.py) | Pure function of a JSON snapshot → replayable. Deny by default |
+| Agent transparency: signed hash-chained activity reports reconciled against the bank's own records, commit-reveal for reasoning logs, dead-man's switch | [transparency.py](apps/api/kym/transparency.py), [spec](docs/specifications/agent-transparency.md) | Detects hidden, invented or rewritten activity **that touches the bank**; cannot see elsewhere or verify reasoning |
 | Sandbox OAuth/OIDC server (PAR, PKCE, RAR, DPoP, introspection, revocation, token exchange) | [oauth.py](apps/api/kym/oauth.py) | **Sandbox adapter**, not a certified server |
 | Policy Enforcement Point + simulated open-banking gateway | [gateway.py](apps/api/kym/gateway.py), [bank.py](apps/api/kym/bank.py) | Payment engine accepts only signed, short-lived, single-use decisions bound to the exact operation hash |
 | Double-entry accounting ledger (money) | [bank.py](apps/api/kym/bank.py) | Distinct from the evidence ledger (authority) |
@@ -84,22 +85,38 @@ Same agent, same valid OAuth token, four different outcomes: the **mandate** dec
 
 ## Philosophy in brief
 
-Authority is not identity and not permission; the agent never decides what it may do; the bank enforces observable facts, not intentions; authority can only narrow when delegated; humans approve exact operations; evidence is checkable by someone who does not trust the bank; and the claims are narrow enough to be falsified. Read the full argument, twelve steelmanned critic objections (and where the critics are right) in **[docs/philosophy](docs/philosophy/README.md)**.
+Authority is not identity and not permission; the agent never decides what it may do; the bank enforces observable facts, not intentions; authority can only narrow when delegated; humans approve exact operations; evidence is checkable by someone who does not trust the bank; and the claims are narrow enough to be falsified. Read the full argument, thirteen steelmanned critic objections (and where the critics are right) in **[docs/philosophy](docs/philosophy/README.md)**.
+
+## Agents that hide or lie about what they did
+
+An agent's own logs and stated reasoning are produced by the system being governed, so they can be incomplete, edited or invented. KYM never relies on them: **the ledger records what the bank observed**. On top of that, enrolled agents must account for themselves and the bank checks the account against its own records:
+
+| Agent behaviour | What the bank does |
+|---|---|
+| Leaves a payment out of its signed activity log | `UNREPORTED_ACTION`: agent restricted to read-only, signed event |
+| Logs a request that never happened | `PHANTOM_ACTION` |
+| Reports a different amount or counterparty | `DECLARATION_MISMATCH` |
+| Deletes or edits entries in its hash-chained log | `LOG_CHAIN_BREAK` |
+| Reveals a different reasoning log than the digest it committed to before acting | `LOG_SWAPPED` (provable tampering) |
+| Refuses a demanded reveal, or stops reporting | `REVEAL_REFUSED`, `REPORT_OVERDUE` (dead-man's switch) |
+| Acts at another bank or with other tools, then reports cleanly here | **Not detected**: an honest gap (`out_of_band_action`) |
+
+Specification: [docs/specifications/agent-transparency.md](docs/specifications/agent-transparency.md). Demo: `PYTHONPATH=apps/api .venv/bin/python examples/03_agent_transparency.py`. It makes hiding and after-the-fact rewriting detectable for actions that touch the bank; it does not make an agent honest or let anyone verify its reasoning.
 
 ## Risks and disclosures
 
-KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (24 vulnerabilities found and fixed (15 in a self-review, 9 more through an independent review and follow-up testing), 22 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
+KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (24 vulnerabilities found and fixed (15 in a self-review, 9 more through an independent review and follow-up testing), 26 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
 
 ## Prove it (or break it)
 
 ```bash
-make redteam      # 23 attacks x 3 designs, same real token; writes docs/redteam/latest.md
+make redteam      # 28 attacks x 3 designs, same real token; writes docs/redteam/latest.md
 make test         # unit, property-based, integration, security
 make scenarios    # demonstration scenarios A-M
 make verify-ledger
 ```
 
-The red-team harness compares a **scope-only bank**, an **OAuth + static RAR bank** (stronger than scopes, but deliberately stateless: no sender constraint, online revocation, budgets or approvals, so it is a model of one common design, not of every OAuth deployment) and **KYM**, and includes an attack KYM cannot stop (`in_mandate_malicious`). It runs in the UI at `/proof`. Add an attack that KYM fails and you have improved the project. After `make redteam`, run `make reset-demo` for a clean demo state.
+The red-team harness compares a **scope-only bank**, an **OAuth + static RAR bank** (stronger than scopes, but deliberately stateless: no sender constraint, online revocation, budgets or approvals, so it is a model of one common design, not of every OAuth deployment) and **KYM**, and includes two attacks KYM cannot stop (`in_mandate_malicious`, `out_of_band_action`). It runs in the UI at `/proof`. Add an attack that KYM fails and you have improved the project. After `make redteam`, run `make reset-demo` for a clean demo state.
 
 ## Run it
 
@@ -137,11 +154,11 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 
 | Suite | Result |
 |---|---|
-| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **237 passed, 0 failed, 1 skipped** (the PostgreSQL multi-process test runs only when `KYM_TEST_PG_URL` is set; it was run separately); line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
+| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **256 passed, 0 failed, 1 skipped** (the PostgreSQL multi-process test runs only when `KYM_TEST_PG_URL` is set; it was run separately); line + branch coverage **83%** (`make coverage`, [how to read it](docs/testing.md)) |
 | `make scenarios` — scenarios A–M against the real engine (SQLite), run three times in a row on one database | **13/13 passed each time**; `make verify-ledger` afterwards: 767 events, 8 checkpoints, chain intact |
 | Same 13 scenarios + Alembic migration against **PostgreSQL 14** and, through `docker compose`, **PostgreSQL 16** | **13/13 passed** on both |
 | `ruff check apps tests` | clean |
-| `make redteam` (23 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 22/22** applicable blocked (10/10 on the same ten attacks the baselines can model); 1 documented honest gap; 0 harness errors ([results](docs/redteam/latest.md)) |
+| `make redteam` (28 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 26/26** applicable blocked (10/10 on the same ten attacks the baselines can model); 2 documented honest gaps; 0 harness errors ([results](docs/redteam/latest.md)) |
 | Web: `tsc`, `eslint`, `next build`, Playwright (Chromium, live API) | clean; **30 passed, 0 failed** ([apps/web/README.md](apps/web/README.md)) |
 | `make benchmark` (single process, SQLite, in-process ASGI client) | PDP pure evaluation p50 0.076 ms / p95 0.088 ms / p99 0.135 ms (n=20 000); full gateway payment p50 18.9 ms / p95 24.7 ms / p99 37.0 ms (n=300). Raw output: [docs/benchmarks/latest.json](docs/benchmarks/latest.json) |
 

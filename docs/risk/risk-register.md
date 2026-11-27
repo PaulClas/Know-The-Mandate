@@ -33,6 +33,7 @@ Scoring is qualitative (L = low, M = medium, H = high), by the authors, **before
 | S-13 | Time-boundary budget errors | L | M | Calendar windows in IANA zones | **M**: limited DST tests (O-20) |
 | S-14 | Decision-snapshot manipulation by a compromised gateway | L | H | Replay detects non-determinism | **M**: garbage-in not detectable (O-17) |
 | S-15 | Deceptive or erroneous consent rendering | M | H | Digest-bound receipt, EN/FR summaries, tests on content | **M–H** (O-18) |
+| S-16 | **Agent hides, invents or rewrites its own activity or reasoning log** (or goes silent). | M | H | Signed hash-chained reports reconciled against the bank's records; commit-reveal; dead-man's switch; restriction on violation | **M** (O-23 to O-26): activity outside the bank and private reasoning stay invisible |
 
 ## C. Design flaws and "ways KYM could fail as an idea"
 

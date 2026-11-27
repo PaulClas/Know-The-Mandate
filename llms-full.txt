@@ -35,7 +35,7 @@
 | What does it add to OAuth? | State and per-request decisions: cumulative budgets, instant revocation, single-use approvals, delegation lineage, evidence. It *uses* OAuth (PKCE, PAR, DPoP, RFC 9396 RAR) |
 | Is it a standard? | No. The namespace (`https://example.org/kym/v1#`), KYM-CNL and the `kym_financial_mandate` RAR type are experimental proposals |
 | What can it NOT do? | Stop wrong-but-permitted actions inside a mandate; make agents safe; decide legal liability; guarantee compliance |
-| What is the evidence? | `make redteam`: 23 attacks against a scope-only bank, an OAuth+static-RAR bank and KYM. KYM blocks 22/22 applicable attacks; on the 10 attacks the baselines can model: scope-only 0/10, stateless static RAR 3/10, KYM 10/10. One attack is documented as unstoppable. Self-assessed, written by the author, baselines are deliberately stateless |
+| What is the evidence? | `make redteam`: 28 attacks against a scope-only bank, an OAuth+static-RAR bank and KYM. KYM blocks 26/26 applicable attacks; on the 10 attacks the baselines can model: scope-only 0/10, stateless static RAR 3/10, KYM 10/10. Two attacks are documented as unstoppable (in-mandate misuse, and activity outside the bank). Self-assessed, written by the author, baselines are deliberately stateless |
 | Is it production-ready? | No: see [security review](docs/security/security-review.md) and [risk register](docs/risk/risk-register.md) |
 | Where do I learn more? | [FAQ](docs/faq.md) · [Philosophy and critics](docs/philosophy/README.md) · [Glossary](docs/glossary.md) · [Docs index](docs/README.md) · [llms.txt](llms.txt) |
 
@@ -78,6 +78,7 @@ Same agent, same valid OAuth token, four different outcomes: the **mandate** dec
 | KYM-CNL controlled language (Lark grammar) + deterministic compiler | [packages/controlled-language](packages/controlled-language), [cnl.py](apps/api/kym/cnl.py) | Inspired by ASD-STE100; makes no conformance claim |
 | Canonical mandate model (Pydantic + generated JSON Schema) | [schemas.py](apps/api/kym/schemas.py), [packages/mandate-schema](packages/mandate-schema) | Integer minor units; explicit timezones |
 | Deterministic Policy Decision Point | [policy.py](apps/api/kym/policy.py) | Pure function of a JSON snapshot → replayable. Deny by default |
+| Agent transparency: signed hash-chained activity reports reconciled against the bank's own records, commit-reveal for reasoning logs, dead-man's switch | [transparency.py](apps/api/kym/transparency.py), [spec](docs/specifications/agent-transparency.md) | Detects hidden, invented or rewritten activity **that touches the bank**; cannot see elsewhere or verify reasoning |
 | Sandbox OAuth/OIDC server (PAR, PKCE, RAR, DPoP, introspection, revocation, token exchange) | [oauth.py](apps/api/kym/oauth.py) | **Sandbox adapter**, not a certified server |
 | Policy Enforcement Point + simulated open-banking gateway | [gateway.py](apps/api/kym/gateway.py), [bank.py](apps/api/kym/bank.py) | Payment engine accepts only signed, short-lived, single-use decisions bound to the exact operation hash |
 | Double-entry accounting ledger (money) | [bank.py](apps/api/kym/bank.py) | Distinct from the evidence ledger (authority) |
@@ -93,22 +94,38 @@ Same agent, same valid OAuth token, four different outcomes: the **mandate** dec
 
 ## Philosophy in brief
 
-Authority is not identity and not permission; the agent never decides what it may do; the bank enforces observable facts, not intentions; authority can only narrow when delegated; humans approve exact operations; evidence is checkable by someone who does not trust the bank; and the claims are narrow enough to be falsified. Read the full argument, twelve steelmanned critic objections (and where the critics are right) in **[docs/philosophy](docs/philosophy/README.md)**.
+Authority is not identity and not permission; the agent never decides what it may do; the bank enforces observable facts, not intentions; authority can only narrow when delegated; humans approve exact operations; evidence is checkable by someone who does not trust the bank; and the claims are narrow enough to be falsified. Read the full argument, thirteen steelmanned critic objections (and where the critics are right) in **[docs/philosophy](docs/philosophy/README.md)**.
+
+## Agents that hide or lie about what they did
+
+An agent's own logs and stated reasoning are produced by the system being governed, so they can be incomplete, edited or invented. KYM never relies on them: **the ledger records what the bank observed**. On top of that, enrolled agents must account for themselves and the bank checks the account against its own records:
+
+| Agent behaviour | What the bank does |
+|---|---|
+| Leaves a payment out of its signed activity log | `UNREPORTED_ACTION`: agent restricted to read-only, signed event |
+| Logs a request that never happened | `PHANTOM_ACTION` |
+| Reports a different amount or counterparty | `DECLARATION_MISMATCH` |
+| Deletes or edits entries in its hash-chained log | `LOG_CHAIN_BREAK` |
+| Reveals a different reasoning log than the digest it committed to before acting | `LOG_SWAPPED` (provable tampering) |
+| Refuses a demanded reveal, or stops reporting | `REVEAL_REFUSED`, `REPORT_OVERDUE` (dead-man's switch) |
+| Acts at another bank or with other tools, then reports cleanly here | **Not detected**: an honest gap (`out_of_band_action`) |
+
+Specification: [docs/specifications/agent-transparency.md](docs/specifications/agent-transparency.md). Demo: `PYTHONPATH=apps/api .venv/bin/python examples/03_agent_transparency.py`. It makes hiding and after-the-fact rewriting detectable for actions that touch the bank; it does not make an agent honest or let anyone verify its reasoning.
 
 ## Risks and disclosures
 
-KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (24 vulnerabilities found and fixed (15 in a self-review, 9 more through an independent review and follow-up testing), 22 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
+KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (24 vulnerabilities found and fixed (15 in a self-review, 9 more through an independent review and follow-up testing), 26 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
 
 ## Prove it (or break it)
 
 ```bash
-make redteam      # 23 attacks x 3 designs, same real token; writes docs/redteam/latest.md
+make redteam      # 28 attacks x 3 designs, same real token; writes docs/redteam/latest.md
 make test         # unit, property-based, integration, security
 make scenarios    # demonstration scenarios A-M
 make verify-ledger
 ```
 
-The red-team harness compares a **scope-only bank**, an **OAuth + static RAR bank** (stronger than scopes, but deliberately stateless: no sender constraint, online revocation, budgets or approvals, so it is a model of one common design, not of every OAuth deployment) and **KYM**, and includes an attack KYM cannot stop (`in_mandate_malicious`). It runs in the UI at `/proof`. Add an attack that KYM fails and you have improved the project. After `make redteam`, run `make reset-demo` for a clean demo state.
+The red-team harness compares a **scope-only bank**, an **OAuth + static RAR bank** (stronger than scopes, but deliberately stateless: no sender constraint, online revocation, budgets or approvals, so it is a model of one common design, not of every OAuth deployment) and **KYM**, and includes two attacks KYM cannot stop (`in_mandate_malicious`, `out_of_band_action`). It runs in the UI at `/proof`. Add an attack that KYM fails and you have improved the project. After `make redteam`, run `make reset-demo` for a clean demo state.
 
 ## Run it
 
@@ -146,11 +163,11 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 
 | Suite | Result |
 |---|---|
-| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **237 passed, 0 failed, 1 skipped** (the PostgreSQL multi-process test runs only when `KYM_TEST_PG_URL` is set; it was run separately); line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
+| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **256 passed, 0 failed, 1 skipped** (the PostgreSQL multi-process test runs only when `KYM_TEST_PG_URL` is set; it was run separately); line + branch coverage **83%** (`make coverage`, [how to read it](docs/testing.md)) |
 | `make scenarios` — scenarios A–M against the real engine (SQLite), run three times in a row on one database | **13/13 passed each time**; `make verify-ledger` afterwards: 767 events, 8 checkpoints, chain intact |
 | Same 13 scenarios + Alembic migration against **PostgreSQL 14** and, through `docker compose`, **PostgreSQL 16** | **13/13 passed** on both |
 | `ruff check apps tests` | clean |
-| `make redteam` (23 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 22/22** applicable blocked (10/10 on the same ten attacks the baselines can model); 1 documented honest gap; 0 harness errors ([results](docs/redteam/latest.md)) |
+| `make redteam` (28 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 26/26** applicable blocked (10/10 on the same ten attacks the baselines can model); 2 documented honest gaps; 0 harness errors ([results](docs/redteam/latest.md)) |
 | Web: `tsc`, `eslint`, `next build`, Playwright (Chromium, live API) | clean; **30 passed, 0 failed** ([apps/web/README.md](apps/web/README.md)) |
 | `make benchmark` (single process, SQLite, in-process ASGI client) | PDP pure evaluation p50 0.076 ms / p95 0.088 ms / p99 0.135 ms (n=20 000); full gateway payment p50 18.9 ms / p95 24.7 ms / p99 37.0 ms (n=300). Raw output: [docs/benchmarks/latest.json](docs/benchmarks/latest.json) |
 
@@ -233,7 +250,7 @@ See [CITATION.cff](CITATION.cff) (GitHub shows a "Cite this repository" button) 
 
 ## License
 
-[Apache License 2.0](LICENSE). See [NOTICE](NOTICE). Provided as is, without warranty; not legal, compliance or financial advice.
+[Apache License 2.0](LICENSE). See [NOTICE](NOTICE). Chosen for its explicit patent grant and because it is the common choice for security and infrastructure projects (it is compatible with the permissive dependencies used here; `psycopg` and `sharp-libvips` are LGPL-3.0 and used unmodified, see NOTICE). Provided as is, without warranty; not legal, compliance or financial advice.
 
 
 ---
@@ -251,7 +268,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **It closes the gap between "this client holds a valid token" and "the customer actually authorized this specific action".** KYC identifies the customer, authentication verifies the caller, OAuth grants API access, KYA identifies the agent, KYT scores transactions. None records the delegated authority itself. Without it, a bank cannot easily answer who authorized what, within which limits, and whether those limits were honoured.
 
 ## How is KYM different from OAuth and OAuth Rich Authorization Requests (RAR)?
-**OAuth/RAR is the carrier; KYM supplies the state and the decision.** RAR (RFC 9396) can express account, beneficiary and maximum amount inside a token, and KYM uses it. But a static grant cannot track cumulative budgets, instant mandate revocation, single-use approvals or delegation lineage. In KYM's red-team comparison, a stateless design with scopes plus static RAR stopped 3 of the 10 attacks it can model; KYM blocked all 10 of those and 22 of 22 applicable attacks overall (and documents one it cannot stop). The baseline is deliberately stateless, so this shows what needs state, not that no other design could add it. See [philosophy](philosophy/README.md#1-oauth-with-rich-authorization-requests-already-does-this).
+**OAuth/RAR is the carrier; KYM supplies the state and the decision.** RAR (RFC 9396) can express account, beneficiary and maximum amount inside a token, and KYM uses it. But a static grant cannot track cumulative budgets, instant mandate revocation, single-use approvals or delegation lineage. In KYM's red-team comparison, a stateless design with scopes plus static RAR stopped 3 of the 10 attacks it can model; KYM blocked all 10 of those and 26 of 26 applicable attacks overall (and documents two it cannot stop). The baseline is deliberately stateless, so this shows what needs state, not that no other design could add it. See [philosophy](philosophy/README.md#1-oauth-with-rich-authorization-requests-already-does-this).
 
 ## Does a valid access token authorize a payment in KYM?
 **No.** A valid token is only technical permission. Scenario C demonstrates it: the token passes OAuth verification (including `payments.initiate`), the mandate does not permit the beneficiary, and the payment is denied.
@@ -284,7 +301,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **No.** It attributes who did what and which party controlled which system. It distinguishes factual responsibility, contractual responsibility, potential legal liability and final adjudicated liability, and decides none of the last three. A valid signature shows integrity and key control, not legally effective consent.
 
 ## Is it ready for production?
-**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (24 findings fixed, 22 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
+**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (24 findings fixed, 26 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
 
 ## What are the biggest risks of KYM?
 **Approval fatigue, customers misreading mandates, overly broad mandates, coverage gaps when payments bypass the bank, in-mandate harm, insider abuse, and standards absorbing the idea.** Full list with likelihood and impact: [risk register](risk/risk-register.md).
@@ -293,7 +310,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **When agents only read data, when a single static per-transaction cap suffices, or when you cannot run a highly available enforcement point.** See [risk register §E](risk/risk-register.md#e-when-you-should-not-use-kym).
 
 ## How can I verify the claims myself?
-**Run `make redteam`.** It executes 23 attacks against three designs with the same real token and writes [docs/redteam/latest.md](redteam/latest.md). Also `make test` (208 tests incl. property-based), `make scenarios` (13 demonstration scenarios A–M), and `make verify-ledger`.
+**Run `make redteam`.** It executes 28 attacks against three designs with the same real token and writes [docs/redteam/latest.md](redteam/latest.md). Also `make test` (256 tests incl. property-based), `make scenarios` (13 demonstration scenarios A–M), and `make verify-ledger`.
 
 ## How do I run it?
 `make install && make install-web && make demo`; API docs at http://127.0.0.1:8000/docs, UI at http://localhost:3000. Demo users and details: [README](../README.md#run-it).
@@ -305,6 +322,10 @@ KYM is an independent project by Paul Clas, a machine learning developer; he is 
 ## Has KYM been independently audited?
 
 No. All evidence is self-assessed, plus one AI-assisted hostile review whose findings were fixed. See [external review status](security/external-review.md) and the [media guide](media-guide.md) for what may be claimed.
+
+## Can an AI agent hide or fake its own logs and reasoning?
+
+Yes, and KYM assumes it can. It never trusts an agent's account of itself: the ledger records what the bank observed. Enrolled agents file signed, hash-chained activity reports that the bank reconciles against its own transactions (hidden, invented or altered actions restrict the agent), reasoning logs can be committed to before acting and revealed on demand (a swapped log is provable, a refusal is a violation), and silence trips a dead-man's switch. It cannot see what an agent does outside the bank or verify its reasoning. See the [agent transparency specification](specifications/agent-transparency.md).
 
 
 ---
@@ -355,9 +376,18 @@ No. All evidence is self-assessed, plus one AI-assisted hostile review whose fin
 
 **Know Your Transaction (KYT).** Transaction risk assessment. In KYM it is synthetic and separate from mandate authorization.
 
-**Honest gap.** An attack KYM does not stop: payments that stay inside the mandate (`in_mandate_malicious`).
+**Honest gap.** An attack or limitation KYM documents instead of hiding: payments that stay inside the mandate (`in_mandate_malicious`) and activity outside the bank (`out_of_band_action`).
 
 **Baseline (red-team).** Deliberately simple models used for comparison: *scope-only* and *OAuth + static RAR*.
+
+## Agent transparency terms
+
+**Activity report.** A compact JWS signed with an agent's registered key, covering a contiguous time window and carrying the agent's hash-chained log entries. The bank reconciles it against its own records; it is never taken on trust.
+
+**Commit-reveal.** The agent commits to a digest of its reasoning/decision log before acting; the bank can demand the reveal later. A reveal that differs from the commitment proves the log was altered; a refusal is a violation. It proves consistency, not honesty.
+
+**Dead-man's switch.** The rule that an enrolled agent that files no valid report within its interval (plus grace) is restricted before its next decision.
+
 
 
 ---
@@ -403,8 +433,9 @@ Everything else (ontology, CNL, delegation graphs, dashboards) serves or illustr
 | A child can't exceed its parent | Create a wider child by any dimension | `tests/unit/test_properties.py` (Hypothesis); Scenario G |
 | Evidence tampering is detectable | Alter, delete or re-hash an event without detection | Scenario L; `redteam: ledger_tamper` |
 | Decisions can be reconstructed | Fail to reproduce a decision from stored inputs | Scenario M; `tests/integration` replay tests |
-| KYM is more than OAuth + static RAR | Show a static design stopping the stateful attacks | `redteam` comparison (stateless static RAR 3/10 vs KYM 10/10 on the same attacks, 22/22 overall; the baseline is deliberately stateless) |
+| KYM is more than OAuth + static RAR | Show a static design stopping the stateful attacks | `redteam` comparison (stateless static RAR 3/10 vs KYM 10/10 on the same attacks, 26/26 overall; the baseline is deliberately stateless) |
 | **KYM cannot stop in-mandate misuse** (negative claim) | Show a mandate-level control that does | `redteam: in_mandate_malicious` (honest gap) |
+| **KYM cannot see what an agent does outside the bank, or verify its reasoning** (negative claim) | Show a bank-side control that does | `redteam: out_of_band_action` (honest gap) |
 
 Run `make redteam`. Results are written to [docs/redteam/latest.md](../redteam/latest.md).
 
@@ -459,6 +490,9 @@ Each objection is stated at its strongest, answered, and then we say **where the
 
 ### 12. "Too complex for the benefit."
 *Answer:* It need not be adopted whole.
+
+### 13. "Agents can hide or fake their own logs and reasoning, so your evidence is worthless."
+*Answer:* Partly right, and the design assumes it. KYM never relies on an agent's account of itself: the ledger records what the **bank** observed, signed by the bank. Transparency adds a check on the agent's own claims: signed, hash-chained activity reports are reconciled against the bank's records (hidden, invented or altered actions are flagged and the agent is restricted), reasoning logs can be committed to before acting and revealed on demand (a swapped log is provable, a refusal is a violation), and silence trips a dead-man's switch. *Where the critic is right:* the bank cannot see what an agent does elsewhere, cannot verify reasoning, and cannot tell that a log committed before acting was sanitized from the start. Those are documented honest gaps (`out_of_band_action`, open findings O-23 and O-24). See the [agent transparency specification](../specifications/agent-transparency.md).
 
 ## Adoption ladder
 
@@ -519,6 +553,7 @@ Scoring is qualitative (L = low, M = medium, H = high), by the authors, **before
 | S-13 | Time-boundary budget errors | L | M | Calendar windows in IANA zones | **M**: limited DST tests (O-20) |
 | S-14 | Decision-snapshot manipulation by a compromised gateway | L | H | Replay detects non-determinism | **M**: garbage-in not detectable (O-17) |
 | S-15 | Deceptive or erroneous consent rendering | M | H | Digest-bound receipt, EN/FR summaries, tests on content | **M–H** (O-18) |
+| S-16 | **Agent hides, invents or rewrites its own activity or reasoning log** (or goes silent). | M | H | Signed hash-chained reports reconciled against the bank's records; commit-reveal; dead-man's switch; restriction on violation | **M** (O-23 to O-26): activity outside the bank and private reasoning stay invisible |
 
 ## C. Design flaws and "ways KYM could fail as an idea"
 
@@ -571,7 +606,7 @@ Run `make redteam`, read [docs/redteam/latest.md](../redteam/latest.md), and add
 
 **Scope:** the full repository as of 2026-11-26 (backend `apps/api/kym`, web `apps/web`, infrastructure files). **Type:** self-assessment by the authors of the code, with executable regression proofs. **This is not an independent penetration test, audit or certification.** Self-review is biased toward finding what the reviewer already thought of; external review is listed as required work.
 
-Machine-checkable evidence: `make redteam` (23 attacks, 3 designs), `tests/security/`, `tests/integration/`. Generated results: [docs/redteam/latest.md](../redteam/latest.md).
+Machine-checkable evidence: `make redteam` (28 attacks, 3 designs), `tests/security/`, `tests/integration/`. Generated results: [docs/redteam/latest.md](../redteam/latest.md).
 
 ## 1. Method
 
@@ -641,6 +676,10 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | O-20 | Time-window logic (day/month in IANA zones) is property-tested across DST transitions, a 30-minute-DST zone, leap years and year ends (`tests/unit/test_time_windows.py`), but not for zones whose DST change falls at local midnight. | Budget miscounts at those boundaries. | Extend the zone list; test against a second implementation. |
 | O-21 | No external penetration test, no fuzzing campaign, no formal verification, no real-world pilot. | Unknown unknowns. | All of the above. |
 | O-22 | Replay re-runs the **current** engine. Each signed decision now records an engine fingerprint, so a changed engine is reported as `engine_changed` (a warning) rather than as tampering, but past engine versions are not archived, so an old decision cannot be re-run with its original code from this repository alone. | Historical replay is verifiable only while the engine is unchanged. | Tag and archive engine builds by `policy_version`; replay in a pinned container. |
+| O-23 | The bank cannot see what an agent does **outside this bank**, nor verify its reasoning; transparency reconciles only what touches the bank. | A rogue agent can act elsewhere and report cleanly here (`out_of_band_action`). | Operator-side monitoring, cross-institution signals, constrained tool environments. |
+| O-24 | Commit-reveal proves a log was not changed after commitment, not that it was honest: an agent can commit to a sanitized log before acting. | Consistency, not truth. | Independent tool-call traces from the agent platform; spot audits. |
+| O-25 | Reconciliation covers payment and transfer attempts only (not reads or delegation) and depends on the agent logging the bank's `transaction_id`. | Reads and delegation can be hidden from reports; an agent that discards ids is flagged (fails safe). | Extend reconciliation to all bank interactions; report on a per-request receipt. |
+| O-26 | Clearing a transparency violation is a single-operator action, and enrolment is opt-in per agent. | An insider could clear a real violation; un-enrolled agents are not monitored. | Maker-checker on clearance; enrolment required by bank policy. |
 
 ## 3. OWASP API Security Top 10 (2023) mapping
 
@@ -673,6 +712,7 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | Risk | How KYM treats it |
 |---|---|
 | Prompt injection / excessive agency (OWASP LLM01/LLM06 in the 2025 list) | Capability is bounded by the mandate; injected content cannot widen it (`prompt_injection` proof). It cannot stop injected requests that stay **inside** the mandate (`in_mandate_malicious`). |
+| Agent hides, invents or rewrites its activity or reasoning (OWASP ASI10 Rogue Agents; ASI09) | The bank does not trust self-reports: signed, hash-chained activity reports are reconciled against the bank's own transactions; reasoning logs use commit-reveal; silence trips a dead-man's switch; violations restrict the agent (`hidden_action`, `phantom_action`, `log_swap`, `silent_agent`). Cannot see activity outside the bank or verify reasoning (`out_of_band_action`, O-23 to O-26). |
 | Confused deputy / token sharing | Actor binding (`act`), DPoP key binding, per-request mandate lookup. |
 | Compromised agent runtime | Blast radius = the mandate (amounts, beneficiaries, budget, expiry) plus approvals. The agent's own key can still be used by the attacker within those bounds. |
 | Non-human-identity sprawl | Registry with status/attestation; no expiry/recertification (open). |

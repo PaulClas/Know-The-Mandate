@@ -12,7 +12,7 @@ help:
 	@echo "make test          - backend tests (unit, integration, security, property-based)"
 	@echo "make test-e2e      - Playwright end-to-end tests (needs make demo running)"
 	@echo "make scenarios     - run demonstration scenarios A-M headless"
-	@echo "make redteam       - 23 attacks vs scope-only, OAuth+static-RAR and KYM; writes docs/redteam/latest.md"
+	@echo "make redteam       - 28 attacks vs scope-only, OAuth+static-RAR and KYM; writes docs/redteam/latest.md"
 	@echo "make verify-ledger - verify the evidence ledger hash chain, signatures and checkpoints"
 	@echo "make benchmark     - measure authorization latency (p50/p95/p99)"
 	@echo "make reset-demo    - delete the local demo database and re-seed"

@@ -41,9 +41,9 @@ export default function ProofPage() {
       />
       {!can && <Notice tone="warn" className="mb-4" title="Bank operator or investigator required">Switch user in the header. Running creates synthetic mandates and transactions; use “Reset demo” on the Scenarios page afterwards.</Notice>}
       <Notice tone="info" className="mb-4" title="Self-assessment">
-        This harness was written by KYM&apos;s authors. It is falsifiable and reproducible (<span className="mono">make redteam</span>), not an independent audit. One attack is an intentional <b>honest gap</b>: a wrong payment that stays inside the mandate cannot be detected by mandate enforcement.
+        This harness was written by KYM&apos;s authors. It is falsifiable and reproducible (<span className="mono">make redteam</span>), not an independent audit. Two attacks are intentional <b>honest gaps</b>: a wrong payment that stays inside the mandate cannot be detected by mandate enforcement, and an agent&apos;s activity outside this bank is invisible to it.
       </Notice>
-      {run.isPending && <Spinner label="Running 23 attacks (about 10–20 seconds)…" />}
+      {run.isPending && <Spinner label="Running 28 attacks (about 10–20 seconds)…" />}
       {run.error && <Notice tone="bad" className="mb-4">{run.error.message}</Notice>}
       {rep && (
         <div className="space-y-4" data-testid="redteam-report">

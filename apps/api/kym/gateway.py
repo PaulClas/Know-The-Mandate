@@ -30,6 +30,7 @@ from . import (
     risk,
     security,
     taxonomy,
+    transparency,
 )
 from .metrics import METRICS
 
@@ -125,6 +126,8 @@ def build_inputs(s, claims: dict | None, facts: dict, req: dict, *, approval_id:
     pol = config.policy_config()
     principal = s.get(db.Customer, facts.get("sub") or "") if facts.get("present") else None
     agent = s.execute(select(db.Agent).where(db.Agent.client_id == facts.get("client_id"))).scalar_one_or_none() if facts.get("present") else None
+    if agent is not None:
+        transparency.enforce(s, agent, now)  # dead-man's switch: an agent that stopped reporting is restricted before this decision is made
     acct = s.get(db.Account, req["account_id"]) if req.get("account_id") else None
     inputs: dict = {"request": {**{k: v for k, v in req.items() if k not in ("principal_id",)}, "now": clock.iso(now)}, "token": facts, "bank_policy": pol,
                     "customer": None if not principal else {"id": principal.id, "kyc_status": principal.kyc_status, "restrictions": principal.restrictions},
