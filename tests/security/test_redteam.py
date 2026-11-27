@@ -33,7 +33,7 @@ def test_baselines_fail_where_expected(report, aid, scope_only, rar_static):
     assert tier(report, aid, "rar_static") is rar_static
 
 
-def test_oauth_plus_static_rar_is_a_real_steelman(report):
+def test_static_rar_is_better_than_scopes_alone_but_weaker_than_kym(report):
     s = report["summary"]
     assert s["rar_static"]["blocked"] > s["scope_only"]["blocked"] >= 0  # RAR is meaningfully better than scopes alone
     assert s["rar_static"]["blocked"] < s["kym"]["blocked"]
@@ -78,3 +78,16 @@ def test_evidence_verification_endpoint_pins_server_keys(client):
     assert client.post("/api/evidence/verify", json=pkg, headers=session_headers("admin_001")).json()["key_trust"] == "PINNED_BY_VERIFIER"
     pkg["public_keys"]["ledger"]["x"] = "AAAA"
     assert client.post("/api/evidence/verify", json=pkg, headers=session_headers("admin_001")).json()["ok"] is False
+
+
+def test_kym_is_scored_like_for_like_on_the_attacks_baselines_can_model(report):
+    like = report["summary"]["kym_on_baseline_attacks"]
+    assert like["applicable"] == report["summary"]["scope_only"]["applicable"] == 10 and like["blocked"] == like["applicable"]
+
+
+def test_a_block_requires_an_explicit_denial_with_the_expected_reason_code():
+    d = redteam.denied
+    assert d(403, {"reason_codes": ["BENEFICIARY_NOT_AUTHORIZED"]}, "BENEFICIARY_NOT_AUTHORIZED")
+    assert not d(403, {"reason_codes": ["SOMETHING_ELSE"]}, "BENEFICIARY_NOT_AUTHORIZED")  # wrong reason: not credited
+    assert not d(500, {"reason_codes": ["BENEFICIARY_NOT_AUTHORIZED"]}, "BENEFICIARY_NOT_AUTHORIZED")  # outage is not a block
+    assert not d(403, {"status": "EXECUTED", "reason_codes": []})

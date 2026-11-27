@@ -122,6 +122,52 @@ def _ed_keys(reg: dict) -> dict:
     return {v["kid"]: v["x"] for v in reg.values() if isinstance(v, dict) and "x" in v and v.get("alg") == "Ed25519"}
 
 
+def _binding_problems(pkg: dict) -> list[dict]:
+    """The displayed transaction, decision and replay result are unsigned report fields. Bind them to the signed ledger payloads and recompute the
+    replay locally, so a package cannot show one story while its signed evidence says another (or says nothing)."""
+    out: list[dict] = []
+    txn = pkg.get("transaction") or {}
+    tx_id = txn.get("id")
+    mine = [e for e in pkg.get("ledger_events", []) if e.get("transaction_id") == tx_id]
+
+    def payload(event_type: str, **match) -> dict | None:
+        for e in mine:
+            p = e.get("payload")
+            if e["event_type"] == event_type and isinstance(p, dict) and all(p.get(k) == v for k, v in match.items()):
+                return p
+        return None
+
+    req = payload("ACTION_REQUESTED")
+    if req is None:
+        return [{"check": "evidence_binding", "detail": "no signed ACTION_REQUESTED evidence (with its payload) exists for the displayed transaction"}]
+    shown = {"amount_minor": txn.get("amount_minor") or 0, "currency": txn.get("currency") or "", "account_id": txn.get("account_id"), "op_hash": (pkg.get("operation") or {}).get("op_hash")}
+    signed = {"amount_minor": req.get("amount_minor") or 0, "currency": req.get("currency") or "", "account_id": req.get("account_id"), "op_hash": req.get("op_hash")}
+    for k in shown:
+        if shown[k] != signed[k]:
+            out.append({"check": "evidence_binding", "detail": f"displayed {k}={shown[k]!r} differs from signed evidence {signed[k]!r}"})
+    if txn.get("payee_id") and txn["payee_id"] != req.get("counterparty"):
+        out.append({"check": "evidence_binding", "detail": "displayed payee differs from the signed evidence"})
+    pol = pkg.get("policy")
+    if pol:
+        ev = payload("POLICY_EVALUATED", decision_id=pol.get("decision_id"))
+        if ev is None:
+            out.append({"check": "evidence_binding", "detail": "no signed POLICY_EVALUATED evidence for the displayed decision"})
+        else:
+            digest_ok = canon.digest(pol.get("inputs")) == ev.get("inputs_digest")
+            replayed = policy.replay(pol["inputs"]) if digest_ok else None
+            if not digest_ok:
+                out.append({"check": "decision_inputs", "detail": "decision inputs do not match the signed inputs_digest"})
+            elif replayed["decision"] != ev.get("decision") or replayed["reason_codes"] != ev.get("reason_codes"):
+                out.append({"check": "decision_replay", "detail": "recomputed replay differs from the signed decision (policy engine or inputs changed)"})
+            if pol.get("decision") != ev.get("decision"):
+                out.append({"check": "evidence_binding", "detail": "displayed decision differs from the signed evidence"})
+    if txn.get("status") == "EXECUTED":
+        done = payload("PAYMENT_EXECUTED")
+        if done is None or (done.get("amount_minor") or 0) != shown["amount_minor"] or (pol and done.get("decision_id") != pol.get("decision_id")):
+            out.append({"check": "evidence_binding", "detail": "status EXECUTED is not backed by matching signed PAYMENT_EXECUTED evidence"})
+    return out
+
+
 def verify_package(pkg: dict, trusted_keys: dict | None = None) -> dict:
     """Verify event hashes, signatures, spine linkage, checkpoints and decision replay.
 
@@ -165,6 +211,7 @@ def verify_package(pkg: dict, trusted_keys: dict | None = None) -> dict:
             problems.append({"check": "checkpoint_head", "detail": f"{cb['checkpoint_id']} head differs from spine"})
     if pkg.get("policy") and pkg["policy"].get("replay") and not pkg["policy"]["replay"]["matches"]:
         problems.append({"check": "decision_replay", "detail": "replaying stored inputs produced a different decision"})
+    problems += _binding_problems(pkg)
     if pkg.get("consent") and pkg["consent"].get("signature_valid") is False:
         problems.append({"check": "consent_signature", "detail": "consent receipt signature invalid"})
     return {"ok": not problems, "key_trust": "PINNED_BY_VERIFIER" if trusted_keys is not None else "UNPINNED_EMBEDDED_KEYS (internal consistency only)", "events_verified": ev_ok, "events_in_package": len(pkg["ledger_events"]), "spine_length": len(spine), "problems": problems, "verified_at": clock.iso(),

@@ -88,12 +88,13 @@ def _usage(s, principal_id: str, mandate_ids: dict[str, str], now) -> dict:
         for t in txs:
             if mid not in t.mandate_chain:
                 continue
-            at = clock.parse(t.created_at)
-            if w["month"][0] <= at < w["month"][1]:
+            # A payment created before a boundary but reserved/executed after it (approval delay) counts in both windows: never under-count spend.
+            stamps = [clock.parse(t.created_at), clock.parse(t.updated_at)]
+            if any(w["month"][0] <= at < w["month"][1] for at in stamps):
                 month += t.amount_minor
                 count += 1
-                if w["day"][0] <= at < w["day"][1]:
-                    day += t.amount_minor
+            if any(w["day"][0] <= at < w["day"][1] for at in stamps):
+                day += t.amount_minor
         out[mid] = {"day_minor": day, "month_minor": month, "month_count": count}
     return out
 
@@ -193,6 +194,8 @@ def normalize_operation(s, spec: dict, principal_id: str) -> tuple[dict, dict | 
             raise BadRequest("to_account_id or beneficiary_id required")
     op.update(action=action, counterparty_kind=cp_kind, counterparty_id=cp_id)
     payee = s.get(db.Payee, cp_id) if cp_kind in ("beneficiary", "merchant") else None
+    if payee is not None and payee.kind != cp_kind:
+        raise BadRequest(f"{cp_id} is registered as a {payee.kind}; it cannot be addressed as a {cp_kind}")
     return op, ({"country": payee.country, "category": payee.category} if payee else None)
 
 

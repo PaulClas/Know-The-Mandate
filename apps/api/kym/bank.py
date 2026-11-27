@@ -56,6 +56,10 @@ def _post(s, tx_id: str, account_id: str, debit: int, credit: int, ccy: str, kin
 def execute_authorized(s, tx: db.Transaction, cert: dict) -> str:
     """Reserve funds, then post balanced double-entry lines. Returns the final status. Called under the global write lock."""
     verify_certificate(cert, tx.op_hash)
+    # Defence in depth: the certificate vouches for the stored hash; make sure the fields we are about to move money with still produce it.
+    if (op_hash(tx.operation, tx.mandate_id or "", tx.mandate_version or 0, tx.principal_id, tx.agent_id) != tx.op_hash
+            or tx.operation.get("amount_minor") != tx.amount_minor or tx.operation.get("account_id") != tx.account_id or tx.operation.get("currency") != tx.currency):
+        raise EngineError("OP_TAMPERED", "transaction fields no longer match the authorized operation hash")
     dec = s.get(db.Decision, cert["decision_id"])
     if dec is None or dec.consumed_at:
         raise EngineError("CERT_CONSUMED", "authorization decision already used or unknown (single use)")

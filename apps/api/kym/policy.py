@@ -31,6 +31,25 @@ EXTENDED_REASON_CODES = [
 ]
 
 
+def _rar_problem(details: list, req: dict) -> str | None:
+    """A token may carry a narrower grant than the mandate (RFC 9396). The request must fit inside it as well as inside the mandate."""
+    action = req["action"]
+    cover = [d for d in details if action in d.get("actions", [])]
+    if not cover:
+        return f"The token's authorization_details do not include {action}"
+    acct = req.get("account_id")
+    if acct and not any(acct in d.get("accounts", []) for d in cover):
+        return f"Account {acct} is outside the token's authorization_details"
+    if action in taxonomy.MONEY_MOVING:
+        caps = [d["maximum_amount"]["amount_minor"] for d in cover if d.get("maximum_amount")]
+        if caps and (req.get("amount_minor") is None or req["amount_minor"] > max(caps)):
+            return f"Amount {req.get('amount_minor')} exceeds the maximum {max(caps)} in the token's authorization_details"
+        if req.get("counterparty_kind") == "beneficiary" and all("beneficiaries" in d for d in cover) \
+                and not any(req.get("counterparty_id") in d["beneficiaries"] for d in cover):
+            return f"Beneficiary {req.get('counterparty_id')} is outside the token's authorization_details"
+    return None
+
+
 # --------------------------------------------------------------------------- compiled runtime policy
 
 
@@ -94,6 +113,7 @@ class _Trace:
         self.refer = False
         self.need_approval = False
         self.approvals_required = 0
+        self.rar_problem: str | None = None
 
     def add(self, cid: str, name: str, outcome: str, detail: str, code: str | None = None, rule: str | None = None):
         self.items.append({"id": cid, "name": name, "outcome": outcome, "detail": detail, "reason_code": code, "rule": rule})
@@ -252,6 +272,9 @@ def evaluate(inputs: dict) -> dict:
             t.ok("token.scope", "OAuth scope", f"Scope {needed} present (scopes cannot express account, beneficiary, amount or purpose)")
         else:
             t.fail("token.scope", "OAuth scope", "TOKEN_SCOPE_INSUFFICIENT", f"Scope {needed} not granted")
+        if needed is not None and "rar" in tok:
+            # Judged last (see _finish): it only bites when the token is narrower than the mandate, so a mandate denial stays the primary reason.
+            t.rar_problem = _rar_problem(tok["rar"], req)
 
     # 2. Customer identity and authority over the resource (evaluated independently).
     cust = inputs.get("customer")
@@ -424,6 +447,10 @@ def _status_checks(t: _Trace, label: str, m: dict, rt: dict, now: datetime, pare
 
 
 def _finish(t: _Trace, inputs: dict) -> dict:
+    if t.rar_problem and not t.fail_codes:
+        t.fail("token.rar", "Token's own authorization_details", "TOKEN_SCOPE_INSUFFICIENT", t.rar_problem)
+    elif not t.rar_problem and "rar" in (inputs.get("token") or {}) and not t.fail_codes:
+        t.ok("token.rar", "Token's own authorization_details", "The request is within the authority the agent asked for when it obtained this token")
     if t.fail_codes:
         decision = "DENY"
     elif t.refer:

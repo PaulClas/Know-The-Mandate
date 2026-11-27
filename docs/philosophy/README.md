@@ -13,7 +13,7 @@ Software that can act is not new. What is new is *software with open-ended inten
 3. **Enforce the observable, not the intention.** The bank cannot know whether an agent hallucinated, was injected or was compromised, and does not need to. It checks amounts, beneficiaries, budgets, time, state. This makes enforcement independent of the model.
 4. **Deny by default; closed world at runtime.** Ontologies reason under an open world (absence ≠ falsity). Money cannot. Missing authority means denial; semantic technology is used for meaning and validation, never for the decision.
 5. **Authority only attenuates.** Delegation can narrow, never widen (capability-security lineage: least privilege, attenuation). A child can never exceed its parent, and revoking a parent disables the children.
-6. **Evidence over trust.** Claims should be checkable by someone who does not trust the bank: signed, hash-chained, replayable, offline-verifiable (with keys pinned out of band). Evidence shows *who did what and under which version*; **it does not decide liability.**
+6. **Evidence over trust.** Claims should be checkable by someone who does not trust the bank: signed, hash-chained, replayable against the current engine, offline-verifiable (with keys pinned out of band; the verifier also binds the displayed transaction to the signed events). Evidence shows *who did what and under which version*; **it does not decide liability.**
 7. **Humans decide exceptions, about exact things.** Approval is bound to the exact operation, single use, expiring, by distinct people where required. One-time approval never expands the mandate.
 8. **Extend standards; do not replace them.** OAuth, DPoP, RAR, JSON-LD, SHACL, PROV-O, ODRL are reused. KYM-specific parts are labelled *proposed*.
 9. **Honesty is a feature.** Simulated things say so in the UI and docs. Gaps are published (see the [risk register](../risk/risk-register.md)), including attacks KYM does **not** stop.
@@ -30,14 +30,14 @@ Everything else (ontology, CNL, delegation graphs, dashboards) serves or illustr
 | Claim | How to falsify it | Proof in repo |
 |---|---|---|
 | A valid token cannot move money outside the mandate | Make a payment to a non-permitted beneficiary with a valid token succeed | Scenario C; `redteam: beneficiary_swap`; `tests/integration/test_enforcement.py` |
-| Cumulative limits hold under concurrency | Exceed the monthly budget with parallel requests | Scenario H; `redteam: budget_race`; 8-thread integration test |
+| Cumulative limits hold under concurrency **in a single process** | Exceed the monthly budget with parallel requests | Scenario H; `redteam: budget_race`; 8-thread integration test. Multi-process or multi-node deployments need row locks or serializable isolation and are untested (O-03, README limitations) |
 | Revocation is immediate and cascades | Execute after revocation with an unexpired token, or via a child | Scenario F, G; `redteam: revoked_mandate` |
 | A stolen token is useless to another party | Replay a token or DPoP proof from another key | `redteam: stolen_token`, `dpop_replay` |
 | Approvals can't be substituted or replayed | Execute a changed payload, or reuse an approval | Scenario J; `redteam: approval_*` |
 | A child can't exceed its parent | Create a wider child by any dimension | `tests/unit/test_properties.py` (Hypothesis); Scenario G |
 | Evidence tampering is detectable | Alter, delete or re-hash an event without detection | Scenario L; `redteam: ledger_tamper` |
 | Decisions can be reconstructed | Fail to reproduce a decision from stored inputs | Scenario M; `tests/integration` replay tests |
-| KYM is more than OAuth + static RAR | Show a static design stopping the stateful attacks | `redteam` comparison (static RAR 3/10 vs KYM 22/22 applicable) |
+| KYM is more than OAuth + static RAR | Show a static design stopping the stateful attacks | `redteam` comparison (stateless static RAR 3/10 vs KYM 10/10 on the same attacks, 22/22 overall; the baseline is deliberately stateless) |
 | **KYM cannot stop in-mandate misuse** (negative claim) | Show a mandate-level control that does | `redteam: in_mandate_malicious` (honest gap) |
 
 Run `make redteam`. Results are written to [docs/redteam/latest.md](../redteam/latest.md).

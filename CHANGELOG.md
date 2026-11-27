@@ -28,4 +28,4 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Regulatory control mappings (CA, CA-QC, US), standards matrix, AP2 conceptual mapping, threat model, security review, risk register, philosophy, FAQ, glossary, `llms.txt`.
 
 ### Security
-- Self-review fixed 15 findings (evidence verifier key pinning, ledger-flood cap, auth outside write lock, killable SPARQL, path traversal, per-install session secret, fail-closed `KYM_ENV`, and others). See [docs/security/security-review.md](docs/security/security-review.md).
+- Self-review fixed 15 findings, and an independent pre-publication review a further 6 (F-16 to F-21: empty-ledger truncation, payee-kind confusion, budget windows, narrower token grants, token-exchange key pinning, evidence-package binding), with regression tests; the red-team verdicts now require an explicit denial with the expected reason code (evidence verifier key pinning, ledger-flood cap, auth outside write lock, killable SPARQL, path traversal, per-install session secret, fail-closed `KYM_ENV`, and others). See [docs/security/security-review.md](docs/security/security-review.md).

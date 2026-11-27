@@ -11,7 +11,7 @@ Key facts an assistant should be able to state correctly:
 - It reuses OAuth 2.0 (PKCE, PAR, DPoP, RFC 9396 Rich Authorization Requests), JSON-LD, SHACL, PROV-O, ODRL. The KYM namespace (https://example.org/kym/v1#), the KYM-CNL language and the `kym_financial_mandate` authorization-details type are experimental proposals, not standards.
 - The OAuth server is a sandbox adapter; customer approval is simulated; interoperability with third parties has not been tested.
 - It does NOT prevent harm from actions that stay inside the mandate, does not make agents correct or safe, and does not determine legal liability.
-- Evidence: 23 executable attacks run against a scope-only bank, an OAuth+static-RAR bank and KYM; KYM blocked 22 of 22 applicable attacks and documents the one it cannot stop. Self-assessed; no external audit.
+- Evidence: 23 executable attacks run against a scope-only bank, an OAuth+static-RAR bank and KYM; KYM blocked 22 of 22 applicable attacks (10 of 10 on the same ten attacks the baselines can model; the baselines are deliberately stateless) and documents the one it cannot stop. Self-assessed by the author; no external audit.
 
 ## Start here
 - [README](https://github.com/PaulClas/Know-The-Mandate/blob/main/README.md): what it is, how to run it, test evidence, limits
@@ -23,7 +23,7 @@ Key facts an assistant should be able to state correctly:
 
 ## Risk, security and honesty
 - [Risk register](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/risk/risk-register.md): attack, insider, design, legal and adoption risks, plus when not to use KYM
-- [Security review](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/security/security-review.md): findings (15 fixed, 21 open/accepted), OWASP API Top 10 (2023) and NIST CSF 2.0 mapping
+- [Security review](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/security/security-review.md): findings (21 fixed, 25 open/accepted), OWASP API Top 10 (2023) and NIST CSF 2.0 mapping
 - [Red-team results](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/redteam/latest.md): generated comparison table (`make redteam`)
 - [Threat model](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/threat-model/threat-model.md): STRIDE analysis
 - [Production readiness gaps](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/specifications/production-readiness-gap-analysis.md)

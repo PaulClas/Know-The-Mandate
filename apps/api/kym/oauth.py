@@ -301,6 +301,8 @@ def _token_exchange(s, client, params, dpop, url) -> dict:
     ok, detail, jkt = verify_dpop(s, dpop, method="POST", url=url)
     if not ok:
         raise OAuthError("invalid_dpop_proof", detail)
+    if jkt != agents_mod.jwk_thumbprint(client.public_key_jwk):
+        raise OAuthError("invalid_dpop_proof", "DPoP key is not the agent's registered key")
     details = validate_rar(params.get("authorization_details")) if params.get("authorization_details") else mandates_to_details(child.content)
     _rar_within_mandate(details, child.content)
     token, c2 = _issue(s, agent=client, row=child, details=details, jkt=jkt, actor_chain={"sub": client.id, "act": claims["act"]})
@@ -346,6 +348,7 @@ def verify_access_token(s, token: str | None, *, method: str, url: str, dpop: st
         "scopes": (claims.get("scope") or "").split(), "jti": claims.get("jti"), "client_id": claims.get("client_id"), "sub": claims.get("sub"),
         "mandate_id": claims.get(f"{config.CLAIM_NS}mandate_id"), "mandate_version": claims.get(f"{config.CLAIM_NS}mandate_version"),
         "mandate_hash": claims.get(f"{config.CLAIM_NS}mandate_hash"), "actor": actor,
+        "rar": (row.authorization_details if row is not None else []) or [],
     }
     return claims, facts
 

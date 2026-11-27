@@ -9,7 +9,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **It closes the gap between "this client holds a valid token" and "the customer actually authorized this specific action".** KYC identifies the customer, authentication verifies the caller, OAuth grants API access, KYA identifies the agent, KYT scores transactions. None records the delegated authority itself. Without it, a bank cannot easily answer who authorized what, within which limits, and whether those limits were honoured.
 
 ## How is KYM different from OAuth and OAuth Rich Authorization Requests (RAR)?
-**OAuth/RAR is the carrier; KYM supplies the state and the decision.** RAR (RFC 9396) can express account, beneficiary and maximum amount inside a token, and KYM uses it. But a static grant cannot track cumulative budgets, instant mandate revocation, single-use approvals or delegation lineage. In KYM's red-team comparison, a design with scopes plus static RAR stopped 3 of 10 applicable attacks; KYM blocked 22 of 22 applicable attacks (and documents one it cannot stop). See [philosophy](philosophy/README.md#1-oauth-with-rich-authorization-requests-already-does-this).
+**OAuth/RAR is the carrier; KYM supplies the state and the decision.** RAR (RFC 9396) can express account, beneficiary and maximum amount inside a token, and KYM uses it. But a static grant cannot track cumulative budgets, instant mandate revocation, single-use approvals or delegation lineage. In KYM's red-team comparison, a stateless design with scopes plus static RAR stopped 3 of the 10 attacks it can model; KYM blocked all 10 of those and 22 of 22 applicable attacks overall (and documents one it cannot stop). The baseline is deliberately stateless, so this shows what needs state, not that no other design could add it. See [philosophy](philosophy/README.md#1-oauth-with-rich-authorization-requests-already-does-this).
 
 ## Does a valid access token authorize a payment in KYM?
 **No.** A valid token is only technical permission. Scenario C demonstrates it: the token passes OAuth verification (including `payments.initiate`), the mandate does not permit the beneficiary, and the payment is denied.
@@ -27,7 +27,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **They are complementary layers, not substitutes.** AP2 concerns agent-driven commerce artifacts (user-approved mandates, checkout and payment proofs); KYM adds the bank-side authority decision and evidence. MCP and A2A are transport/discovery protocols: tool discovery is not permission, and every MCP-shaped call in KYM still passes the same enforcement point. AP2 mapping is conceptual only: [ap2-mapping.md](research/ap2-mapping.md).
 
 ## Why not just use Open Policy Agent (OPA) or Cedar?
-**You can; KYM chose a typed Python engine for determinism, explanation and replay in one language.** The decision is a pure function of a stored JSON snapshot, which makes every historical decision replayable. OPA/Cedar are valid production choices; the snapshot format is the integration seam ([ADR-0002](adr/0002-deterministic-pdp-no-opa.md)).
+**You can; KYM chose a typed Python engine for determinism, explanation and replay in one language.** The decision is a pure function of a stored JSON snapshot, which makes a stored decision replayable by re-running the current engine on its snapshot (past engine versions are not archived; see O-23). OPA/Cedar are valid production choices; the snapshot format is the integration seam ([ADR-0002](adr/0002-deterministic-pdp-no-opa.md)).
 
 ## Is the ontology used to make authorization decisions?
 **No.** OWL reasoning is open-world; money needs deny-by-default. The ontology and SHACL validate mandates when they are created and support explanation and SPARQL queries. The runtime decision uses a compiled policy ([ADR-0003](adr/0003-ontology-not-in-the-decision-path.md)).
@@ -42,7 +42,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **No.** It attributes who did what and which party controlled which system. It distinguishes factual responsibility, contractual responsibility, potential legal liability and final adjudicated liability, and decides none of the last three. A valid signature shows integrity and key control, not legally effective consent.
 
 ## Is it ready for production?
-**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (15 findings fixed, 21 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
+**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (21 findings fixed, 25 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
 
 ## What are the biggest risks of KYM?
 **Approval fatigue, customers misreading mandates, overly broad mandates, coverage gaps when payments bypass the bank, in-mandate harm, insider abuse, and standards absorbing the idea.** Full list with likelihood and impact: [risk register](risk/risk-register.md).

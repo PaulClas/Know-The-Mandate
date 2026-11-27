@@ -36,6 +36,12 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | F-13 | DPoP replay cache grew without bound. | Low–Med | Entries older than 300 s deleted on insert. | code + DPoP tests |
 | F-14 | Transfer to the same account, or to a destination in a different currency, was accepted (integrity). | Med | Rejected at normalization; engine refuses currency-mismatched or closed destination. | engine path |
 | F-15 | Unbounded idempotency-key length. | Low | 1–128 characters. | gateway |
+| F-16 | Deleting the whole ledger passed checkpoint verification: the truncation test required a non-empty event list (found by an independent review). | High | An empty chain is truncation whenever a signed checkpoint commits to later events. | `test_review_findings` |
+| F-17 | Counterparty type came from the request: a beneficiary could be addressed as a merchant and judged by merchant-category rules. | Med–High | Type must match the payee registry (400 otherwise). | `test_review_findings` |
+| F-18 | Spend was bucketed only by creation time, so a payment held for approval across midnight or month end escaped the later window. | Med | A payment counts in every window its creation or last (reserve/execute) update falls in; never under-counts. | `test_review_findings` |
+| F-19 | A token's own, narrower `authorization_details` (amount, accounts, beneficiaries) were ignored; only scopes and the mandate were checked. | Med | The PDP also requires the request to fit the token's grant (judged last, so a mandate denial stays the primary reason). | `test_review_findings` |
+| F-20 | RFC 8693-style token exchange did not require the DPoP key to be the agent's registered key. | Med | Same key pinning as the authorization-code grant. | `test_review_findings` |
+| F-21 | `verify_package` trusted unsigned display fields and a supplied replay flag; a package could show a transaction its signed events did not support. | High | Displayed amount, account, payee, op hash, decision and EXECUTED status are bound to signed ledger payloads; replay is recomputed locally. | `test_review_findings` |
 
 ### Accepted or open (not fixed in this repository)
 
@@ -53,7 +59,7 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | O-10 | Rate limiter is in-process and ignores `X-Forwarded-For`. Behind a proxy, all clients share one bucket. | Mis-sized limits; trivial self-DoS or bypass depending on topology. | Edge/WAF limiter and trusted-proxy configuration. |
 | O-11 | Rejection-event sampling (F-02) means a burst's individual rejections are only counted. | Forensic detail lost under attack. | Separate high-volume security log with independent retention. |
 | O-12 | Risk engine and ambiguity detector are simple and rule-based; the trust score is gameable. | False negatives; adaptive attackers. | Governed models, red-team the models. |
-| O-13 | Dependencies are version-pinned, not hash-locked; no SBOM or vulnerability scanning. | Supply-chain exposure (a listed threat). | Hash-locking, SBOM, SCA, signed releases. |
+| O-13 | Dependencies are version-pinned, not hash-locked; no SBOM. Scanning is configured (`pip-audit`, `npm audit`, gitleaks, CodeQL in `.github/workflows/security.yml`; local `pip-audit` and `npm audit` found nothing on 2026-11-27) but the workflows have not yet run on GitHub. | Supply-chain exposure (a listed threat). | Hash-locking, SBOM, SCA, signed releases. |
 | O-14 | UI keeps the session token in `localStorage`; the web app sets no CSP. | An XSS would exfiltrate admin sessions. (React escapes output; the only `dangerouslySetInnerHTML` is a constant theme script.) | HttpOnly cookies + CSRF protection + CSP. |
 | O-15 | **Denial responses reveal policy structure** (limits, allowed-beneficiary checks) to the calling agent. | An adaptive agent can map limits by probing. | A terse mode for agent-facing errors; detailed reasons only to the bank/customer. |
 | O-16 | Gateway, PDP, risk engine and payment engine share one process and trust domain. | A single code-execution bug defeats separation of duties. | Separate processes with mutual authentication; signed decisions already make this possible. |
@@ -62,6 +68,10 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | O-19 | Admin reads of evidence are not themselves logged. | Insider snooping undetected. | Access logging into a separate ledger. |
 | O-20 | Time-window logic (day/month in IANA zones) has limited tests around DST and month boundaries. | Budget miscounts at boundaries. | Property tests over zone transitions. |
 | O-21 | No external penetration test, no fuzzing campaign, no formal verification, no real-world pilot. | Unknown unknowns. | All of the above. |
+| O-22 | Token exchange does not require proof of possession of the *subject* (parent) token's key, only the child's client secret and registered key. | A leaked parent token plus child credentials suffices. | Require the parent's DPoP proof or a bank-issued delegation grant. |
+| O-23 | "Replayable" means re-running the **current** engine on the stored snapshot. Past engine versions are not preserved, so a later rule change makes old decisions fail replay (surfaced, not hidden). | Historical replay breaks across policy versions. | Versioned, archived engines keyed by `policy_version`. |
+| O-24 | Budgets use created/updated timestamps; there is no dedicated `executed_at` column, so boundary-crossing payments are counted conservatively in both windows. | Occasional over-counting at midnight or month end. | An `executed_at` column plus migration. |
+| O-25 | The decision certificate is bound to the stored `op_hash` and the payment engine now re-derives that hash from the stored operation before moving money (partial fix), but the decision is not yet bound to the transaction ID. | A caller that replaces the operation *and* its hash together, or reuses a certificate across transactions with identical operations, is not caught by the certificate alone. | Bind the decision to the transaction ID and check it at execution. |
 
 ## 3. OWASP API Security Top 10 (2023) mapping
 

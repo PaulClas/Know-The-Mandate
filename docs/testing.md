@@ -6,14 +6,14 @@ KYM's central claim is testable, so the test suite is part of the product. All n
 
 | Layer | Location | Tests | What it proves | Command |
 |---|---|---|---|---|
-| Unit | [tests/unit](../tests/unit) | 91 | Policy decision point as a pure function, CNL compiler, ontology/SHACL, ledger primitives, docs-consistency | `make test-unit` |
+| Unit | [tests/unit](../tests/unit) | 95 | Policy decision point as a pure function, CNL compiler, ontology/SHACL, ledger primitives, docs-consistency | `make test-unit` |
 | Property-based | [tests/unit/test_properties.py](../tests/unit/test_properties.py) (Hypothesis) | 5 (in unit) | Money arithmetic and attenuation invariants hold for generated inputs | `make test-unit` |
 | Integration | [tests/integration](../tests/integration) | 85 | Real FastAPI app and database: OAuth/DPoP flow, enforcement, scenarios A to M, migrations, examples | `make test` |
-| Security / red-team | [tests/security](../tests/security) | 37 | Regression tests for fixed findings F-01 to F-15 and the 23-attack harness | `make test` |
+| Security / red-team | [tests/security](../tests/security) | 48 | Regression tests for fixed findings F-01 to F-21 and the 23-attack harness | `make test` |
 | End to end (browser) | [apps/web/e2e](../apps/web/e2e) | 30 Playwright specs | UI pages, scenario runner, customer approval flow, discoverability metadata | `make test-e2e` (needs `make demo` running) |
 | Docker smoke | [.github/workflows/ci.yml](../.github/workflows/ci.yml) | CI job | Compose stack builds, becomes healthy, passes scenarios and red-team | `docker compose up --build` |
 
-Total backend: **213 tests** (`make test`).
+Total backend: **228 tests** (`make test`).
 
 ## Coverage
 
@@ -21,7 +21,7 @@ Total backend: **213 tests** (`make test`).
 make coverage
 ```
 
-Measured: **82% of statements and branches** across `apps/api/kym` (5,538 statements, 1,562 branches), excluding `cli.py` and `sparql_worker.py`, which run as subprocesses and are exercised by CLI runs instead of in-process.
+Measured: **82% of statements and branches** across `apps/api/kym` (5,610 statements, 1,610 branches), excluding `cli.py` and `sparql_worker.py`, which run as subprocesses and are exercised by CLI runs instead of in-process.
 
 Highest value modules are well covered: `policy.py` 88%, `ledger.py` 84%, `security.py` 96%, `ontology_service.py` 94%, `db.py` 97%. Weakest: `sandbox.py` 55% (the demo agent simulator), `bank.py` 67%, `adapters.py` 68%. Coverage is a floor for what ran, not proof of correctness. Many important behaviours (for example the red-team checks) are asserted by outcome, not by line.
 

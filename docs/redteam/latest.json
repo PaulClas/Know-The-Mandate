@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-27T01:07:51.773Z",
+  "generated_at": "2026-11-27T02:09:13.181Z",
   "attacks": [
     {
       "id": "beneficiary_swap",
@@ -27,7 +27,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 513
+      "ms": 500
     },
     {
       "id": "over_limit",
@@ -54,7 +54,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 229
+      "ms": 224
     },
     {
       "id": "budget_drain",
@@ -76,12 +76,12 @@
         },
         "kym": {
           "blocked": true,
-          "detail": "moved 49000 vs monthly limit 50000"
+          "detail": "moved 49000 vs monthly limit 50000 (legitimate payments executed, excess refused)"
         }
       },
       "note": null,
       "error": null,
-      "ms": 391
+      "ms": 388
     },
     {
       "id": "budget_race",
@@ -103,12 +103,12 @@
         },
         "kym": {
           "blocked": true,
-          "detail": "moved 30000 vs limit 30000 under 8 concurrent requests"
+          "detail": "moved 30000 vs limit 30000 under 8 concurrent requests (some executed, the rest refused)"
         }
       },
       "note": null,
       "error": null,
-      "ms": 353
+      "ms": 316
     },
     {
       "id": "revoked_mandate",
@@ -130,12 +130,12 @@
         },
         "kym": {
           "blocked": true,
-          "detail": "HTTP 403 ['MANDATE_REVOKED']"
+          "detail": "before revocation HTTP 201; after: HTTP 403 ['MANDATE_REVOKED']"
         }
       },
       "note": "Baselines assume offline JWT validation. With immediate online token revocation they would also block; KYM adds mandate-level revocation that cascades to children independent of token plumbing.",
       "error": null,
-      "ms": 260
+      "ms": 294
     },
     {
       "id": "stolen_token",
@@ -163,7 +163,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 284
+      "ms": 217
     },
     {
       "id": "dpop_replay",
@@ -190,7 +190,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 235
+      "ms": 239
     },
     {
       "id": "approval_threshold_bypass",
@@ -212,12 +212,12 @@
         },
         "kym": {
           "blocked": true,
-          "detail": "HTTP 202 REQUIRE_HUMAN_APPROVAL"
+          "detail": "HTTP 202 REQUIRE_HUMAN_APPROVAL (held for a human; nothing executed)"
         }
       },
       "note": null,
       "error": null,
-      "ms": 230
+      "ms": 227
     },
     {
       "id": "approval_substitution",
@@ -243,7 +243,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 239
+      "ms": 336
     },
     {
       "id": "approval_replay",
@@ -269,7 +269,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 248
+      "ms": 290
     },
     {
       "id": "prompt_injection",
@@ -291,12 +291,12 @@
         },
         "kym": {
           "blocked": true,
-          "detail": "DENY ['ACTION_NOT_AUTHORIZED', 'MONTHLY_LIMIT_EXCEEDED']"
+          "detail": "same CAD 2,000 request and token: HTTP 403 ['TRANSACTION_LIMIT_EXCEEDED', 'MONTHLY_LIMIT_EXCEEDED']; separate shopping-agent loop with a document injection: DENY ['ACTION_NOT_AUTHORIZED', 'MONTHLY_LIMIT_EXCEEDED']"
         }
       },
       "note": null,
       "error": null,
-      "ms": 490
+      "ms": 497
     },
     {
       "id": "in_mandate_malicious",
@@ -322,7 +322,7 @@
       },
       "note": "ACCEPTED LIMITATION. Mitigations are outside mandate enforcement: tighter limits, approval thresholds, customer notification, behavioural risk models.",
       "error": null,
-      "ms": 231
+      "ms": 227
     },
     {
       "id": "delegation_escalation",
@@ -348,7 +348,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 224
+      "ms": 218
     },
     {
       "id": "ledger_tamper",
@@ -376,7 +376,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 377
+      "ms": 589
     },
     {
       "id": "forged_evidence_package",
@@ -403,7 +403,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 288
+      "ms": 298
     },
     {
       "id": "sparql_dos",
@@ -429,7 +429,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 2359
+      "ms": 2409
     },
     {
       "id": "unauth_flood",
@@ -456,7 +456,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 659
+      "ms": 683
     },
     {
       "id": "client_auth_bruteforce",
@@ -483,7 +483,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 807
+      "ms": 808
     },
     {
       "id": "path_traversal",
@@ -536,7 +536,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 219
+      "ms": 242
     },
     {
       "id": "malformed_input",
@@ -563,7 +563,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 220
+      "ms": 291
     },
     {
       "id": "session_forgery",
@@ -589,7 +589,7 @@
       },
       "note": null,
       "error": null,
-      "ms": 3
+      "ms": 2
     },
     {
       "id": "production_fail_closed",
@@ -615,10 +615,14 @@
       },
       "note": null,
       "error": null,
-      "ms": 5
+      "ms": 8
     }
   ],
   "summary": {
+    "kym_on_baseline_attacks": {
+      "blocked": 10,
+      "applicable": 10
+    },
     "scope_only": {
       "blocked": 0,
       "applicable": 10

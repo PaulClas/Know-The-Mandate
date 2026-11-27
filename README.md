@@ -26,7 +26,7 @@
 | What does it add to OAuth? | State and per-request decisions: cumulative budgets, instant revocation, single-use approvals, delegation lineage, evidence. It *uses* OAuth (PKCE, PAR, DPoP, RFC 9396 RAR) |
 | Is it a standard? | No. The namespace (`https://example.org/kym/v1#`), KYM-CNL and the `kym_financial_mandate` RAR type are experimental proposals |
 | What can it NOT do? | Stop wrong-but-permitted actions inside a mandate; make agents safe; decide legal liability; guarantee compliance |
-| What is the evidence? | `make redteam`: 23 attacks against a scope-only bank, an OAuth+static-RAR bank and KYM. KYM blocks 22/22 applicable attacks; static RAR 3/10; scope-only 0/10; one attack is documented as unstoppable. Self-assessed |
+| What is the evidence? | `make redteam`: 23 attacks against a scope-only bank, an OAuth+static-RAR bank and KYM. KYM blocks 22/22 applicable attacks; on the 10 attacks the baselines can model: scope-only 0/10, stateless static RAR 3/10, KYM 10/10. One attack is documented as unstoppable. Self-assessed, written by the author, baselines are deliberately stateless |
 | Is it production-ready? | No: see [security review](docs/security/security-review.md) and [risk register](docs/risk/risk-register.md) |
 | Where do I learn more? | [FAQ](docs/faq.md) · [Philosophy and critics](docs/philosophy/README.md) · [Glossary](docs/glossary.md) · [Docs index](docs/README.md) · [llms.txt](llms.txt) |
 
@@ -88,7 +88,7 @@ Authority is not identity and not permission; the agent never decides what it ma
 
 ## Risks and disclosures
 
-KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (15 vulnerabilities found and fixed in a self-review, 21 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
+KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (21 vulnerabilities found and fixed (15 in a self-review, 6 more by an independent review), 25 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
 
 ## Prove it (or break it)
 
@@ -99,7 +99,7 @@ make scenarios    # demonstration scenarios A-M
 make verify-ledger
 ```
 
-The red-team harness compares a **scope-only bank**, an **OAuth + static RAR bank** (a steelman of "RAR is enough") and **KYM**, and includes an attack KYM cannot stop (`in_mandate_malicious`). It runs in the UI at `/proof`. Add an attack that KYM fails and you have improved the project. After `make redteam`, run `make reset-demo` for a clean demo state.
+The red-team harness compares a **scope-only bank**, an **OAuth + static RAR bank** (stronger than scopes, but deliberately stateless: no sender constraint, online revocation, budgets or approvals, so it is a model of one common design, not of every OAuth deployment) and **KYM**, and includes an attack KYM cannot stop (`in_mandate_malicious`). It runs in the UI at `/proof`. Add an attack that KYM fails and you have improved the project. After `make redteam`, run `make reset-demo` for a clean demo state.
 
 ## Run it
 
@@ -137,11 +137,11 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 
 | Suite | Result |
 |---|---|
-| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **213 passed, 0 failed**; line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
+| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **228 passed, 0 failed**; line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
 | `make scenarios` — scenarios A–M against the real engine (SQLite), run three times in a row on one database | **13/13 passed each time**; `make verify-ledger` afterwards: 767 events, 8 checkpoints, chain intact |
 | Same 13 scenarios + Alembic migration against **PostgreSQL 14** and, through `docker compose`, **PostgreSQL 16** | **13/13 passed** on both |
 | `ruff check apps tests` | clean |
-| `make redteam` (23 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 22/22** applicable blocked; 1 documented honest gap; 0 harness errors ([results](docs/redteam/latest.md)) |
+| `make redteam` (23 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 22/22** applicable blocked (10/10 on the same ten attacks the baselines can model); 1 documented honest gap; 0 harness errors ([results](docs/redteam/latest.md)) |
 | Web: `tsc`, `eslint`, `next build`, Playwright (Chromium, live API) | clean; **30 passed, 0 failed** ([apps/web/README.md](apps/web/README.md)) |
 | `make benchmark` (single process, SQLite, in-process ASGI client) | PDP pure evaluation p50 0.076 ms / p95 0.088 ms / p99 0.135 ms (n=20 000); full gateway payment p50 18.9 ms / p95 24.7 ms / p99 37.0 ms (n=300). Raw output: [docs/benchmarks/latest.json](docs/benchmarks/latest.json) |
 

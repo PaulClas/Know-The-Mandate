@@ -204,7 +204,7 @@ def verify(events: list[dict], payloads: dict[str, dict] | None = None, cps: lis
             pub = pubkeys.get(cp.get(kid_key))
             if not pub or not keys.verify_ed25519(pub, msg, cp.get(sig_key, "")):
                 problems.append({"event_id": None, "check": "checkpoint", "detail": f"{cb['checkpoint_id']}: invalid {sig_key}"})
-        if cb["sequence"] > last_seq and events and events[0]["sequence"] == 1:
+        if cb["sequence"] > last_seq and (not events or events[0]["sequence"] == 1):
             problems.append({"event_id": None, "check": "checkpoint", "detail": f"{cb['checkpoint_id']}: events up to {cb['sequence']} were signed but chain ends at {last_seq} (truncation / missing events)"})
         elif cb["sequence"] in by_seq and by_seq[cb["sequence"]]["event_hash"] != cb["head_hash"]:
             problems.append({"event_id": None, "check": "checkpoint", "detail": f"{cb['checkpoint_id']}: head hash differs from chain at sequence {cb['sequence']} (history rewritten)"})
