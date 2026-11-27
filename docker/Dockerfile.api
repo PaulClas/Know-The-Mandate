@@ -9,6 +9,7 @@ COPY packages ./packages
 COPY policies ./policies
 COPY standards ./standards
 COPY tests/helpers.py ./tests/helpers.py
+COPY scripts/concurrency_check.py ./scripts/concurrency_check.py
 ENV PYTHONPATH=/app/apps/api KYM_DATA_DIR=/data
 RUN useradd -m kym && mkdir /data && chown kym /data
 USER kym

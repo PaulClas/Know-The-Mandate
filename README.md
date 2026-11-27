@@ -16,7 +16,7 @@
 
 > ⚠️ **Synthetic demo. Not compliant, certified, audited or production-ready.** All customers, accounts, agents, KYC and "sanctions" data are fictional. Authentication, signing keys and approvals use clearly labelled sandbox mechanisms. Nothing here is legal advice or a claim of conformance with any law, regulation or standard. KYM is **not** related to "Know Your Meme".
 
-**Contents:** [At a glance](#at-a-glance-for-people-and-ai-assistants) · [The idea](#the-idea) · [Quickstart](#quickstart) · [What is built](#what-is-built) · [Philosophy](#philosophy-in-brief) · [Risks](#risks-and-disclosures) · [Prove it](#prove-it-or-break-it) · [Run it](#run-it) · [Test evidence](#test-evidence-recorded-from-actual-runs) · [Standards](#standards-implemented-vs-simulated-vs-mapped) · [Security limitations](#security-limitations-read-before-drawing-conclusions) · [Documentation](#documentation) · [Contributing](#contributing) · [Security policy](#security-policy) · [Citing](#citing-kym) · [License](#license)
+**Contents:** [At a glance](#at-a-glance-for-people-and-ai-assistants) · [The idea](#the-idea) · [Quickstart](#quickstart) · [What is built](#what-is-built) · [Philosophy](#philosophy-in-brief) · [Risks](#risks-and-disclosures) · [Prove it](#prove-it-or-break-it) · [Run it](#run-it) · [Test evidence](#test-evidence-recorded-from-actual-runs) · [Standards](#standards-implemented-vs-simulated-vs-mapped) · [Security limitations](#security-limitations-read-before-drawing-conclusions) · [Documentation](#documentation) · [Contributing](#contributing) · [Security policy](#security-policy) · [Contact](#contact) · [Citing](#citing-kym) · [License](#license)
 
 ## At a glance (for people and AI assistants)
 
@@ -88,7 +88,7 @@ Authority is not identity and not permission; the agent never decides what it ma
 
 ## Risks and disclosures
 
-KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (21 vulnerabilities found and fixed (15 in a self-review, 6 more by an independent review), 25 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
+KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (24 vulnerabilities found and fixed (15 in a self-review, 9 more through an independent review and follow-up testing), 22 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
 
 ## Prove it (or break it)
 
@@ -137,7 +137,7 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 
 | Suite | Result |
 |---|---|
-| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **228 passed, 0 failed**; line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
+| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **237 passed, 0 failed, 1 skipped** (the PostgreSQL multi-process test runs only when `KYM_TEST_PG_URL` is set; it was run separately); line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
 | `make scenarios` — scenarios A–M against the real engine (SQLite), run three times in a row on one database | **13/13 passed each time**; `make verify-ledger` afterwards: 767 events, 8 checkpoints, chain intact |
 | Same 13 scenarios + Alembic migration against **PostgreSQL 14** and, through `docker compose`, **PostgreSQL 16** | **13/13 passed** on both |
 | `ruff check apps tests` | clean |
@@ -159,7 +159,7 @@ Full matrix with sources and "interoperability tested?" (it is **No** everywhere
 
 * Demo sessions have no authentication; demo keys (ledger, decision, witness, customer consent, agent, authorization server) are plain files under `.kym-data/keys` (mode 0600). Production: HSM/KMS, WORM storage, RFC 3161 timestamping, independent witnesses, SPIFFE/SPIRE, passkeys, mTLS, a FAPI-certified authorization server.
 * The ledger is **tamper-evident, not tamper-proof**: whoever can replace the database *and* the keys can rewrite history. The demo adds signed checkpoints, an independent witness key and locally exported checkpoint files to show stronger detection (Scenario L).
-* Budget atomicity relies on a single-process write lock plus database transactions; a multi-process deployment needs row-level locking (`SELECT … FOR UPDATE`) or serializable isolation.
+* Budget atomicity relies on a global write lock: an in-process lock plus a database-level lock (`BEGIN IMMEDIATE` on SQLite, an advisory lock on PostgreSQL). `make concurrency` races four OS processes for one budget and passed on SQLite and PostgreSQL 16 (without the lock, PostgreSQL runs crashed on the ledger sequence). It is a throughput ceiling, tested at four processes, not at load or across nodes.
 * Scenario runs call `demo.prepare_isolated_state()` (demo/test only): it starts a fresh *synthetic risk window* and tops up balances with a balanced `DEMO_TOPUP` double-entry pair, so repeated runs are independent. It never touches the enforcement path.
 * Within-mandate mistakes (e.g. paying CAD 90 instead of CAD 9) cannot be detected by mandate enforcement alone (Scenario D).
 * A valid signature proves integrity and key control, **not** legally effective consent.
@@ -199,9 +199,16 @@ The repository layout deliberately omits empty placeholder services (`services/*
 | Reference | [HTTP API](docs/reference/api.md) · [Reason codes](docs/reference/reason-codes.md) · [Mandate spec](docs/specifications/mandate-spec.md) · [KYM-CNL](docs/specifications/kym-cnl-spec.md) · [Ledger spec](docs/specifications/evidence-ledger-spec.md) · [OpenAPI](docs/specifications/openapi.json) |
 | Understand | [FAQ](docs/faq.md) · [Glossary](docs/glossary.md) · [Philosophy and critics](docs/philosophy/README.md) · [Architecture](docs/architecture/README.md) · [ADRs](docs/adr) |
 | Trust | [Security review](docs/security/security-review.md) · [Risk register](docs/risk/risk-register.md) · [Red-team results](docs/redteam/latest.md) · [Testing](docs/testing.md) · [Benchmarks](docs/benchmarks/README.md) |
+| Trust more | [External review status and how to commission one](docs/security/external-review.md) · [Media and citation guide](docs/media-guide.md) |
 | Project | [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Governance](GOVERNANCE.md) · [Support](SUPPORT.md) |
 
 Full index: [docs/README.md](docs/README.md).
+
+## Contact
+
+Questions, corrections, critiques, or a wish to review the design: **email me at [clas.paul@gmail.com](mailto:clas.paul@gmail.com)**, or open a [GitHub issue](https://github.com/PaulClas/Know-The-Mandate/issues) for anything that others may benefit from. Security reports: [SECURITY.md](SECURITY.md).
+
+**About the author.** I am Paul Clas, a **machine learning developer**. I built KYM as an independent exploration of how banks might govern the authority they hand to AI agents. I am not a bank, payments-security, cryptography or legal professional, which is why the project publishes its [risks](docs/risk/risk-register.md), [open findings](docs/security/security-review.md) and [call for external review](docs/security/external-review.md) rather than asking you to trust it. Expert criticism is the most useful thing you can send me. Media and citation notes: [media guide](docs/media-guide.md).
 
 ## Contributing
 
@@ -217,4 +224,4 @@ See [CITATION.cff](CITATION.cff) (GitHub shows a "Cite this repository" button) 
 
 ## License
 
-[Apache License 2.0](LICENSE). See [NOTICE](NOTICE). Provided as is, without warranty; not legal, compliance or financial advice.
+[Apache License 2.0](LICENSE). See [NOTICE](NOTICE). Chosen for its explicit patent grant and because it is the common choice for security and infrastructure projects (it is compatible with the permissive dependencies used here; `psycopg` and `sharp-libvips` are LGPL-3.0 and used unmodified, see NOTICE). Provided as is, without warranty; not legal, compliance or financial advice.

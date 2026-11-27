@@ -77,7 +77,7 @@ def test_license_is_apache_2_and_declared_consistently():
 
 def test_community_health_files_exist():
     for p in ("LICENSE", "NOTICE", "README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "SUPPORT.md", "CHANGELOG.md", "GOVERNANCE.md", "MAINTAINERS.md",
-              ".github/pull_request_template.md", ".github/CODEOWNERS", ".github/dependabot.yml", ".github/workflows/ci.yml", ".github/workflows/security.yml"):
+              ".github/pull_request_template.md", ".github/CODEOWNERS", ".github/dependabot.yml", ".github/workflows/ci.yml", ".github/workflows/security.yml", "docs/security/external-review.md", "docs/media-guide.md"):
         assert (ROOT / p).exists(), p
 
 

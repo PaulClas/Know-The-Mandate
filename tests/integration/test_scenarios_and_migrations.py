@@ -32,8 +32,11 @@ def test_alembic_migration_matches_models():
     env = {**os.environ, "KYM_DATA_DIR": tmp}
     env.pop("KYM_DATABASE_URL", None)
     subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], cwd=ROOT / "apps" / "api", env={**env, "PYTHONPATH": str(ROOT / "apps" / "api")}, check=True, capture_output=True)
-    tables = set(inspect(create_engine(f"sqlite:///{tmp}/kym.db")).get_table_names()) - {"alembic_version"}
+    insp = inspect(create_engine(f"sqlite:///{tmp}/kym.db"))
+    tables = set(insp.get_table_names()) - {"alembic_version"}
     assert tables == set(db.Base.metadata.tables)
+    for name, table in db.Base.metadata.tables.items():  # columns too: a model change without a migration must fail here
+        assert {c["name"] for c in insp.get_columns(name)} == set(table.columns.keys()), name
 
 
 def test_committed_json_schema_is_current():

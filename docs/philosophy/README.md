@@ -30,7 +30,7 @@ Everything else (ontology, CNL, delegation graphs, dashboards) serves or illustr
 | Claim | How to falsify it | Proof in repo |
 |---|---|---|
 | A valid token cannot move money outside the mandate | Make a payment to a non-permitted beneficiary with a valid token succeed | Scenario C; `redteam: beneficiary_swap`; `tests/integration/test_enforcement.py` |
-| Cumulative limits hold under concurrency **in a single process** | Exceed the monthly budget with parallel requests | Scenario H; `redteam: budget_race`; 8-thread integration test. Multi-process or multi-node deployments need row locks or serializable isolation and are untested (O-03, README limitations) |
+| Cumulative limits hold under concurrency | Exceed the monthly budget with parallel requests | Scenario H; `redteam: budget_race`; 8-thread test and a 4-process race (`make concurrency`) on SQLite and PostgreSQL. Serialization-based, so throughput-limited; multi-node is untested (O-03) |
 | Revocation is immediate and cascades | Execute after revocation with an unexpired token, or via a child | Scenario F, G; `redteam: revoked_mandate` |
 | A stolen token is useless to another party | Replay a token or DPoP proof from another key | `redteam: stolen_token`, `dpop_replay` |
 | Approvals can't be substituted or replayed | Execute a changed payload, or reuse an approval | Scenario J; `redteam: approval_*` |

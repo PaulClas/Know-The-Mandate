@@ -14,6 +14,8 @@ KYM is an **experimental proof of concept** with synthetic data and sandbox secu
 **Please do not open a public issue for an exploitable vulnerability.** Use GitHub's private reporting:
 <https://github.com/PaulClas/Know-The-Mandate/security/advisories/new>
 
+If you cannot use GitHub's reporting, email [clas.paul@gmail.com](mailto:clas.paul@gmail.com) with "KYM security" in the subject and no exploit details in the first message; I will reply with a way to share them.
+
 Include: affected component/commit, reproduction steps (a failing test or a new attack in `apps/api/kym/redteam.py` is ideal), impact, and any suggested fix.
 
 What to expect (best effort, single maintainer): acknowledgement within 7 days; an assessment within 14 days; a fix or a documented acceptance in the [security review](docs/security/security-review.md) afterwards, with credit if you wish.

@@ -27,7 +27,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **They are complementary layers, not substitutes.** AP2 concerns agent-driven commerce artifacts (user-approved mandates, checkout and payment proofs); KYM adds the bank-side authority decision and evidence. MCP and A2A are transport/discovery protocols: tool discovery is not permission, and every MCP-shaped call in KYM still passes the same enforcement point. AP2 mapping is conceptual only: [ap2-mapping.md](research/ap2-mapping.md).
 
 ## Why not just use Open Policy Agent (OPA) or Cedar?
-**You can; KYM chose a typed Python engine for determinism, explanation and replay in one language.** The decision is a pure function of a stored JSON snapshot, which makes a stored decision replayable by re-running the current engine on its snapshot (past engine versions are not archived; see O-23). OPA/Cedar are valid production choices; the snapshot format is the integration seam ([ADR-0002](adr/0002-deterministic-pdp-no-opa.md)).
+**You can; KYM chose a typed Python engine for determinism, explanation and replay in one language.** The decision is a pure function of a stored JSON snapshot, which makes a stored decision replayable by re-running the current engine on its snapshot (past engine versions are not archived; see O-22). OPA/Cedar are valid production choices; the snapshot format is the integration seam ([ADR-0002](adr/0002-deterministic-pdp-no-opa.md)).
 
 ## Is the ontology used to make authorization decisions?
 **No.** OWL reasoning is open-world; money needs deny-by-default. The ontology and SHACL validate mandates when they are created and support explanation and SPARQL queries. The runtime decision uses a compiled policy ([ADR-0003](adr/0003-ontology-not-in-the-decision-path.md)).
@@ -42,7 +42,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **No.** It attributes who did what and which party controlled which system. It distinguishes factual responsibility, contractual responsibility, potential legal liability and final adjudicated liability, and decides none of the last three. A valid signature shows integrity and key control, not legally effective consent.
 
 ## Is it ready for production?
-**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (21 findings fixed, 25 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
+**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (24 findings fixed, 22 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
 
 ## What are the biggest risks of KYM?
 **Approval fatigue, customers misreading mandates, overly broad mandates, coverage gaps when payments bypass the bank, in-mandate harm, insider abuse, and standards absorbing the idea.** Full list with likelihood and impact: [risk register](risk/risk-register.md).
@@ -55,3 +55,11 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 
 ## How do I run it?
 `make install && make install-web && make demo`; API docs at http://127.0.0.1:8000/docs, UI at http://localhost:3000. Demo users and details: [README](../README.md#run-it).
+
+## Who made KYM, and how do I ask a question?
+
+KYM is an independent project by Paul Clas, a machine learning developer; he is not a bank, payments-security, cryptography or legal professional, which is why the project discloses its [risks](risk/risk-register.md) and [open findings](security/security-review.md) and invites [external review](security/external-review.md). Questions, critiques and review offers: clas.paul@gmail.com or a [GitHub issue](https://github.com/PaulClas/Know-The-Mandate/issues). Reporting a vulnerability: [SECURITY.md](../SECURITY.md).
+
+## Has KYM been independently audited?
+
+No. All evidence is self-assessed, plus one AI-assisted hostile review whose findings were fixed. See [external review status](security/external-review.md) and the [media guide](media-guide.md) for what may be claimed.

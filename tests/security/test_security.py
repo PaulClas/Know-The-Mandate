@@ -114,7 +114,7 @@ def test_payment_engine_refuses_without_valid_bound_certificate(conn):
     with db.write() as s:
         tx = s.get(db.Transaction, ok["transaction_id"])
         dec = s.get(db.Decision, tx.decision_id)
-        cert = {"decision_id": dec.id, "decision": dec.decision, "op_hash": dec.op_hash, "policy_version": dec.policy_version, "inputs_digest": dec.inputs_digest, "issued_at": dec.created_at,
+        cert = {"decision_id": dec.id, "decision": dec.decision, "op_hash": dec.op_hash, "tx_id": tx.id, "policy_version": dec.policy_version, "inputs_digest": dec.inputs_digest, "issued_at": dec.created_at,
                 "expires_at": dec.expires_at, "signature": dec.signature, "key_id": dec.key_id}
         bank.verify_certificate(cert, tx.op_hash)  # genuine certificate verifies
         for bad, exc in [({**cert, "op_hash": "sha256:other"}, "CERT_INVALID"), ({**cert, "signature": "AAAA"}, "CERT_INVALID"), ({**cert, "decision": "DENY"}, "CERT_INVALID")]:

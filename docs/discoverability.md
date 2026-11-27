@@ -19,3 +19,18 @@ Goal: make KYM easy to find, summarize and **cite correctly**, without overstati
 
 ## Limits and honesty
 SEO/AEO results cannot be guaranteed or measured from this repository. Nothing here uses hidden text, keyword stuffing or claims of authority KYM does not have. The local web app is a demo; its metadata matters only if deployed publicly (which the project advises against for the demo configuration).
+
+## Applying the GitHub metadata
+
+The description, topics and private vulnerability reporting live in repository settings, not in the code, so they must be set once by the owner. The source of truth is [.github/repo-metadata.json](../.github/repo-metadata.json).
+
+**By hand (about two minutes, no token needed)**
+
+1. Open the repository page, click the gear icon next to **About**, paste the `description`, add each entry of `topics`, and save.
+2. Go to **Settings → Code security** (or **Advanced Security**) and enable **Private vulnerability reporting**. [SECURITY.md](../SECURITY.md) and the issue templates point reporters at it.
+
+**By script**
+
+1. Create a fine-grained token at <https://github.com/settings/personal-access-tokens/new>: repository access limited to `PaulClas/Know-The-Mandate`, permission **Administration: Read and write**. Set a short expiry.
+2. `GITHUB_TOKEN=<token> python3 scripts/set_github_metadata.py` (add `--dry-run` first to preview).
+3. Delete the token.

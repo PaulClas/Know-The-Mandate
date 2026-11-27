@@ -289,6 +289,10 @@ def _token_exchange(s, client, params, dpop, url) -> dict:
     trow = s.get(db.Token, claims["jti"])
     if not trow or trow.revoked_at or claims["exp"] < clock.now().timestamp():
         raise OAuthError("invalid_grant", "subject_token expired or revoked")
+    # Proof of possession of the subject token: the parent must co-sign the exchange with the key the parent token is bound to (RFC 9449 `ath`).
+    ok, detail, _ = verify_dpop(s, params.get("subject_dpop"), method="POST", url=url, access_token=subject, expected_jkt=(claims.get("cnf") or {}).get("jkt"))
+    if not ok:
+        raise OAuthError("invalid_grant", f"subject_dpop: {detail}")
     child_id = params.get("mandate_id")
     child = mandates.get_row(s, child_id) if child_id else None
     if not child or child.content["mandatary"]["client_id"] != client.client_id:

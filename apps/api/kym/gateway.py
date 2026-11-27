@@ -88,13 +88,12 @@ def _usage(s, principal_id: str, mandate_ids: dict[str, str], now) -> dict:
         for t in txs:
             if mid not in t.mandate_chain:
                 continue
-            # A payment created before a boundary but reserved/executed after it (approval delay) counts in both windows: never under-count spend.
-            stamps = [clock.parse(t.created_at), clock.parse(t.updated_at)]
-            if any(w["month"][0] <= at < w["month"][1] for at in stamps):
+            at = clock.parse(t.executed_at or t.updated_at)  # money moves at execution, not at request (approvals can delay it across a boundary)
+            if w["month"][0] <= at < w["month"][1]:
                 month += t.amount_minor
                 count += 1
-            if any(w["day"][0] <= at < w["day"][1] for at in stamps):
-                day += t.amount_minor
+                if w["day"][0] <= at < w["day"][1]:
+                    day += t.amount_minor
         out[mid] = {"day_minor": day, "month_minor": month, "month_count": count}
     return out
 
@@ -290,7 +289,7 @@ def _process(s, claims: dict, facts: dict, spec: dict, idem: str | None, dry_run
     METRICS.count(f"decision_{result['decision']}")
     ledger.append(s, "POLICY_EVALUATED", actor_id="meridian-policy-decision-point", actor_type="bank_system", principal_id=principal_id, agent_id=agent_id, mandate_id=facts.get("mandate_id"),
                   mandate_version=facts.get("mandate_version"), transaction_id=tx.id if tx else None, correlation_id=corr, policy_version=result["policy_version"],
-                  payload={"decision_id": dec.id, "decision": result["decision"], "reason_codes": result["reason_codes"], "inputs_digest": inputs_digest, "passed": result["passed"], "failed": result["failed"], "dry_run": dry_run})
+                  payload={"decision_id": dec.id, "decision": result["decision"], "reason_codes": result["reason_codes"], "inputs_digest": inputs_digest, "engine_digest": policy.ENGINE_DIGEST, "passed": result["passed"], "failed": result["failed"], "dry_run": dry_run})
     if inputs.get("risk") and money_moving:
         r = inputs["risk"]
         ledger.append(s, "RISK_EVALUATED", actor_id="meridian-risk-engine", actor_type="bank_system", principal_id=principal_id, agent_id=agent_id, mandate_id=facts.get("mandate_id"),

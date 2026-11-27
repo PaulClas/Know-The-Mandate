@@ -25,7 +25,7 @@
 
 > ⚠️ **Synthetic demo. Not compliant, certified, audited or production-ready.** All customers, accounts, agents, KYC and "sanctions" data are fictional. Authentication, signing keys and approvals use clearly labelled sandbox mechanisms. Nothing here is legal advice or a claim of conformance with any law, regulation or standard. KYM is **not** related to "Know Your Meme".
 
-**Contents:** [At a glance](#at-a-glance-for-people-and-ai-assistants) · [The idea](#the-idea) · [Quickstart](#quickstart) · [What is built](#what-is-built) · [Philosophy](#philosophy-in-brief) · [Risks](#risks-and-disclosures) · [Prove it](#prove-it-or-break-it) · [Run it](#run-it) · [Test evidence](#test-evidence-recorded-from-actual-runs) · [Standards](#standards-implemented-vs-simulated-vs-mapped) · [Security limitations](#security-limitations-read-before-drawing-conclusions) · [Documentation](#documentation) · [Contributing](#contributing) · [Security policy](#security-policy) · [Citing](#citing-kym) · [License](#license)
+**Contents:** [At a glance](#at-a-glance-for-people-and-ai-assistants) · [The idea](#the-idea) · [Quickstart](#quickstart) · [What is built](#what-is-built) · [Philosophy](#philosophy-in-brief) · [Risks](#risks-and-disclosures) · [Prove it](#prove-it-or-break-it) · [Run it](#run-it) · [Test evidence](#test-evidence-recorded-from-actual-runs) · [Standards](#standards-implemented-vs-simulated-vs-mapped) · [Security limitations](#security-limitations-read-before-drawing-conclusions) · [Documentation](#documentation) · [Contributing](#contributing) · [Security policy](#security-policy) · [Contact](#contact) · [Citing](#citing-kym) · [License](#license)
 
 ## At a glance (for people and AI assistants)
 
@@ -97,7 +97,7 @@ Authority is not identity and not permission; the agent never decides what it ma
 
 ## Risks and disclosures
 
-KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (21 vulnerabilities found and fixed (15 in a self-review, 6 more by an independent review), 25 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
+KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (24 vulnerabilities found and fixed (15 in a self-review, 9 more through an independent review and follow-up testing), 22 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
 
 ## Prove it (or break it)
 
@@ -146,7 +146,7 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 
 | Suite | Result |
 |---|---|
-| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **228 passed, 0 failed**; line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
+| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **237 passed, 0 failed, 1 skipped** (the PostgreSQL multi-process test runs only when `KYM_TEST_PG_URL` is set; it was run separately); line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
 | `make scenarios` — scenarios A–M against the real engine (SQLite), run three times in a row on one database | **13/13 passed each time**; `make verify-ledger` afterwards: 767 events, 8 checkpoints, chain intact |
 | Same 13 scenarios + Alembic migration against **PostgreSQL 14** and, through `docker compose`, **PostgreSQL 16** | **13/13 passed** on both |
 | `ruff check apps tests` | clean |
@@ -168,7 +168,7 @@ Full matrix with sources and "interoperability tested?" (it is **No** everywhere
 
 * Demo sessions have no authentication; demo keys (ledger, decision, witness, customer consent, agent, authorization server) are plain files under `.kym-data/keys` (mode 0600). Production: HSM/KMS, WORM storage, RFC 3161 timestamping, independent witnesses, SPIFFE/SPIRE, passkeys, mTLS, a FAPI-certified authorization server.
 * The ledger is **tamper-evident, not tamper-proof**: whoever can replace the database *and* the keys can rewrite history. The demo adds signed checkpoints, an independent witness key and locally exported checkpoint files to show stronger detection (Scenario L).
-* Budget atomicity relies on a single-process write lock plus database transactions; a multi-process deployment needs row-level locking (`SELECT … FOR UPDATE`) or serializable isolation.
+* Budget atomicity relies on a global write lock: an in-process lock plus a database-level lock (`BEGIN IMMEDIATE` on SQLite, an advisory lock on PostgreSQL). `make concurrency` races four OS processes for one budget and passed on SQLite and PostgreSQL 16 (without the lock, PostgreSQL runs crashed on the ledger sequence). It is a throughput ceiling, tested at four processes, not at load or across nodes.
 * Scenario runs call `demo.prepare_isolated_state()` (demo/test only): it starts a fresh *synthetic risk window* and tops up balances with a balanced `DEMO_TOPUP` double-entry pair, so repeated runs are independent. It never touches the enforcement path.
 * Within-mandate mistakes (e.g. paying CAD 90 instead of CAD 9) cannot be detected by mandate enforcement alone (Scenario D).
 * A valid signature proves integrity and key control, **not** legally effective consent.
@@ -208,9 +208,16 @@ The repository layout deliberately omits empty placeholder services (`services/*
 | Reference | [HTTP API](docs/reference/api.md) · [Reason codes](docs/reference/reason-codes.md) · [Mandate spec](docs/specifications/mandate-spec.md) · [KYM-CNL](docs/specifications/kym-cnl-spec.md) · [Ledger spec](docs/specifications/evidence-ledger-spec.md) · [OpenAPI](docs/specifications/openapi.json) |
 | Understand | [FAQ](docs/faq.md) · [Glossary](docs/glossary.md) · [Philosophy and critics](docs/philosophy/README.md) · [Architecture](docs/architecture/README.md) · [ADRs](docs/adr) |
 | Trust | [Security review](docs/security/security-review.md) · [Risk register](docs/risk/risk-register.md) · [Red-team results](docs/redteam/latest.md) · [Testing](docs/testing.md) · [Benchmarks](docs/benchmarks/README.md) |
+| Trust more | [External review status and how to commission one](docs/security/external-review.md) · [Media and citation guide](docs/media-guide.md) |
 | Project | [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Governance](GOVERNANCE.md) · [Support](SUPPORT.md) |
 
 Full index: [docs/README.md](docs/README.md).
+
+## Contact
+
+Questions, corrections, critiques, or a wish to review the design: **email me at [clas.paul@gmail.com](mailto:clas.paul@gmail.com)**, or open a [GitHub issue](https://github.com/PaulClas/Know-The-Mandate/issues) for anything that others may benefit from. Security reports: [SECURITY.md](SECURITY.md).
+
+**About the author.** I am Paul Clas, a **machine learning developer**. I built KYM as an independent exploration of how banks might govern the authority they hand to AI agents. I am not a bank, payments-security, cryptography or legal professional, which is why the project publishes its [risks](docs/risk/risk-register.md), [open findings](docs/security/security-review.md) and [call for external review](docs/security/external-review.md) rather than asking you to trust it. Expert criticism is the most useful thing you can send me. Media and citation notes: [media guide](docs/media-guide.md).
 
 ## Contributing
 
@@ -262,7 +269,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **They are complementary layers, not substitutes.** AP2 concerns agent-driven commerce artifacts (user-approved mandates, checkout and payment proofs); KYM adds the bank-side authority decision and evidence. MCP and A2A are transport/discovery protocols: tool discovery is not permission, and every MCP-shaped call in KYM still passes the same enforcement point. AP2 mapping is conceptual only: [ap2-mapping.md](research/ap2-mapping.md).
 
 ## Why not just use Open Policy Agent (OPA) or Cedar?
-**You can; KYM chose a typed Python engine for determinism, explanation and replay in one language.** The decision is a pure function of a stored JSON snapshot, which makes a stored decision replayable by re-running the current engine on its snapshot (past engine versions are not archived; see O-23). OPA/Cedar are valid production choices; the snapshot format is the integration seam ([ADR-0002](adr/0002-deterministic-pdp-no-opa.md)).
+**You can; KYM chose a typed Python engine for determinism, explanation and replay in one language.** The decision is a pure function of a stored JSON snapshot, which makes a stored decision replayable by re-running the current engine on its snapshot (past engine versions are not archived; see O-22). OPA/Cedar are valid production choices; the snapshot format is the integration seam ([ADR-0002](adr/0002-deterministic-pdp-no-opa.md)).
 
 ## Is the ontology used to make authorization decisions?
 **No.** OWL reasoning is open-world; money needs deny-by-default. The ontology and SHACL validate mandates when they are created and support explanation and SPARQL queries. The runtime decision uses a compiled policy ([ADR-0003](adr/0003-ontology-not-in-the-decision-path.md)).
@@ -277,7 +284,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 **No.** It attributes who did what and which party controlled which system. It distinguishes factual responsibility, contractual responsibility, potential legal liability and final adjudicated liability, and decides none of the last three. A valid signature shows integrity and key control, not legally effective consent.
 
 ## Is it ready for production?
-**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (21 findings fixed, 25 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
+**No.** See the [production readiness gap analysis](specifications/production-readiness-gap-analysis.md), the [security review](security/security-review.md) (24 findings fixed, 22 open or accepted) and the [risk register](risk/risk-register.md). Key gaps: no real authentication, plaintext keys, single-process locking, no external audit, sandbox OAuth.
 
 ## What are the biggest risks of KYM?
 **Approval fatigue, customers misreading mandates, overly broad mandates, coverage gaps when payments bypass the bank, in-mandate harm, insider abuse, and standards absorbing the idea.** Full list with likelihood and impact: [risk register](risk/risk-register.md).
@@ -290,6 +297,14 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 
 ## How do I run it?
 `make install && make install-web && make demo`; API docs at http://127.0.0.1:8000/docs, UI at http://localhost:3000. Demo users and details: [README](../README.md#run-it).
+
+## Who made KYM, and how do I ask a question?
+
+KYM is an independent project by Paul Clas, a machine learning developer; he is not a bank, payments-security, cryptography or legal professional, which is why the project discloses its [risks](risk/risk-register.md) and [open findings](security/security-review.md) and invites [external review](security/external-review.md). Questions, critiques and review offers: clas.paul@gmail.com or a [GitHub issue](https://github.com/PaulClas/Know-The-Mandate/issues). Reporting a vulnerability: [SECURITY.md](../SECURITY.md).
+
+## Has KYM been independently audited?
+
+No. All evidence is self-assessed, plus one AI-assisted hostile review whose findings were fixed. See [external review status](security/external-review.md) and the [media guide](media-guide.md) for what may be claimed.
 
 
 ---
@@ -381,7 +396,7 @@ Everything else (ontology, CNL, delegation graphs, dashboards) serves or illustr
 | Claim | How to falsify it | Proof in repo |
 |---|---|---|
 | A valid token cannot move money outside the mandate | Make a payment to a non-permitted beneficiary with a valid token succeed | Scenario C; `redteam: beneficiary_swap`; `tests/integration/test_enforcement.py` |
-| Cumulative limits hold under concurrency **in a single process** | Exceed the monthly budget with parallel requests | Scenario H; `redteam: budget_race`; 8-thread integration test. Multi-process or multi-node deployments need row locks or serializable isolation and are untested (O-03, README limitations) |
+| Cumulative limits hold under concurrency | Exceed the monthly budget with parallel requests | Scenario H; `redteam: budget_race`; 8-thread test and a 4-process race (`make concurrency`) on SQLite and PostgreSQL. Serialization-based, so throughput-limited; multi-node is untested (O-03) |
 | Revocation is immediate and cascades | Execute after revocation with an unexpired token, or via a child | Scenario F, G; `redteam: revoked_mandate` |
 | A stolen token is useless to another party | Replay a token or DPoP proof from another key | `redteam: stolen_token`, `dpop_replay` |
 | Approvals can't be substituted or replayed | Execute a changed payload, or reuse an approval | Scenario J; `redteam: approval_*` |
@@ -592,10 +607,13 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | F-15 | Unbounded idempotency-key length. | Low | 1–128 characters. | gateway |
 | F-16 | Deleting the whole ledger passed checkpoint verification: the truncation test required a non-empty event list (found by an independent review). | High | An empty chain is truncation whenever a signed checkpoint commits to later events. | `test_review_findings` |
 | F-17 | Counterparty type came from the request: a beneficiary could be addressed as a merchant and judged by merchant-category rules. | Med–High | Type must match the payee registry (400 otherwise). | `test_review_findings` |
-| F-18 | Spend was bucketed only by creation time, so a payment held for approval across midnight or month end escaped the later window. | Med | A payment counts in every window its creation or last (reserve/execute) update falls in; never under-counts. | `test_review_findings` |
+| F-18 | Spend was bucketed by creation time, so a payment held for approval across midnight or month end escaped the later window. | Med | Budgets are counted when money moves: new `transactions.executed_at` column (migration `0002`, backfilled). | `test_review_findings` |
 | F-19 | A token's own, narrower `authorization_details` (amount, accounts, beneficiaries) were ignored; only scopes and the mandate were checked. | Med | The PDP also requires the request to fit the token's grant (judged last, so a mandate denial stays the primary reason). | `test_review_findings` |
 | F-20 | RFC 8693-style token exchange did not require the DPoP key to be the agent's registered key. | Med | Same key pinning as the authorization-code grant. | `test_review_findings` |
 | F-21 | `verify_package` trusted unsigned display fields and a supplied replay flag; a package could show a transaction its signed events did not support. | High | Displayed amount, account, payee, op hash, decision and EXECUTED status are bound to signed ledger payloads; replay is recomputed locally. | `test_review_findings` |
+| F-22 | A leaked parent token plus the child's credentials was enough to exchange for a child token (no proof of possession of the subject token). | Med | The parent must co-sign the exchange (`subject_dpop`, bound to the subject token by `ath` and to its `cnf.jkt`); proofs are single-use. | `test_review_findings` |
+| F-23 | **Writers were serialized only inside one process.** With several PostgreSQL workers, concurrent writes collided on the evidence-ledger sequence (observed: `UniqueViolation` on `evidence_events_pkey`) and budget reads could interleave. | High | `db.write()` takes a database-level lock: `BEGIN IMMEDIATE` (SQLite) or a transaction-scoped advisory lock (PostgreSQL). | `scripts/concurrency_check.py`: 4 processes racing one budget on SQLite and PostgreSQL 16 (3/3 runs held the limit; with the lock removed, PostgreSQL runs crashed) |
+| F-24 | A decision certificate was not bound to its transaction; identical operations could in principle reuse each other's certificate. | Low–Med | The signed certificate carries `tx_id`; execution refuses a mismatch. The engine also re-derives the operation hash from the stored operation before moving money. | `test_review_findings` |
 
 ### Accepted or open (not fixed in this repository)
 
@@ -603,7 +621,7 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 |---|---|---|---|
 | O-01 | **Demo sessions have no authentication.** Anyone who can reach the API can act as admin. | Critical if exposed. Default bind is loopback/Compose localhost. | OIDC + passkeys; never run `KYM_ENV=demo` on a reachable host. |
 | O-02 | Keys, agent private keys and agent client secrets are plaintext files; the "agent" runs inside the server process for the demo. | Host compromise = total compromise; agents are not independent. | HSM/KMS; real agents hold their own keys (SPIFFE/SPIRE, hardware-backed). |
-| O-03 | One global write lock serializes all mutations. | Throughput ceiling; a slow transaction delays everyone; authenticated agents can still consume capacity. | Row-level locking / serializable isolation, per-tenant limits. |
+| O-03 | One global write lock serializes all mutations (in-process lock plus a database-level lock: `BEGIN IMMEDIATE` / PostgreSQL advisory lock). Cross-process safety is tested; throughput is bounded by serialization. | Throughput ceiling; a slow transaction delays everyone; authenticated agents can contend for the lock. Tested at 4 processes, not at load. | Row-level locks on budget rows, per-principal serialization, a queue. |
 | O-04 | **No maker–checker for bank operators.** One admin can suspend agents, reverse payments, clear risk reviews. | Insider risk. | Dual control, privileged-access management, signed operator actions. |
 | O-05 | A business mandate can be approved by a **single** signatory (only *payments* can require two). | Weaker than typical corporate-authority rules. | Mandate-level multi-signatory policy. |
 | O-06 | No server-issued DPoP nonces (RFC 9449 §8). | Proofs can be pre-generated within the 60 s `iat` window. | Nonce challenge. |
@@ -620,12 +638,9 @@ Severity is the authors' judgement *in a deployed setting*, not in the local dem
 | O-17 | Decision replay proves the *engine is deterministic* over the stored snapshot, not that the snapshot was complete or honest when built. | A compromised gateway could build misleading inputs. | Independent input attestations; sampling replay by a second implementation. |
 | O-18 | **"What you see is what you sign":** the consent summary is generated by the bank; its digest is recorded, but an incorrect or deceptive generator would mislead the customer. | Central to the thesis; the approval is only as good as the rendering. | Independent summary verification, accessibility and usability studies. |
 | O-19 | Admin reads of evidence are not themselves logged. | Insider snooping undetected. | Access logging into a separate ledger. |
-| O-20 | Time-window logic (day/month in IANA zones) has limited tests around DST and month boundaries. | Budget miscounts at boundaries. | Property tests over zone transitions. |
+| O-20 | Time-window logic (day/month in IANA zones) is property-tested across DST transitions, a 30-minute-DST zone, leap years and year ends (`tests/unit/test_time_windows.py`), but not for zones whose DST change falls at local midnight. | Budget miscounts at those boundaries. | Extend the zone list; test against a second implementation. |
 | O-21 | No external penetration test, no fuzzing campaign, no formal verification, no real-world pilot. | Unknown unknowns. | All of the above. |
-| O-22 | Token exchange does not require proof of possession of the *subject* (parent) token's key, only the child's client secret and registered key. | A leaked parent token plus child credentials suffices. | Require the parent's DPoP proof or a bank-issued delegation grant. |
-| O-23 | "Replayable" means re-running the **current** engine on the stored snapshot. Past engine versions are not preserved, so a later rule change makes old decisions fail replay (surfaced, not hidden). | Historical replay breaks across policy versions. | Versioned, archived engines keyed by `policy_version`. |
-| O-24 | Budgets use created/updated timestamps; there is no dedicated `executed_at` column, so boundary-crossing payments are counted conservatively in both windows. | Occasional over-counting at midnight or month end. | An `executed_at` column plus migration. |
-| O-25 | The decision certificate is bound to the stored `op_hash` and the payment engine now re-derives that hash from the stored operation before moving money (partial fix), but the decision is not yet bound to the transaction ID. | A caller that replaces the operation *and* its hash together, or reuses a certificate across transactions with identical operations, is not caught by the certificate alone. | Bind the decision to the transaction ID and check it at execution. |
+| O-22 | Replay re-runs the **current** engine. Each signed decision now records an engine fingerprint, so a changed engine is reported as `engine_changed` (a warning) rather than as tampering, but past engine versions are not archived, so an old decision cannot be re-run with its original code from this repository alone. | Historical replay is verifiable only while the engine is unchanged. | Tag and archive engine builds by `policy_version`; replay in a pinned container. |
 
 ## 3. OWASP API Security Top 10 (2023) mapping
 

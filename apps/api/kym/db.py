@@ -3,7 +3,7 @@ from __future__ import annotations
 import threading
 from contextlib import contextmanager
 
-from sqlalchemy import JSON, BigInteger, Boolean, Integer, String, Text, create_engine, event
+from sqlalchemy import JSON, BigInteger, Boolean, Integer, String, Text, create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from . import config
@@ -218,6 +218,7 @@ class Transaction(Base):
     correlation_id: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[str] = mapped_column(String)
     updated_at: Mapped[str] = mapped_column(String)
+    executed_at: Mapped[str | None] = mapped_column(String, nullable=True)  # when funds were reserved/moved; budgets are counted by this, not by creation time
     failure_reason: Mapped[str | None] = mapped_column(String, nullable=True)
     dispute: Mapped[dict | None] = j(nullable=True)
 
@@ -318,7 +319,7 @@ def get_engine():
     if _engine is None:
         config.ensure_dirs()
         sqlite = config.DATABASE_URL.startswith("sqlite")
-        _engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False} if sqlite else {}, future=True, pool_pre_ping=not sqlite)
+        _engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False, "timeout": 30} if sqlite else {}, future=True, pool_pre_ping=not sqlite)
 
         if sqlite:
 
@@ -327,6 +328,7 @@ def get_engine():
                 cur = conn.cursor()
                 cur.execute("PRAGMA journal_mode=WAL")
                 cur.execute("PRAGMA foreign_keys=ON")
+                cur.execute("PRAGMA busy_timeout=30000")
                 cur.close()
 
         _Session = sessionmaker(_engine, expire_on_commit=False)
@@ -345,6 +347,19 @@ def dispose() -> None:
     _Session = None
 
 
+PG_WRITE_LOCK_ID = 0x4B594D01  # arbitrary constant: "KYM" + 1
+
+
+def _lock_database(s: Session) -> None:
+    """Serialize writers across processes, not just threads. Budget checks read-then-write, so two workers must never interleave them.
+    SQLite: BEGIN IMMEDIATE takes the database write lock up front. PostgreSQL: a transaction-scoped advisory lock (released at commit/rollback)."""
+    name = s.get_bind().dialect.name
+    if name == "sqlite":
+        s.connection().exec_driver_sql("BEGIN IMMEDIATE")
+    elif name == "postgresql":
+        s.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": PG_WRITE_LOCK_ID})
+
+
 @contextmanager
 def write():
     """Serialized write transaction. All state changes, including evidence events, commit atomically."""
@@ -357,6 +372,7 @@ def write():
         s: Session = _Session()
         _local.session = s
         try:
+            _lock_database(s)
             yield s
             s.commit()
         except BaseException:

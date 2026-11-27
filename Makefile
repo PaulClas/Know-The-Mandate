@@ -4,7 +4,7 @@ API_DIR := apps/api
 export PYTHONPATH := $(API_DIR)
 export PYTHONWARNINGS := ignore
 
-.PHONY: coverage reference examples audit llms-full redteam help install install-web demo api web seed reset-demo migrate test test-unit test-e2e lint verify-ledger benchmark scenarios schema openapi clean
+.PHONY: concurrency coverage reference examples audit llms-full redteam help install install-web demo api web seed reset-demo migrate test test-unit test-e2e lint verify-ledger benchmark scenarios schema openapi clean
 
 help:
 	@echo "make install       - create .venv and install backend dependencies"
@@ -19,6 +19,7 @@ help:
 	@echo "make coverage     - backend tests with line+branch coverage report"
 	@echo "make examples     - run the quickstart example"
 	@echo "make reference    - regenerate docs/reference (API table, reason codes)"
+	@echo "make concurrency  - race 4 OS processes for one budget (SQLite; set KYM_DATABASE_URL for PostgreSQL)"
 	@echo "make audit        - pip-audit the Python dependencies"
 	@echo "make lint          - ruff (backend) and tsc (frontend)"
 
@@ -59,6 +60,9 @@ examples:
 
 reference:
 	$(PY) scripts/build_reference.py
+
+concurrency:
+	$(PY) scripts/concurrency_check.py
 
 audit:
 	.venv/bin/pip-audit --skip-editable

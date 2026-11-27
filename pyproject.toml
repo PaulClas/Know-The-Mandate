@@ -10,7 +10,7 @@ requires-python = ">=3.12"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 readme = "README.md"
-authors = [{ name = "Paul Clas" }]
+authors = [{ name = "Paul Clas", email = "clas.paul@gmail.com" }]
 keywords = ["ai-agents", "authorization", "oauth", "delegated-authority", "open-banking"]
 classifiers = ["Development Status :: 2 - Pre-Alpha", "Intended Audience :: Developers", "Topic :: Security", "Topic :: Office/Business :: Financial"]
 dependencies = [

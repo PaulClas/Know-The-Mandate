@@ -32,7 +32,7 @@ def issue_certificate(s, tx_id: str | None, decision: dict, *, op_h: str, inputs
     """Server-signed, short-lived authorization decision bound to the exact operation."""
     now = clock.now()
     cert = {"decision_id": f"dec_{canon.sha256_hex(canon.canonical([tx_id, op_h, clock.iso(now)]))[:14]}", "decision": decision["decision"], "op_hash": op_h,
-            "policy_version": decision["policy_version"], "inputs_digest": inputs_digest, "issued_at": clock.iso(now), "expires_at": clock.iso(now + timedelta(seconds=ttl))}
+            "tx_id": tx_id, "policy_version": decision["policy_version"], "inputs_digest": inputs_digest, "issued_at": clock.iso(now), "expires_at": clock.iso(now + timedelta(seconds=ttl))}
     k = keys.decision_key()
     return {**cert, "signature": k.sign(DECISION_DOMAIN + canon.canonical(cert)), "key_id": k.kid}
 
@@ -56,6 +56,8 @@ def _post(s, tx_id: str, account_id: str, debit: int, credit: int, ccy: str, kin
 def execute_authorized(s, tx: db.Transaction, cert: dict) -> str:
     """Reserve funds, then post balanced double-entry lines. Returns the final status. Called under the global write lock."""
     verify_certificate(cert, tx.op_hash)
+    if cert.get("tx_id") != tx.id:
+        raise EngineError("CERT_TX_MISMATCH", "authorization decision was issued for a different transaction")
     # Defence in depth: the certificate vouches for the stored hash; make sure the fields we are about to move money with still produce it.
     if (op_hash(tx.operation, tx.mandate_id or "", tx.mandate_version or 0, tx.principal_id, tx.agent_id) != tx.op_hash
             or tx.operation.get("amount_minor") != tx.amount_minor or tx.operation.get("account_id") != tx.account_id or tx.operation.get("currency") != tx.currency):
@@ -75,6 +77,7 @@ def execute_authorized(s, tx: db.Transaction, cert: dict) -> str:
         return _fail(s, tx, "INSUFFICIENT_FUNDS")
     acct.reserved_minor += tx.amount_minor
     tx.status = "RESERVED"
+    tx.executed_at = clock.iso()
     s.flush()
     credit_acct = dest.id if dest else f"gl_settlement_{tx.currency}"
     _post(s, tx.id, acct.id, tx.amount_minor, 0, tx.currency)

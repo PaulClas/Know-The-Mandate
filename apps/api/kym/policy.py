@@ -17,6 +17,19 @@ from . import canon, clock, taxonomy
 
 DECISIONS = ["ALLOW", "DENY", "REQUIRE_HUMAN_APPROVAL", "REFER_TO_RISK_REVIEW"]
 
+
+def _engine_digest() -> str:
+    """Fingerprint of the decision logic (this file and the action taxonomy). Recorded in each signed decision event so a later replay can tell
+    'the engine changed since this decision' apart from 'the evidence was altered'."""
+    import hashlib
+    from pathlib import Path
+
+    here = Path(__file__).parent
+    return "sha256:" + hashlib.sha256(b"".join((here / n).read_bytes() for n in ("policy.py", "taxonomy.py"))).hexdigest()
+
+
+ENGINE_DIGEST = _engine_digest()
+
 REASON_CODES = [
     "AGENT_NOT_VERIFIED", "AGENT_SUSPENDED", "INVALID_TOKEN", "INVALID_ACTOR_BINDING", "TOKEN_SCOPE_INSUFFICIENT",
     "MANDATE_NOT_FOUND", "MANDATE_EXPIRED", "MANDATE_REVOKED", "MANDATE_VERSION_MISMATCH", "RESOURCE_NOT_AUTHORIZED",

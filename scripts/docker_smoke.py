@@ -56,6 +56,10 @@ def main() -> None:
     ledger = json.loads(call("POST", f"{API}/api/ledger/verify", token=token)[1])
     check(ledger["ok"] and not ledger["problems"], f"ledger verified ({ledger['events_checked']} events)")
 
+    import subprocess
+
+    cc = subprocess.run(["docker", "compose", "exec", "-T", "api", "python", "/app/scripts/concurrency_check.py"], capture_output=True, text=True, timeout=600)
+    check(cc.returncode == 0 and '"database": "postgresql"' in cc.stdout, "4 processes racing one monthly budget on PostgreSQL: limit held (" + cc.stdout.strip().splitlines()[-1] + ")" if cc.stdout.strip() else "concurrency check produced no output: " + cc.stderr[-300:])
     check(call("GET", f"{WEB}/")[0] == 200, "web serves /")
     check(call("GET", f"{WEB}/llms.txt")[0] == 200, "web serves /llms.txt")
     check(json.loads(call("GET", f"{WEB}/api/overview", token=token)[1]) is not None, "web proxies /api/overview to the API")

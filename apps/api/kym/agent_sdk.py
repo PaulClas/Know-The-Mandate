@@ -69,10 +69,16 @@ class AgentClient:
         d = authorization_details[0]
         return TokenSet(b["access_token"], time.time() + b["expires_in"], d["mandate_id"], d["mandate_version"], b["scope"], b)
 
-    def exchange(self, subject_token: str, mandate_id: str) -> TokenSet:
+    def subject_proof(self, subject_token: str) -> str:
+        """Called by the holder of the PARENT token: a DPoP proof over the token endpoint and the parent token, to hand to the child that will exchange it."""
+        return self.dpop("POST", f"{self.base}/oauth/token", subject_token)
+
+    def exchange(self, subject_token: str, mandate_id: str, subject_dpop: str) -> TokenSet:
+        """The CHILD exchanges the parent's token for a child-mandate token. `subject_dpop` proves the parent consented (see `subject_proof`)."""
         url = f"{self.base}/oauth/token"
         r = self.http.post(url, json={"grant_type": "urn:ietf:params:oauth:grant-type:token-exchange", "client_id": self.client_id, "client_secret": self.client_secret,
-                                      "subject_token": subject_token, "subject_token_type": "urn:ietf:params:oauth:token-type:access_token", "mandate_id": mandate_id}, headers={"DPoP": self.dpop("POST", url)})
+                                      "subject_token": subject_token, "subject_token_type": "urn:ietf:params:oauth:token-type:access_token", "mandate_id": mandate_id,
+                                      "subject_dpop": subject_dpop}, headers={"DPoP": self.dpop("POST", url)})
         if r.status_code != 200:
             raise AuthorizationFailed(r.status_code, r.json())
         b = r.json()

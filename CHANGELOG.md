@@ -12,6 +12,11 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - `scripts/set_github_metadata.py` and `.github/repo-metadata.json` to apply the repository description, topics and private vulnerability reporting.
 - Tests for examples, generated references, license consistency and community-health files.
 
+- `docs/security/external-review.md` (honest status of independent review and how to commission one), `docs/media-guide.md` (what may and may not be claimed), author/contact details (a machine learning developer; email for questions).
+- `scripts/concurrency_check.py` / `make concurrency`: four OS processes race one budget; run on SQLite and PostgreSQL 16 and in the Docker smoke test.
+- Token exchange now requires the parent's co-signed proof of possession; decision certificates carry `tx_id`; signed decisions record an engine fingerprint so replay can report `engine_changed`.
+- `transactions.executed_at` (migration `0002`); budgets are counted by execution time. Property tests for day/month windows across DST.
+
 ### Changed
 - README: badges, contents, quickstart, documentation map, contributing, security, citation and license sections.
 - Docker Compose verified end to end (PostgreSQL 16 + API + web); `.dockerignore` files added.
@@ -28,4 +33,4 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Regulatory control mappings (CA, CA-QC, US), standards matrix, AP2 conceptual mapping, threat model, security review, risk register, philosophy, FAQ, glossary, `llms.txt`.
 
 ### Security
-- Self-review fixed 15 findings, and an independent pre-publication review a further 6 (F-16 to F-21: empty-ledger truncation, payee-kind confusion, budget windows, narrower token grants, token-exchange key pinning, evidence-package binding), with regression tests; the red-team verdicts now require an explicit denial with the expected reason code (evidence verifier key pinning, ledger-flood cap, auth outside write lock, killable SPARQL, path traversal, per-install session secret, fail-closed `KYM_ENV`, and others). See [docs/security/security-review.md](docs/security/security-review.md).
+- Self-review fixed 15 findings, and an independent pre-publication review a further 6 (F-16 to F-24: empty-ledger truncation, payee-kind confusion, execution-time budget windows with a migration, narrower token grants, token-exchange key pinning and parent co-signature, evidence-package binding, cross-process write serialization, transaction-bound certificates), with regression tests; the red-team verdicts now require an explicit denial with the expected reason code (evidence verifier key pinning, ledger-flood cap, auth outside write lock, killable SPARQL, path traversal, per-install session secret, fail-closed `KYM_ENV`, and others). See [docs/security/security-review.md](docs/security/security-review.md).
