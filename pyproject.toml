@@ -51,10 +51,10 @@ select = ["E", "F", "I", "B"]
 ignore = ["E501", "B008"]
 
 [project.urls]
-Repository = "https://github.com/PaulClas/Know-The-Mandate"
-Documentation = "https://github.com/PaulClas/Know-The-Mandate/tree/main/docs"
-Issues = "https://github.com/PaulClas/Know-The-Mandate/issues"
-Changelog = "https://github.com/PaulClas/Know-The-Mandate/blob/main/CHANGELOG.md"
+Repository = "https://github.com/PaulClas/Know-Your-Mandate"
+Documentation = "https://github.com/PaulClas/Know-Your-Mandate/tree/main/docs"
+Issues = "https://github.com/PaulClas/Know-Your-Mandate/issues"
+Changelog = "https://github.com/PaulClas/Know-Your-Mandate/blob/main/CHANGELOG.md"
 
 [tool.coverage.run]
 source = ["apps/api/kym"]

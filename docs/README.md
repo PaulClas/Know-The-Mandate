@@ -17,4 +17,4 @@ KYM (Know Your Mandate) is an experimental proof of concept for governing the fi
 | Demo it | [5-minute script](specifications/demo-script-5-min.md), [10-minute walkthrough](specifications/walkthrough-10-min.md) |
 | See design decisions | [ADRs](adr/) |
 | Know what is missing for production | [Gap analysis](specifications/production-readiness-gap-analysis.md) |
-| Improve discoverability | [Discoverability notes](discoverability.md) |
+| Improve discoverability | [Discoverability notes](discoverability.md), [domain name options](domain-options.md) (parked) |

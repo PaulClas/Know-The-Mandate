@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
-const REPO = "https://github.com/PaulClas/Know-The-Mandate/blob/main";
+const REPO = "https://github.com/PaulClas/Know-Your-Mandate/blob/main";
 
 const FAQ: [string, string][] = [
   ["What is KYM?", DEFINITION],
@@ -50,7 +50,7 @@ export default function AboutPage() {
       description: DEFINITION,
       applicationCategory: "Financial technology; authorization; AI agent governance",
       operatingSystem: "Any (Python 3.12+, Node 20+)",
-      codeRepository: "https://github.com/PaulClas/Know-The-Mandate",
+      codeRepository: "https://github.com/PaulClas/Know-Your-Mandate",
       softwareVersion: "0.1.0",
       isAccessibleForFree: true,
       author: { "@type": "Person", name: "Paul Clas" },

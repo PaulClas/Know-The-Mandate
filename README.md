@@ -2,8 +2,8 @@
 
 **Bank the agent. Verify the mandate. Govern the execution. Record the evidence.**
 
-[![CI](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/ci.yml/badge.svg)](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/ci.yml)
-[![Security checks](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/security.yml/badge.svg)](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/security.yml)
+[![CI](https://github.com/PaulClas/Know-Your-Mandate/actions/workflows/ci.yml/badge.svg)](https://github.com/PaulClas/Know-Your-Mandate/actions/workflows/ci.yml)
+[![Security checks](https://github.com/PaulClas/Know-Your-Mandate/actions/workflows/security.yml/badge.svg)](https://github.com/PaulClas/Know-Your-Mandate/actions/workflows/security.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 [![Status: experimental](https://img.shields.io/badge/status-experimental%20PoC-orange.svg)](#security-limitations-read-before-drawing-conclusions)
@@ -44,7 +44,7 @@ A valid access token never implies an authorized financial operation. **Scenario
 ## Quickstart
 
 ```bash
-git clone https://github.com/PaulClas/Know-The-Mandate.git && cd Know-The-Mandate
+git clone https://github.com/PaulClas/Know-Your-Mandate.git && cd Know-Your-Mandate
 make install
 PYTHONPATH=apps/api .venv/bin/python examples/01_quickstart_bill_payment.py
 ```
@@ -223,7 +223,7 @@ Full index: [docs/README.md](docs/README.md).
 
 ## Contact
 
-Questions, corrections, critiques, or a wish to review the design: **email me at [clas.paul@gmail.com](mailto:clas.paul@gmail.com)**, or open a [GitHub issue](https://github.com/PaulClas/Know-The-Mandate/issues) for anything that others may benefit from. Security reports: [SECURITY.md](SECURITY.md).
+Questions, corrections, critiques, or a wish to review the design: **email me at [clas.paul@gmail.com](mailto:clas.paul@gmail.com)**, or open a [GitHub issue](https://github.com/PaulClas/Know-Your-Mandate/issues) for anything that others may benefit from. Security reports: [SECURITY.md](SECURITY.md).
 
 **About the author.** I am Paul Clas, a **machine learning developer**. I built KYM as an independent exploration of how banks might govern the authority they hand to AI agents. I am not a bank, payments-security, cryptography or legal professional, which is why the project publishes its [risks](docs/risk/risk-register.md), [open findings](docs/security/security-review.md) and [call for external review](docs/security/external-review.md) rather than asking you to trust it. Expert criticism is the most useful thing you can send me. Media and citation notes: [media guide](docs/media-guide.md).
 

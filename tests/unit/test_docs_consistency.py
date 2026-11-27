@@ -28,7 +28,7 @@ def test_findings_counts_match_the_register():
 
 
 def test_llms_txt_links_resolve_to_files():
-    for path in re.findall(r"github\.com/PaulClas/Know-The-Mandate/(?:blob|tree)/main/([^)\s]+)", read("llms.txt")):
+    for path in re.findall(r"github\.com/PaulClas/Know-Your-Mandate/(?:blob|tree)/main/([^)\s]+)", read("llms.txt")):
         assert (ROOT / path).exists(), path
 
 

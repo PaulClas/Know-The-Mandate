@@ -5,7 +5,7 @@ Thank you for helping. KYM is an experimental proof of concept; **the most valua
 ## Quick start (development)
 
 ```bash
-git clone https://github.com/PaulClas/Know-The-Mandate && cd Know-The-Mandate
+git clone https://github.com/PaulClas/Know-Your-Mandate && cd Know-Your-Mandate
 make install            # .venv + pinned backend deps + dev tools (pytest, hypothesis, ruff, coverage)
 make install-web        # npm install for the UI (Node 20+)
 make test               # backend: unit, property-based, integration, security

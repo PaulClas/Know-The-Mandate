@@ -1,5 +1,5 @@
 {
-  "repository": "PaulClas/Know-The-Mandate",
+  "repository": "PaulClas/Know-Your-Mandate",
   "description": "Experimental control plane + evidence ledger for financial authority delegated to AI agents: mandates, OAuth RAR/DPoP, deterministic policy enforcement, signed audit ledger. Synthetic demo.",
   "homepage": "",
   "topics": [

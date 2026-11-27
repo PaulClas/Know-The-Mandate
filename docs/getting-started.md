@@ -14,8 +14,8 @@ A five-minute path from clone to a verified result. Everything is synthetic; not
 ## 1. Install and run the headless proof (no UI needed)
 
 ```bash
-git clone https://github.com/PaulClas/Know-The-Mandate.git
-cd Know-The-Mandate
+git clone https://github.com/PaulClas/Know-Your-Mandate.git
+cd Know-Your-Mandate
 make install                 # .venv with pinned dependencies
 make scenarios               # scenarios A-M against a real SQLite database
 make redteam                 # 28 attacks vs scope-only, OAuth+static-RAR and KYM

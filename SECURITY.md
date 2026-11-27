@@ -12,7 +12,7 @@ KYM is an **experimental proof of concept** with synthetic data and sandbox secu
 ## Reporting a vulnerability
 
 **Please do not open a public issue for an exploitable vulnerability.** Use GitHub's private reporting:
-<https://github.com/PaulClas/Know-The-Mandate/security/advisories/new>
+<https://github.com/PaulClas/Know-Your-Mandate/security/advisories/new>
 
 If you cannot use GitHub's reporting, email [clas.paul@gmail.com](mailto:clas.paul@gmail.com) with "KYM security" in the subject and no exploit details in the first message; I will reply with a way to share them.
 

@@ -31,6 +31,10 @@ The description, topics and private vulnerability reporting live in repository s
 
 **By script**
 
-1. Create a fine-grained token at <https://github.com/settings/personal-access-tokens/new>: repository access limited to `PaulClas/Know-The-Mandate`, permission **Administration: Read and write**. Set a short expiry.
+1. Create a fine-grained token at <https://github.com/settings/personal-access-tokens/new>: repository access limited to `PaulClas/Know-Your-Mandate`, permission **Administration: Read and write**. Set a short expiry.
 2. `GITHUB_TOKEN=<token> python3 scripts/set_github_metadata.py` (add `--dry-run` first to preview).
 3. Delete the token.
+
+## Custom domain
+
+None is registered. Options, registry status and the steps to follow if one is bought are in [domain-options.md](domain-options.md).

@@ -9,7 +9,7 @@ authors:
     given-names: Paul
     email: clas.paul@gmail.com
 license: Apache-2.0
-repository-code: "https://github.com/PaulClas/Know-The-Mandate"
+repository-code: "https://github.com/PaulClas/Know-Your-Mandate"
 abstract: >-
   KYM is an experimental open proof of concept in which a fictional bank (Meridian Bank) represents a customer's
   delegated financial authority to an AI agent as a stateful, revocable mandate, evaluates it deterministically on

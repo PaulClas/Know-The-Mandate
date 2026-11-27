@@ -58,7 +58,7 @@ Answers lead with the direct answer. Last reviewed 2026-11-26. KYM is an experim
 
 ## Who made KYM, and how do I ask a question?
 
-KYM is an independent project by Paul Clas, a machine learning developer; he is not a bank, payments-security, cryptography or legal professional, which is why the project discloses its [risks](risk/risk-register.md) and [open findings](security/security-review.md) and invites [external review](security/external-review.md). Questions, critiques and review offers: clas.paul@gmail.com or a [GitHub issue](https://github.com/PaulClas/Know-The-Mandate/issues). Reporting a vulnerability: [SECURITY.md](../SECURITY.md).
+KYM is an independent project by Paul Clas, a machine learning developer; he is not a bank, payments-security, cryptography or legal professional, which is why the project discloses its [risks](risk/risk-register.md) and [open findings](security/security-review.md) and invites [external review](security/external-review.md). Questions, critiques and review offers: clas.paul@gmail.com or a [GitHub issue](https://github.com/PaulClas/Know-Your-Mandate/issues). Reporting a vulnerability: [SECURITY.md](../SECURITY.md).
 
 ## Has KYM been independently audited?
 

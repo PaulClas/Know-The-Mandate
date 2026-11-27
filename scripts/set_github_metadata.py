@@ -58,7 +58,7 @@ def main() -> int:
     if not token:
         print("GITHUB_TOKEN is not set.\n"
               "  1. Create a fine-grained token: https://github.com/settings/personal-access-tokens/new\n"
-              "     (Repository access: only PaulClas/Know-The-Mandate; Permissions > Repository > Administration: Read and write)\n"
+              "     (Repository access: only PaulClas/Know-Your-Mandate; Permissions > Repository > Administration: Read and write)\n"
               "  2. Run:  GITHUB_TOKEN=<token> python3 scripts/set_github_metadata.py\n"
               "  3. Delete the token afterwards.\n"
               "No token? Do it by hand: see docs/discoverability.md#applying-the-github-metadata. Use --dry-run to preview.", file=sys.stderr)
