@@ -29,7 +29,7 @@
 | RFC 8705 mTLS client auth / certificate-bound tokens | https://www.rfc-editor.org/rfc/rfc8705 | - | - | - | Yes (mapped only; demo has no mTLS) | - | No |
 | RFC 8707 Resource Indicators | https://www.rfc-editor.org/rfc/rfc8707 | Yes (audience) | Yes - implemented as an audience (`aud`) check | - | - | - | No |
 | RFC 8785 JSON Canonicalization Scheme (Informational) | https://www.rfc-editor.org/rfc/rfc8785 | Yes | Yes - `rfc8785` library for ledger and mandate digests | - | - | - | No |
-| RFC 9068 JWT Profile for OAuth 2.0 Access Tokens | https://www.rfc-editor.org/rfc/rfc9068 | Yes (claims) | Yes - real signatures (PyJWT, Ed25519/ES256), RFC 9068-style claims, sandbox AS (not a certified server) | - | - | Mandate claims (see section 6) | No |
+| RFC 9068 JWT Profile for OAuth 2.0 Access Tokens | https://www.rfc-editor.org/rfc/rfc9068 | Yes (claims) | Yes - real ES256 signatures (PyJWT); the evidence ledger uses Ed25519, RFC 9068-style claims, sandbox AS (not a certified server) | - | - | Mandate claims (see section 6) | No |
 | RFC 9126 Pushed Authorization Requests | https://www.rfc-editor.org/rfc/rfc9126 | Yes | - | Yes - sandbox adapter | - | - | No |
 | RFC 9396 Rich Authorization Requests | https://www.rfc-editor.org/rfc/rfc9396 | Yes (`authorization_details`) | Yes - parsing and validation in sandbox AS | - | - | `kym_financial_mandate` type (see section 6) | No |
 | RFC 9449 DPoP | https://www.rfc-editor.org/rfc/rfc9449 | Yes | Yes - proof validation in sandbox AS: `cnf.jkt` binding, `htm`/`htu`/`iat`/`ath` checks, `jti` replay | - | - | - | No |

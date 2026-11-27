@@ -3,7 +3,7 @@ from __future__ import annotations
 import threading
 from contextlib import contextmanager
 
-from sqlalchemy import JSON, Boolean, Integer, String, Text, create_engine, event
+from sqlalchemy import JSON, BigInteger, Boolean, Integer, String, Text, create_engine, event
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from . import config
@@ -54,8 +54,8 @@ class Account(Base):
     name: Mapped[str] = mapped_column(String)
     type: Mapped[str] = mapped_column(String)
     currency: Mapped[str] = mapped_column(String)
-    balance_minor: Mapped[int] = mapped_column(Integer, default=0)
-    reserved_minor: Mapped[int] = mapped_column(Integer, default=0)
+    balance_minor: Mapped[int] = mapped_column(BigInteger, default=0)
+    reserved_minor: Mapped[int] = mapped_column(BigInteger, default=0)
     status: Mapped[str] = mapped_column(String, default="OPEN")  # OPEN | FROZEN | CLOSED
     restrictions: Mapped[list] = j(default=list)
     cnl_ref: Mapped[str] = mapped_column(String, default="")
@@ -78,7 +78,7 @@ class HistoryEntry(Base):
     account_id: Mapped[str] = mapped_column(String, index=True)
     posted_at: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
-    amount_minor: Mapped[int] = mapped_column(Integer)
+    amount_minor: Mapped[int] = mapped_column(BigInteger)
     currency: Mapped[str] = mapped_column(String)
     category: Mapped[str] = mapped_column(String)
     payee_id: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -204,7 +204,7 @@ class Transaction(Base):
     mandate_chain: Mapped[list] = j(default=list)
     operation: Mapped[dict] = j(default=dict)
     op_hash: Mapped[str] = mapped_column(String, default="")
-    amount_minor: Mapped[int] = mapped_column(Integer, default=0)
+    amount_minor: Mapped[int] = mapped_column(BigInteger, default=0)
     currency: Mapped[str] = mapped_column(String, default="")
     account_id: Mapped[str | None] = mapped_column(String, nullable=True)
     payee_id: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -267,8 +267,8 @@ class Posting(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     tx_id: Mapped[str] = mapped_column(String, index=True)
     account_id: Mapped[str] = mapped_column(String)
-    debit_minor: Mapped[int] = mapped_column(Integer, default=0)
-    credit_minor: Mapped[int] = mapped_column(Integer, default=0)
+    debit_minor: Mapped[int] = mapped_column(BigInteger, default=0)
+    credit_minor: Mapped[int] = mapped_column(BigInteger, default=0)
     currency: Mapped[str] = mapped_column(String)
     kind: Mapped[str] = mapped_column(String, default="EXECUTION")  # EXECUTION | REVERSAL
     created_at: Mapped[str] = mapped_column(String)
@@ -317,14 +317,17 @@ def get_engine():
     global _engine, _Session
     if _engine is None:
         config.ensure_dirs()
-        _engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False}, future=True)
+        sqlite = config.DATABASE_URL.startswith("sqlite")
+        _engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False} if sqlite else {}, future=True, pool_pre_ping=not sqlite)
 
-        @event.listens_for(_engine, "connect")
-        def _pragmas(conn, _):  # noqa: ANN001
-            cur = conn.cursor()
-            cur.execute("PRAGMA journal_mode=WAL")
-            cur.execute("PRAGMA foreign_keys=ON")
-            cur.close()
+        if sqlite:
+
+            @event.listens_for(_engine, "connect")
+            def _pragmas(conn, _):  # noqa: ANN001
+                cur = conn.cursor()
+                cur.execute("PRAGMA journal_mode=WAL")
+                cur.execute("PRAGMA foreign_keys=ON")
+                cur.close()
 
         _Session = sessionmaker(_engine, expire_on_commit=False)
     return _engine

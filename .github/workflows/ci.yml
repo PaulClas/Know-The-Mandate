@@ -1,0 +1,43 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - run: pip install uv && uv venv .venv && uv pip install --python .venv/bin/python -e ".[dev]"
+      - run: .venv/bin/ruff check apps tests
+      - run: .venv/bin/python -m pytest tests
+      - run: PYTHONPATH=apps/api .venv/bin/python -m kym.cli scenarios
+        env: { KYM_DATA_DIR: /tmp/kym-ci }
+
+  web:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: apps/web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [backend, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: pip install uv && uv venv .venv && uv pip install --python .venv/bin/python -e ".[dev]"
+      - run: cd apps/web && npm ci && npx playwright install --with-deps chromium
+      - run: |
+          PYTHONPATH=apps/api .venv/bin/python -m uvicorn kym.app:app --port 8000 &
+          cd apps/web && npm run build && (npm run start &) && sleep 8 && npx playwright test

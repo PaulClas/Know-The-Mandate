@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --foreground: #18181b;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --accent: #0f766e;
+  --accent-fg: #ffffff;
+  --navy: #1e3a5f;
+  --ok: #15803d;
+  --ok-bg: #dcfce7;
+  --warn: #b45309;
+  --warn-bg: #fef3c7;
+  --risk: #c2410c;
+  --risk-bg: #ffedd5;
+  --bad: #b91c1c;
+  --bad-bg: #fee2e2;
+  --info: #1d4ed8;
+  --info-bg: #dbeafe;
+}
+
+.dark {
+  --background: #0b0d10;
+  --surface: #121519;
+  --surface-2: #1a1e24;
+  --foreground: #e6e8eb;
+  --muted: #8b929c;
+  --border: #272c33;
+  --accent: #2dd4bf;
+  --accent-fg: #04201c;
+  --navy: #7aa2d6;
+  --ok: #4ade80;
+  --ok-bg: #0f2a1a;
+  --warn: #fbbf24;
+  --warn-bg: #2d2208;
+  --risk: #fb923c;
+  --risk-bg: #2e1708;
+  --bad: #f87171;
+  --bad-bg: #2d1111;
+  --info: #60a5fa;
+  --info-bg: #0f1f3a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accentfg: var(--accent-fg);
+  --color-navy: var(--navy);
+  --color-ok: var(--ok);
+  --color-okbg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warnbg: var(--warn-bg);
+  --color-risk: var(--risk);
+  --color-riskbg: var(--risk-bg);
+  --color-bad: var(--bad);
+  --color-badbg: var(--bad-bg);
+  --color-info: var(--info);
+  --color-infobg: var(--info-bg);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--border);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.dark .react-flow {
+  --xy-background-color: #0b0d10;
+  --xy-node-color: #e6e8eb;
+  --xy-edge-stroke: #4b5563;
+  --xy-controls-button-background-color: #1a1e24;
+  --xy-controls-button-color: #e6e8eb;
+  --xy-controls-button-border-color: #272c33;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}

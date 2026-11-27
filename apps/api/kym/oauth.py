@@ -92,7 +92,7 @@ def _rar_within_mandate(details: list[dict], content: dict) -> None:
             if not set(d["accounts"]) <= allowed_acc:
                 raise OAuthError("invalid_authorization_details", f"accounts exceed the mandate for {action}")
             if "maximum_amount" in d and perms[0]["constraints"].get("maximum_amount_minor"):
-                cap = max(p["constraints"].get("maximum_amount_minor", 0) for p in perms)
+                cap = max(p["constraints"].get("maximum_amount_minor") or 0 for p in perms)
                 if d["maximum_amount"]["amount_minor"] > cap:
                     raise OAuthError("invalid_authorization_details", "maximum_amount exceeds the mandate")
             if "beneficiaries" in d:

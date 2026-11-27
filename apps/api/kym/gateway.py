@@ -102,13 +102,17 @@ def _risk_ctx(s, req: dict, principal: db.Customer | None, agent: db.Agent | Non
         return None
     hist = [-h.amount_minor for h in s.execute(select(db.HistoryEntry).where(db.HistoryEntry.account_id == req["account_id"], db.HistoryEntry.amount_minor < 0)).scalars()]
     done = s.execute(select(db.Transaction).where(db.Transaction.principal_id == req["principal_id"], db.Transaction.status.in_(bank.BUDGET_STATES))).scalars().all()
+    epoch = s.get(db.Setting, "risk_epoch")  # DEMO ONLY: scenario runs start a fresh risk window so repeated runs stay independent
+    since = clock.parse(epoch.value) if epoch else None
+    if since:
+        done = [t for t in done if clock.parse(t.created_at) >= since]
     hist += [t.amount_minor for t in done]
     known = {h.payee_id for h in s.execute(select(db.HistoryEntry).where(db.HistoryEntry.account_id == req["account_id"])).scalars() if h.payee_id}
     known |= {t.payee_id for t in done if t.payee_id}
     recent = [{"minutes_ago": (now - clock.parse(t.created_at)).total_seconds() / 60, "amount_minor": t.amount_minor} for t in done]
     window = config.policy_config()["risk"]["parameters"]["auth_failure_window_minutes"]
     fails = [t for t in s.execute(select(db.Transaction).where(db.Transaction.agent_id == (agent.id if agent else ""), db.Transaction.status == "DENIED")).scalars()
-             if (now - clock.parse(t.created_at)) <= timedelta(minutes=window)]
+             if (now - clock.parse(t.created_at)) <= timedelta(minutes=window) and (since is None or clock.parse(t.created_at) >= since)]
     return {
         "amount_minor": req["amount_minor"], "payee": {"id": payee.id, "kind": payee.kind, "country": payee.country, "category": payee.category, "watchlist": payee.watchlist},
         "customer_country": (principal.jurisdiction.split("-")[0] if principal else "CA"), "history_amounts": hist, "known_payee_ids": sorted(known), "recent_payments": recent,

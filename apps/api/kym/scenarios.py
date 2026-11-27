@@ -98,6 +98,7 @@ def run(sid: str) -> dict:
     meta = next((c for c in CATALOG if c["id"] == sid), None)
     if not meta:
         raise KeyError(sid)
+    demo.prepare_isolated_state()
     r = Run(sid)
     http = sandbox.http()
     try:

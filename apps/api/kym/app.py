@@ -416,7 +416,7 @@ def delegation_graph(principal_id: str | None = None, user: User = Depends(curre
             c = row.content
             nodes.append({"id": f"{m['mandate_id']}:v{m['version']}", "mandate_id": m["mandate_id"], "version": m["version"], "status": m["status"], "agent_id": m["agent_id"], "principal_id": m["principal_id"],
                           "depth": (c["lineage"]["depth"] if c.get("lineage") else 0), "delegation": c["delegation"], "currency": c["currency"], "expires_at": c["validity"]["expires_at"],
-                          "max_amount_minor": max([p["constraints"].get("maximum_amount_minor", 0) for p in c["permissions"]] or [0]),
+                          "max_amount_minor": max([p["constraints"].get("maximum_amount_minor") or 0 for p in c["permissions"]] or [0]),
                           "monthly_minor": c["aggregate_constraints"].get("maximum_monthly_amount_minor"), "actions": sorted({p["action"] for p in c["permissions"]}),
                           "beneficiaries": sorted({b for p in c["permissions"] for b in p["constraints"].get("allowed_beneficiaries", [])})})
         ids = {n["id"] for n in nodes}

@@ -1,6 +1,6 @@
 # KYM threat model (STRIDE)
 
-**Scope.** KYM (Know Your Mandate) is a proof-of-concept in which a fictional bank, Meridian Bank, governs financial authority delegated to AI agents. All data is synthetic. This model is a design analysis, not a security assessment or certification; no penetration test has been performed. Mitigations marked **(proposed)** go beyond the stated core design and must be confirmed against the code before being relied on.
+**Scope.** KYM (Know Your Mandate) is a proof-of-concept in which a fictional bank, Meridian Bank, governs financial authority delegated to AI agents. All data is synthetic. This model is a design analysis, not a security assessment or certification; no penetration test has been performed. Mitigation status tags (**[implemented]**, **[not implemented]**, **[partially implemented]**) were reconciled against the code; the automated tests under `tests/security` and `tests/integration` exercise the implemented ones.
 
 ## 1. Design under analysis
 
@@ -92,13 +92,13 @@ Residual ratings are qualitative judgments by the KYM authors for the demo desig
 ### T07 Mandate substitution
 - **STRIDE:** Tampering.
 - **Attack:** An attacker swaps or edits the mandate referenced by a token or approval (e.g. substituting a higher-limit mandate).
-- **KYM mitigation:** Mandates are canonicalized (RFC 8785) and digested with a cryptographic hash; the token and decision reference the mandate identity and digest; (proposed) mandate changes create a new immutable version recorded in the ledger. The PDP loads the mandate from the bank's store, not from the caller's input.
+- **KYM mitigation:** Mandates are canonicalized (RFC 8785) and digested with a cryptographic hash; the token and decision reference the mandate identity and digest; **[implemented]** mandate changes create a new immutable version recorded in the ledger (`MANDATE_AMENDED`); content is never edited in place. The PDP loads the mandate from the bank's store, not from the caller's input.
 - **Residual risk:** Insider or key-compromise scenarios where the bank store is altered (see T17, T21); no external witness of mandate versions.
 
 ### T08 Privilege escalation
 - **STRIDE:** Elevation of privilege.
 - **Attack:** A low-privilege principal (agent, operator or customer role) obtains administrative or higher authority.
-- **KYM mitigation:** Deny-by-default; distinct roles for customer, agent, operator and bank administrator; policy changes are evidence events. (proposed) Separation of duties for policy edits.
+- **KYM mitigation:** Deny-by-default; distinct roles for customer, agent, operator and bank administrator; policy changes are evidence events. **[not implemented]** Separation of duties for policy edits: the demo policy is a versioned JSON file in the repository (`policies/bank-policy-1.0.0.json`).
 - **Residual risk:** Insider/administrator abuse; the demo has no dual control, HSM-protected signing, or independent administration plane.
 
 ### T09 Delegation escalation
@@ -116,7 +116,7 @@ Residual ratings are qualitative judgments by the KYM authors for the demo desig
 ### T11 Malicious tool output
 - **STRIDE:** Tampering, Elevation of privilege.
 - **Attack:** A tool or upstream API returns crafted data (payee details, instructions, fake confirmations) that steers the agent or poisons records (LLM05 Improper Output Handling; ASI02 Tool Misuse and Exploitation).
-- **KYM mitigation:** Tool outputs are treated as data, never as authority; the PDP decision does not depend on tool-provided claims and the operation hash is computed from the exact payload the bank will execute. (proposed) Schema validation of tool results.
+- **KYM mitigation:** Tool outputs are treated as data, never as authority; the PDP decision does not depend on tool-provided claims and the operation hash is computed from the exact payload the bank will execute. **[not implemented]** Schema validation of tool results on the agent side (outside the bank's control).
 - **Residual risk:** Agent behaviour can still be influenced, e.g. selection among allowed payees. The restricted tool interface sandbox is not tested against real MCP clients or servers.
 
 ### T12 Compromised agent runtime
@@ -128,7 +128,7 @@ Residual ratings are qualitative judgments by the KYM authors for the demo desig
 ### T13 Revoked mandate reuse
 - **STRIDE:** Elevation of privilege.
 - **Attack:** An agent keeps using authority after the customer revoked the mandate (valid token, cached approval).
-- **KYM mitigation:** Revocation is checked on **every request** regardless of token validity, and in the same transaction as the budget reservation. Revoked mandates cannot produce decisions; (proposed) outstanding approvals tied to the mandate are invalidated.
+- **KYM mitigation:** Revocation is checked on **every request** regardless of token validity, and in the same transaction as the budget reservation. Revoked mandates cannot produce decisions; **[implemented]** pending approvals, risk reviews and reservations tied to the mandate are cancelled on revocation (`bank.cancel_pending`).
 - **Residual risk:** Requests in flight at the instant of revocation; in a distributed deployment, replica lag. Third parties that rely on the agent are not notified automatically (compare Civil Code of Québec art. 2181 on third parties unaware of revocation; legal effect not analysed).
 
 ### T14 Approval replay
@@ -158,25 +158,25 @@ Residual ratings are qualitative judgments by the KYM authors for the demo desig
 ### T18 Evidence disclosure
 - **STRIDE:** Information disclosure.
 - **Attack:** Evidence or ledger exports leak customer or transaction details (LLM02 Sensitive Information Disclosure).
-- **KYM mitigation:** (proposed) Store identifiers and hashes rather than full personal data; role-based access to evidence views; synthetic data only in the demo. Hashes of low-entropy fields can be guessed, a concern AP2's privacy section also raises for checkout hashes.
+- **KYM mitigation:** **[implemented]** event payloads live in a protected store that can be erased without breaking the chain; the chain commits only to digests; evidence views are role- and customer-scoped; reusable tokens are never stored; **[limitation]** payloads still contain synthetic transaction detail; synthetic data only in the demo. Hashes of low-entropy fields can be guessed, a concern AP2's privacy section also raises for checkout hashes.
 - **Residual risk:** No encryption at rest, field-level redaction or key separation in the demo; retention and deletion obligations (privacy law) are not implemented.
 
 ### T19 Non-human identity sprawl
 - **STRIDE:** Elevation of privilege, Repudiation.
 - **Attack:** Many forgotten agent identities, keys and mandates accumulate, widening the attack surface and obscuring accountability (API9 Improper Inventory Management).
-- **KYM mitigation:** (proposed) Agent registry with an owner, status and expiry; mandates are time-limited and revocable; inventory views for review.
+- **KYM mitigation:** **[implemented]** Agent registry with an owner, status and attestation checks; **[not implemented]** agent registration expiry/recertification; mandates are time-limited and revocable; inventory views for review.
 - **Residual risk:** The registry only knows registered agents; no discovery of shadow agents; demo has no lifecycle automation. See enterprise identity options in section 5.
 
 ### T20 Cross-tenant access
 - **STRIDE:** Information disclosure, Elevation of privilege.
 - **Attack:** One customer's or operator's agent accesses another tenant's accounts, mandates or evidence (API1 Broken Object Level Authorization).
-- **KYM mitigation:** Customer authority is an input to the intersection, so the PDP denies operations on resources not owned by the mandating customer. (proposed) Tenant/customer scoping on every query and ledger view.
+- **KYM mitigation:** Customer authority is an input to the intersection, so the PDP denies operations on resources not owned by the mandating customer. **[implemented]** customer scoping on mandate, transaction, evidence and ledger endpoints (covered by tests); **[not implemented]** database-level row security.
 - **Residual risk:** The demo uses a single SQLite database and is not hardened for multi-tenancy; no tenant-level encryption or isolation testing.
 
 ### T21 Policy downgrade
 - **STRIDE:** Tampering, Elevation of privilege.
 - **Attack:** An attacker or misconfiguration swaps in an older or weaker policy set, or disables a rule, so risky operations pass.
-- **KYM mitigation:** Policy changes are recorded as evidence events; (proposed) decisions record a digest of the policy version used and the payment engine rejects decisions from policy versions below a configured floor.
+- **KYM mitigation:** Policy changes are recorded as evidence events; **[implemented]** every decision stores the policy version and the full policy snapshot used, so it can be replayed; **[not implemented]** a policy-version floor in the payment engine.
 - **Residual risk:** Administrators with key access can still change policy; no four-eyes approval or external audit of policy changes in the demo.
 
 ### T22 Stale policy evaluation
@@ -188,7 +188,7 @@ Residual ratings are qualitative judgments by the KYM authors for the demo desig
 ### T23 Supply-chain compromise
 - **STRIDE:** Tampering, Elevation of privilege.
 - **Attack:** A compromised dependency or build tool (JWT, canonicalization, RDF/SHACL libraries, UI packages) undermines verification or exfiltrates keys (OWASP ASI04 Agentic Supply Chain Vulnerabilities; LLM03 Supply Chain).
-- **KYM mitigation:** Small set of well-known libraries (e.g. PyJWT, rfc8785, rdflib, pySHACL). (proposed) Pinned and hash-locked dependencies, software bill of materials, vulnerability scanning and signed releases.
+- **KYM mitigation:** Small set of well-known libraries (e.g. PyJWT, rfc8785, rdflib, pySHACL). **[partially implemented]** dependency versions are pinned in `pyproject.toml`; **[not implemented]** hash-locking, SBOM, vulnerability scanning, signed releases.
 - **Residual risk:** Compromise of a cryptographic or JWT library defeats most controls. The demo has no supply-chain attestation.
 
 ## 4. Demo-only security limitations

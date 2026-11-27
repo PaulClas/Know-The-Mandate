@@ -389,7 +389,7 @@ def sparql_examples(account_id: str = "account_001", tx_id: str = "TX") -> list[
            kym:hasPermission ?p ;
            kym:lifecycleStatus ?status .
   ?p kym:authorizesAction kym:InitiatePayment ;
-     kym:appliesToResource kymid:account/{account_id} .
+     kym:appliesToResource <https://example.org/kym/id/account/{account_id}> .
   FILTER(?status = "ACTIVE")
 }}""",
         },
@@ -405,7 +405,7 @@ def sparql_examples(account_id: str = "account_001", tx_id: str = "TX") -> list[
             "id": "mandates-for-beneficiary",
             "title": "Which mandates authorize a particular beneficiary?",
             "query": """SELECT DISTINCT ?mandate ?status WHERE {
-  ?mandate kym:hasPermission/kym:hasConstraint/kym:allowedBeneficiary kymid:beneficiary/beneficiary_hydro_quebec ;
+  ?mandate kym:hasPermission/kym:hasConstraint/kym:allowedBeneficiary <https://example.org/kym/id/beneficiary/beneficiary_hydro_quebec> ;
            kym:lifecycleStatus ?status .
 }""",
         },

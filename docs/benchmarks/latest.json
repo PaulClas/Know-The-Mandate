@@ -1,0 +1,41 @@
+{
+  "pdp_pure_evaluation": {
+    "n": 20000,
+    "p50_ms": 0.0756,
+    "p95_ms": 0.0882,
+    "p99_ms": 0.135,
+    "mean_ms": 0.0781
+  },
+  "http_gateway_read_end_to_end": {
+    "n": 300,
+    "p50_ms": 6.7364,
+    "p95_ms": 8.084,
+    "p99_ms": 9.4992,
+    "mean_ms": 6.8634
+  },
+  "http_gateway_payment_end_to_end": {
+    "n": 300,
+    "p50_ms": 18.8932,
+    "p95_ms": 24.684,
+    "p99_ms": 37.0244,
+    "mean_ms": 18.8743
+  },
+  "server_side_measurements": {
+    "policy_evaluation": {
+      "n": 600,
+      "p50": 0.11,
+      "p95": 0.134,
+      "p99": 0.185
+    },
+    "authorization_request": {
+      "n": 600,
+      "p50": 8.404,
+      "p95": 21.187,
+      "p99": 26.41
+    }
+  },
+  "environment": {
+    "note": "Single-process SQLite, in-process ASGI test client. Numbers are indicative of this machine only.",
+    "python": "3.13.3"
+  }
+}

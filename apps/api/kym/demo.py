@@ -88,3 +88,31 @@ def child_from_parent(parent: dict, child_agent: db.Agent, *, max_amount_minor: 
         agg["maximum_monthly_amount_minor"] = monthly_minor
     c["aggregate_constraints"] = agg
     return c
+
+
+def prepare_isolated_state() -> None:
+    """DEMO/TEST ONLY: start a fresh risk window and top up synthetic balances so repeated scenario runs stay independent.
+
+    Balances are topped up with a balanced double-entry pair (kind DEMO_TOPUP) so the trial balance still balances.
+    Never used by the enforcement path; the epoch only narrows the lookback of synthetic risk signals.
+    """
+    from . import seed
+
+    with db.write() as s:
+        row = s.get(db.Setting, "risk_epoch")
+        if row:
+            row.value = clock.iso()
+        else:
+            s.add(db.Setting(key="risk_epoch", value=clock.iso()))
+        for aid, owner, _name, _typ, ccy, bal, _ref in seed.ACCOUNTS:
+            if owner is None:
+                continue
+            a = s.get(db.Account, aid)
+            if a and a.balance_minor < bal:
+                diff = bal - a.balance_minor
+                gl = s.get(db.Account, f"gl_settlement_{ccy}")
+                tx_id = f"demo_topup_{aid}_{clock.iso()}"
+                s.add(db.Posting(tx_id=tx_id, account_id=gl.id, debit_minor=diff, credit_minor=0, currency=ccy, kind="DEMO_TOPUP", created_at=clock.iso()))
+                s.add(db.Posting(tx_id=tx_id, account_id=aid, debit_minor=0, credit_minor=diff, currency=ccy, kind="DEMO_TOPUP", created_at=clock.iso()))
+                gl.balance_minor -= diff
+                a.balance_minor += diff

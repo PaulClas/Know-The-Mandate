@@ -20,3 +20,17 @@ def client():
 @pytest.fixture
 def http(client):
     return client
+
+
+@pytest.fixture(autouse=True)
+def isolated_state(request):
+    """Each integration/security test starts with a fresh synthetic risk window and topped-up balances."""
+    if "unit" in str(request.fspath):
+        yield
+        return
+    client = request.getfixturevalue("client")
+    assert client is not None
+    from kym import demo
+
+    demo.prepare_isolated_state()
+    yield

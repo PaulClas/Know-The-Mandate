@@ -1,0 +1,18 @@
+FROM python:3.13-slim
+WORKDIR /app
+RUN pip install --no-cache-dir uv
+COPY pyproject.toml ./
+RUN uv pip install --system "fastapi==0.165.0" "uvicorn[standard]==0.54.0" "pydantic==2.14.4" "sqlalchemy==2.1.9" "alembic==1.20.1" "rdflib==7.6.0" "pyshacl==0.40.2" \
+    "lark==1.3.1" "pyjwt==2.15.1" "cryptography==50.0.2" "rfc8785==0.1.4" "jsonschema==4.26.0" "httpx==0.29.0" "psycopg[binary]==3.3.9"
+COPY apps/api ./apps/api
+COPY packages ./packages
+COPY policies ./policies
+COPY standards ./standards
+COPY tests/helpers.py ./tests/helpers.py
+ENV PYTHONPATH=/app/apps/api KYM_DATA_DIR=/data
+RUN useradd -m kym && mkdir /data && chown kym /data
+USER kym
+WORKDIR /app/apps/api
+EXPOSE 8000
+HEALTHCHECK --interval=10s --timeout=3s --retries=10 CMD python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health')"
+CMD ["sh", "-c", "python -m alembic upgrade head && python -m uvicorn kym.app:app --host 0.0.0.0 --port 8000"]
