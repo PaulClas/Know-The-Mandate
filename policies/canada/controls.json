@@ -1,0 +1,275 @@
+[
+  {
+    "id": "CA-CDBA-01",
+    "jurisdiction": "CA",
+    "source": "Consumer-Driven Banking Act (S.C. 2026, c. 3, s. 224)",
+    "source_type": "enacted_law",
+    "source_url": "https://laws.justice.gc.ca/eng/acts/C-36.78/FullText.html",
+    "provision": "ss. 2, 3, 15-19 (participating entity / accreditation), s. 181 (coming into force)",
+    "source_version": "Justice Laws consolidation current to 2026-11-12; assented 2026-03-26",
+    "date_verified": "2026-11-26",
+    "current_status": "Enacted (assented 2026-03-26). Per s. 181 only ss. 1-9, 13, 14, 74, 113, 114(1),(2),(4),(5), 115(a), 117-119, 123-132, 136-139, 143, 147-149, 169, 170 and 172-179 are in force; all other provisions come into force on a day fixed by order of the Governor in Council and are shown as not in force in the consolidation. Participation is limited to accredited 'participating entities'.",
+    "applicability": "Banks listed in the Act's schedule, and federal/provincial financial institutions, registered payment service providers and other entities once accredited under the Act. Applicability to Meridian Bank (fictional) is assumed for illustration only.",
+    "related_kym_capability": "accredited_participant_identity",
+    "implementation_status": "mapped",
+    "limitations": "KYM models an accredited-participant registry as simulated synthetic data only. No real accreditation, registry or Bank of Canada interface exists. An AI agent is not an accredited participant under the Act as read by the KYM authors; whether an agent operator could be one is a legal question not resolved here.",
+    "evidence_required": [
+      "Accreditation status and identifier of each participating entity at time of access (simulated registry entry in demo)",
+      "Evidence of the date the relied-upon provision came into force",
+      "Counsel opinion on whether an agent operator is a participating entity or third-party service provider"
+    ]
+  },
+  {
+    "id": "CA-CDBA-02",
+    "jurisdiction": "CA",
+    "source": "Consumer-Driven Banking Act - express consent, duration, renewal and withdrawal",
+    "source_type": "enacted_law",
+    "source_url": "https://laws.justice.gc.ca/eng/acts/C-36.78/FullText.html",
+    "provision": "ss. 85-90 (express consent; consent valid max 12 months, s. 86; renewal within 7 days, s. 87; no deception/coercion, ss. 88-89; withdrawal, s. 90); s. 85(8) record of consent",
+    "source_version": "Justice Laws consolidation current to 2026-11-12",
+    "date_verified": "2026-11-26",
+    "current_status": "Enacted but NOT yet in force as of the 2026-11-12 consolidation (marked 'not in force'; commencement by order in council under s. 181).",
+    "applicability": "Participating entities seeking a consumer's express consent to receive the consumer's data from another participating entity. Concerns data sharing, not payment initiation.",
+    "related_kym_capability": "consent_management",
+    "implementation_status": "simulated",
+    "limitations": "KYM simulates a consent record with scope, purpose, expiry and withdrawal. It does not claim to meet the Act's content, plain-language or renewal requirements, which are not yet in force and depend on regulations still being developed.",
+    "evidence_required": [
+      "Record of each express consent (who, what data, purpose, timestamp, expiry)",
+      "Consent text shown to the consumer, in the consumer's language",
+      "Withdrawal request and effective time",
+      "Renewal events"
+    ]
+  },
+  {
+    "id": "CA-CDBA-03",
+    "jurisdiction": "CA",
+    "source": "Consumer-Driven Banking Act - scope: data sharing vs payment initiation; Budget 2025 framework",
+    "source_type": "enacted_law",
+    "source_url": "https://laws.justice.gc.ca/eng/acts/C-36.78/FullText.html",
+    "provision": "ss. 3 (purpose: data be shared), 2 ('sharing' = provision or receipt of data), 10(1) (data to which the Act applies)",
+    "source_version": "Justice Laws consolidation current to 2026-11-12; Department of Finance 'Budget 2025: Canada's Consumer-Driven Banking Framework'",
+    "date_verified": "2026-11-26",
+    "current_status": "The Act text reviewed provides a framework for consumers to direct that their DATA be shared; no payment-initiation (write access) functionality was found in the Act text (no occurrence of 'initiat' in the full text). The Department of Finance Budget 2025 document states write access, 'the ability to initiate an action from an account' such as payments, is to be considered in a second phase after 12-18 months of consultation and policy work. Payment initiation is therefore NOT established by the CDBA as enacted.",
+    "applicability": "Applies to design decisions that separate read-only data access from payment authority. Data covered includes deposit accounts, payment products, loans and other products (s. 10(1)), subject to regulations.",
+    "related_kym_capability": "data_access_vs_payment_separation",
+    "implementation_status": "simulated",
+    "limitations": "KYM deliberately treats data access scopes and payment authority as separate permissions and never lets a data-access grant authorize a payment. This is a KYM design choice, not a statement that payment initiation is regulated or permitted under the CDBA. Second-phase policy outcomes are unknown.",
+    "evidence_required": [
+      "Grant records showing separate data-access and payment-authority permissions",
+      "Denial evidence when a data-access-only token is used on a payment operation",
+      "Monitoring of Department of Finance / Bank of Canada publications on write access"
+    ]
+  },
+  {
+    "id": "CA-CDBA-04",
+    "jurisdiction": "CA",
+    "source": "Bank of Canada - Consumer-driven banking supervision; proposed CDBA regulations (Canada Gazette, Part I)",
+    "source_type": "proposed_regulation",
+    "source_url": "https://www.bankofcanada.ca/regulatory-oversight/consumer-driven-banking/",
+    "provision": "CDBA s. 4 (Bank of Canada objects: supervise participating entities); proposed regulations published in Canada Gazette Part I, 2026-06-27",
+    "source_version": "Bank of Canada page and news release dated 2026-11-02; draft supervisory guidelines consultation closes 2026-12-08",
+    "date_verified": "2026-11-26",
+    "current_status": "The Bank of Canada is the supervisor under the CDBA (s. 4). Per the Bank of Canada page, proposed regulations have been published in Canada Gazette Part I (2026-06-27) and the technical standards body and external complaints body designations appear in Canada Gazette Part I (2026-11-21 notice). On 2026-11-02 the Bank launched a consultation on its first draft supervisory guidelines on accreditation (feedback by 2026-12-08). The Gazette notices themselves could not be retrieved by the KYM authors; their content is not summarized here.",
+    "applicability": "Prospective participants in consumer-driven banking, including financial institutions, payment service providers, fintechs and third-party service providers.",
+    "related_kym_capability": "third_party_oversight",
+    "implementation_status": "mapped",
+    "limitations": "Regulations and guidelines are proposals/drafts and may change. KYM does not implement any Bank of Canada supervisory interface.",
+    "evidence_required": [
+      "Copy of final regulations and supervisory guidelines when published",
+      "Mapping of final accreditation criteria to KYM participant identity attributes"
+    ]
+  },
+  {
+    "id": "CA-CDBA-05",
+    "jurisdiction": "CA",
+    "source": "Consumer-Driven Banking Act - security safeguards and breach reporting",
+    "source_type": "enacted_law",
+    "source_url": "https://laws.justice.gc.ca/eng/acts/C-36.78/FullText.html",
+    "provision": "s. 79 (participating entity must implement the security safeguards provided for in the regulations); subsequent breach report and consumer-notice provisions",
+    "source_version": "Justice Laws consolidation current to 2026-11-12",
+    "date_verified": "2026-11-26",
+    "current_status": "Enacted but not in force as of the 2026-11-12 consolidation; the content of the safeguards is delegated to regulations that are still proposed.",
+    "applicability": "Participating entities handling consumer data shared under the Act.",
+    "related_kym_capability": "security",
+    "implementation_status": "mapped",
+    "limitations": "KYM demonstrates sender-constrained tokens, signed decisions and an evidence ledger, but the demo uses local demo keys and no HSM. These are illustrative and not an implementation of the not-yet-defined regulatory safeguards.",
+    "evidence_required": [
+      "Security safeguard control inventory once regulations are final",
+      "Breach/incident reports and consumer notices"
+    ]
+  },
+  {
+    "id": "CA-PIPEDA-01",
+    "jurisdiction": "CA",
+    "source": "Personal Information Protection and Electronic Documents Act (S.C. 2000, c. 5)",
+    "source_type": "enacted_law",
+    "source_url": "https://laws-lois.justice.gc.ca/eng/acts/P-8.6/FullText.html",
+    "provision": "s. 6.1 (valid consent), Schedule 1 cl. 4.3 (consent), cl. 4.4 (limiting collection)",
+    "source_version": "Justice Laws consolidation current to 2026-11-12; last amended 2025-03-04",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. s. 6.1 states consent is valid only if it is reasonable to expect that an individual to whom the organization's activities are directed would understand the nature, purpose and consequences of the collection, use or disclosure. The consolidation shows no amendment after 2025-03-04; the Budget 2025 announcement of an economy-wide data mobility amendment to PIPEDA was not found as enacted in this consolidation.",
+    "applicability": "Private-sector organizations collecting, using or disclosing personal information in the course of commercial activity, outside provinces with substantially similar legislation (Quebec has its own Act, see policies/quebec).",
+    "related_kym_capability": "customer_permission",
+    "implementation_status": "simulated",
+    "limitations": "KYM shows scoped, purpose-bound customer permissions with plain-language consent text. Whether consent text is 'valid consent' under s. 6.1 is a legal judgment not made here. Clause 4.4 (limit collection to what is necessary for the identified purposes) maps to KYM data minimization.",
+    "evidence_required": [
+      "Consent text version shown and customer acknowledgement",
+      "Purpose and scope of each permission",
+      "Privacy impact assessment for agent-mediated processing"
+    ]
+  },
+  {
+    "id": "CA-PIPEDA-02",
+    "jurisdiction": "CA",
+    "source": "Personal Information Protection and Electronic Documents Act - breaches of security safeguards",
+    "source_type": "enacted_law",
+    "source_url": "https://laws-lois.justice.gc.ca/eng/acts/P-8.6/FullText.html",
+    "provision": "s. 10.1 (report to Commissioner where real risk of significant harm), Schedule 1 cl. 4.7 (safeguards)",
+    "source_version": "Justice Laws consolidation current to 2026-11-12",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. s. 10.1(1) requires reporting to the Commissioner of any breach of security safeguards involving personal information under the organization's control if it is reasonable to believe the breach creates a real risk of significant harm.",
+    "applicability": "Organizations subject to PIPEDA.",
+    "related_kym_capability": "incident_investigation",
+    "implementation_status": "simulated",
+    "limitations": "KYM's evidence ledger and incident view are synthetic. Reporting thresholds, record-keeping duration and notification are not implemented. Clause 4.7 requires safeguards appropriate to the sensitivity of the information; KYM only illustrates a few patterns.",
+    "evidence_required": [
+      "Tamper-evident event record sufficient to reconstruct an agent-related breach",
+      "Breach assessment (real risk of significant harm) and notification records"
+    ]
+  },
+  {
+    "id": "CA-PCMLTFA-01",
+    "jurisdiction": "CA",
+    "source": "Proceeds of Crime (Money Laundering) and Terrorist Financing Act (S.C. 2000, c. 17)",
+    "source_type": "enacted_law",
+    "source_url": "https://laws-lois.justice.gc.ca/eng/acts/P-24.501/FullText.html",
+    "provision": "s. 9.6(1)-(2) (compliance program; risk-based, effective; risk assessment)",
+    "source_version": "Justice Laws consolidation current to 2026-11-12; last amended 2026-03-26",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. s. 9.6(1.1) requires the compliance program to be reasonably designed, risk-based and effective.",
+    "applicability": "Reporting entities under s. 5 (includes banks). Applies to Meridian Bank as a fictional bank for illustration only.",
+    "related_kym_capability": "financial_crime_controls",
+    "implementation_status": "simulated",
+    "limitations": "KYM contains simulated KYC, transaction-monitoring and sanctions checks driven by synthetic data. This is not an AML program, does not file reports and must not be relied on for money laundering or terrorist financing compliance.",
+    "evidence_required": [
+      "Risk assessment covering agent-initiated payments",
+      "Simulated screening outcome recorded per transaction (demo only)",
+      "Compliance program documentation in a real deployment"
+    ]
+  },
+  {
+    "id": "CA-FINTRAC-01",
+    "jurisdiction": "CA",
+    "source": "FINTRAC guidance: Compliance program requirements; Methods to verify the identity of persons and entities",
+    "source_type": "supervisory_guidance",
+    "source_url": "https://fintrac-canafe.canada.ca/guidance-directives/compliance-conformite/Guide4/4-eng",
+    "provision": "general (see also https://fintrac-canafe.canada.ca/guidance-directives/client-clientele/Guide11/11-eng)",
+    "source_version": "FINTRAC web guidance as retrieved 2026-11-26 (publication dates not recorded)",
+    "date_verified": "2026-11-26",
+    "current_status": "Published FINTRAC compliance guidance pages retrieved; the specific content applicable to agent-initiated or delegated transactions was not found and is not asserted.",
+    "applicability": "Reporting entities under the PCMLTFA.",
+    "related_kym_capability": "financial_crime_controls",
+    "implementation_status": "mapped",
+    "limitations": "Only the existence and titles of the guidance pages were verified; KYM does not implement identity verification methods, suspicious transaction reporting or record keeping described there.",
+    "evidence_required": [
+      "Identity verification method and record for the principal customer",
+      "Compliance program policies covering delegated or automated initiation"
+    ]
+  },
+  {
+    "id": "CA-RPAA-01",
+    "jurisdiction": "CA",
+    "source": "Retail Payment Activities Act (S.C. 2021, c. 23, s. 177) and Bank of Canada retail payments supervision",
+    "source_type": "enacted_law",
+    "source_url": "https://laws-lois.justice.gc.ca/eng/acts/R-7.36/FullText.html",
+    "provision": "s. 2 'payment function' (includes (c) initiation of an electronic funds transfer at the request of an end user and (d) authorization or transmission of an EFT instruction)",
+    "source_version": "Justice Laws consolidation current to 2026-11-12; last amended 2026-03-26. Bank of Canada retail payments page retrieved 2026-11-26",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. The Bank of Canada supervises payment service providers (PSPs); per its page, as of 2025-09-08 PSPs must have established risk management and funds safeguarding frameworks and must submit an annual report.",
+    "applicability": "Individuals/entities performing payment functions as a service or business activity that is not incidental to another activity; the Act's exclusions (e.g. for regulated financial institutions) were not analyzed. Whether an agent platform operator would be a PSP depends on facts not assessed here.",
+    "related_kym_capability": "payment_authorization",
+    "implementation_status": "mapped",
+    "limitations": "KYM does not register as a PSP and does not move real money. The mapping only highlights that initiation and authorization of EFTs are defined payment functions, separate from data access.",
+    "evidence_required": [
+      "PSP registration status of each payment-initiating party (simulated in demo)",
+      "Operational risk and funds safeguarding framework in a real deployment"
+    ]
+  },
+  {
+    "id": "CA-RPAA-02",
+    "jurisdiction": "CA",
+    "source": "Bank of Canada - Retail payments supervision: operational risk, incident response and safeguarding of end-user funds",
+    "source_type": "operative_requirement",
+    "source_url": "https://www.bankofcanada.ca/regulatory-oversight/retail-payments/",
+    "provision": "general (Retail Payment Activities Act and Retail Payment Activities Regulations)",
+    "source_version": "Bank of Canada page retrieved 2026-11-26",
+    "date_verified": "2026-11-26",
+    "current_status": "Per the Bank of Canada, supervision assesses whether PSPs manage operational risks, respond effectively to incidents, safeguard end-user funds and meet reporting requirements. Detailed regulation sections were not re-read.",
+    "applicability": "Registered PSPs and applicants.",
+    "related_kym_capability": "incident_investigation",
+    "implementation_status": "mapped",
+    "limitations": "KYM's incident investigation view is a demo of evidence reconstruction, not an incident response program or regulatory reporting.",
+    "evidence_required": [
+      "Incident records with timeline and affected mandates",
+      "Evidence of operational risk framework in a real deployment"
+    ]
+  },
+  {
+    "id": "CA-OSFI-B13",
+    "jurisdiction": "CA",
+    "source": "OSFI Guideline B-13: Technology and Cyber Risk Management",
+    "source_type": "supervisory_guidance",
+    "source_url": "https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/technology-cyber-risk-management",
+    "provision": "general (e.g. principle 10 incident management; cyber security domain)",
+    "source_version": "Guideline dated 2022-07-31",
+    "date_verified": "2026-11-26",
+    "current_status": "Published OSFI guideline for federally regulated financial institutions (FRFIs). Effective date not re-verified here.",
+    "applicability": "Banks, foreign bank branches, insurers and trust/loan companies regulated by OSFI. Not applicable to provincially regulated entities unless adopted.",
+    "related_kym_capability": "security",
+    "implementation_status": "mapped",
+    "limitations": "KYM demonstrates individual security design patterns (sender-constrained tokens, signed decisions, tamper-evident logging) only. It is not a technology risk management program and has not been assessed against B-13.",
+    "evidence_required": [
+      "Technology and cyber risk assessment for agent integrations",
+      "Cryptographic key management and logging standards in a real deployment"
+    ]
+  },
+  {
+    "id": "CA-OSFI-B10",
+    "jurisdiction": "CA",
+    "source": "OSFI Guideline B-10: Third-Party Risk Management",
+    "source_type": "supervisory_guidance",
+    "source_url": "https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/third-party-risk-management-guideline",
+    "provision": "general",
+    "source_version": "Guideline dated 2023-04-30",
+    "date_verified": "2026-11-26",
+    "current_status": "Published OSFI guideline for FRFIs. Effective date and transition arrangements not re-verified here.",
+    "applicability": "OSFI-regulated FRFIs engaging third parties, which may include agent platform providers and accredited fintechs.",
+    "related_kym_capability": "third_party_oversight",
+    "implementation_status": "mapped",
+    "limitations": "KYM models third-party and agent-operator registration with synthetic data; it does not perform due diligence, contracting or monitoring.",
+    "evidence_required": [
+      "Third-party inventory including agent platforms",
+      "Due diligence and contractual terms for agent operators",
+      "Ongoing monitoring records"
+    ]
+  },
+  {
+    "id": "CA-OSFI-E21",
+    "jurisdiction": "CA",
+    "source": "OSFI Guideline E-21: Operational Risk Management and Resilience",
+    "source_type": "supervisory_guidance",
+    "source_url": "https://www.osfi-bsif.gc.ca/en/guidance/guidance-library/operational-risk-management-resilience-guideline",
+    "provision": "general",
+    "source_version": "Guideline dated 2024-08-22",
+    "date_verified": "2026-11-26",
+    "current_status": "Published OSFI guideline for FRFIs; implementation timeline not re-verified here.",
+    "applicability": "OSFI-regulated FRFIs.",
+    "related_kym_capability": "revocation",
+    "implementation_status": "mapped",
+    "limitations": "KYM's fail-closed revocation checking is a design illustration of operational resilience thinking (the ability to stop an agent quickly). It is not an operational resilience program, impact tolerances or testing.",
+    "evidence_required": [
+      "Critical operations and impact tolerances including agent-initiated payment flows",
+      "Revocation and kill-switch test results in a real deployment"
+    ]
+  }
+]

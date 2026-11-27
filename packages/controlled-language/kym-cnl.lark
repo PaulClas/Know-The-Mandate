@@ -1,0 +1,52 @@
+// KYM-CNL 1.0.0 - KYM Controlled Natural Language (experimental).
+// Inspired by the writing principles of ASD-STE100 Simplified Technical English (controlled vocabulary,
+// short declarative statements, one main instruction per statement). It makes NO claim of ASD-STE100 compliance.
+//
+// Every statement ends with "." followed by whitespace or end of input.
+// Money may be written "250 CAD", "250.00 CAD" or "CAD 250"; all normalize identically.
+
+start: statement+
+
+statement: (permit | prohibit | limit | require | allow_delegation | start_at | expire_at | purpose | jurisdiction | timezone) END
+
+permit: (PERMIT | ALLOW) REF "TO" VERB clause*
+clause: "ON" ref_list        -> on_clause
+      | "FROM" ref_list      -> from_clause
+      | "TO" ref_list        -> to_clause
+      | "WITH" "MAX_AMOUNT" money "PER" "TRANSACTION" -> max_clause
+ref_list: REF ("," REF)*
+
+prohibit: (PROHIBIT | FORBID) (VERB | DELEGATION)
+limit: "LIMIT" LIMITKIND "TO" limit_value "PER" PERIOD
+limit_value: money | NUMBER
+require: "REQUIRE" [NUMBER] APPROVAL "FOR" "PAYMENTS" "ABOVE" money
+allow_delegation: ALLOW DELEGATION "TO" "DEPTH" NUMBER
+start_at: "START" "AT" TS
+expire_at: "EXPIRE" "AT" TS
+purpose: "PURPOSE" IDENT
+jurisdiction: "JURISDICTION" JCODE ("," JCODE)*
+timezone: "BUDGET_TIMEZONE" TZ
+
+money: NUMBER CURRENCY | CURRENCY NUMBER
+
+PERMIT: "PERMIT"
+ALLOW: "ALLOW"
+PROHIBIT: "PROHIBIT"
+FORBID: "FORBID"
+DELEGATION: "DELEGATION"
+APPROVAL: "HUMAN_APPROVALS" | "HUMAN_APPROVAL"
+LIMITKIND: "TOTAL_PAYMENTS" | "PAYMENT_COUNT"
+PERIOD: "CALENDAR_MONTH" | "CALENDAR_DAY"
+VERB: /[A-Z]+(_[A-Z]+)+/
+REF: /[a-z]+\.[a-z0-9_-]+(\.[a-z0-9_-]+)*/
+IDENT: /[a-z][a-z0-9_]*/
+NUMBER: /\d+(\.\d+)?/
+CURRENCY: /[A-Z]{3}/
+JCODE: /[A-Z]{2}(-[A-Z0-9]{2,3})?/
+TZ: /[A-Za-z_]+\/[A-Za-z_]+/
+TS: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/
+END: /\.(?=\s|$)/
+
+%import common.WS
+%ignore WS
+%ignore /\/\/[^\n]*/

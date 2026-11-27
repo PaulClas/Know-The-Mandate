@@ -1,0 +1,515 @@
+[
+  {
+    "id": "ietf-rfc6749",
+    "name": "RFC 6749 - The OAuth 2.0 Authorization Framework",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc6749",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "Framework vocabulary and the token/authorization endpoints exercised by the KYM sandbox authorization server. Sandbox only; not a certified or complete OAuth server. Interoperability not tested."
+  },
+  {
+    "id": "ietf-rfc7636",
+    "name": "RFC 7636 - Proof Key for Code Exchange (PKCE)",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc7636",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "PKCE implemented in the sandbox authorization server. Not interoperability tested."
+  },
+  {
+    "id": "ietf-rfc7009",
+    "name": "RFC 7009 - OAuth 2.0 Token Revocation",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc7009",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "Revocation endpoint implemented in the sandbox authorization server. KYM additionally checks mandate revocation on every request regardless of token validity."
+  },
+  {
+    "id": "ietf-rfc7662",
+    "name": "RFC 7662 - OAuth 2.0 Token Introspection",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc7662",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "Introspection endpoint implemented in the sandbox authorization server."
+  },
+  {
+    "id": "ietf-rfc8693",
+    "name": "RFC 8693 - OAuth 2.0 Token Exchange",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc8693",
+    "category": "oauth",
+    "kym_status": "simulated",
+    "notes": "Simulated sandbox adapter using the act (actor) claim to represent delegation. Not a complete token exchange implementation."
+  },
+  {
+    "id": "ietf-rfc8705",
+    "name": "RFC 8705 - OAuth 2.0 Mutual-TLS Client Authentication and Certificate-Bound Access Tokens",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc8705",
+    "category": "oauth",
+    "kym_status": "mapped",
+    "notes": "Conceptually mapped only. The demo uses DPoP (RFC 9449) sender-constraint and has no mTLS."
+  },
+  {
+    "id": "ietf-rfc8707",
+    "name": "RFC 8707 - Resource Indicators for OAuth 2.0",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc8707",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "Implemented as an audience (aud) check on access tokens. Full resource indicator parameter behaviour is not claimed."
+  },
+  {
+    "id": "ietf-rfc8785",
+    "name": "RFC 8785 - JSON Canonicalization Scheme (JCS)",
+    "body": "IETF (Informational)",
+    "url": "https://www.rfc-editor.org/rfc/rfc8785",
+    "category": "semantic",
+    "kym_status": "implemented",
+    "notes": "Used via the rfc8785 library to canonicalize payloads before hashing for ledger entries and mandate digests."
+  },
+  {
+    "id": "ietf-rfc9068",
+    "name": "RFC 9068 - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc9068",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "Access tokens are real signed JWTs (PyJWT, Ed25519/ES256) with RFC 9068-style claims, issued by the sandbox authorization server. Not a certified server."
+  },
+  {
+    "id": "ietf-rfc9126",
+    "name": "RFC 9126 - OAuth 2.0 Pushed Authorization Requests (PAR)",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc9126",
+    "category": "oauth",
+    "kym_status": "simulated",
+    "notes": "Simulated sandbox adapter."
+  },
+  {
+    "id": "ietf-rfc9396",
+    "name": "RFC 9396 - OAuth 2.0 Rich Authorization Requests (RAR)",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc9396",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "authorization_details parsing and validation implemented in the sandbox authorization server, including the KYM experimental kym_financial_mandate type."
+  },
+  {
+    "id": "ietf-rfc9449",
+    "name": "RFC 9449 - OAuth 2.0 Demonstrating Proof of Possession (DPoP)",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc9449",
+    "category": "oauth",
+    "kym_status": "implemented",
+    "notes": "DPoP proof validation implemented in the sandbox authorization server: cnf.jkt binding; htm, htu, iat, ath checks; jti replay detection."
+  },
+  {
+    "id": "ietf-rfc9700",
+    "name": "RFC 9700 - Best Current Practice for OAuth 2.0 Security",
+    "body": "IETF (BCP)",
+    "url": "https://www.rfc-editor.org/rfc/rfc9700",
+    "category": "oauth",
+    "kym_status": "mapped",
+    "notes": "Used as design guidance (sender-constrained tokens, PKCE, audience restriction). Conformance has not been assessed."
+  },
+  {
+    "id": "openid-connect-core",
+    "name": "OpenID Connect Core 1.0",
+    "body": "OpenID Foundation",
+    "url": "https://openid.net/specs/openid-connect-core-1_0.html",
+    "category": "identity",
+    "kym_status": "mapped",
+    "notes": "Conceptually mapped (customer authentication, ID token). The demo uses a simulated bank-authenticated session instead."
+  },
+  {
+    "id": "openid-fapi2-security-profile",
+    "name": "FAPI 2.0 Security Profile",
+    "body": "OpenID Foundation",
+    "url": "https://openid.net/specs/fapi-security-profile-2_0.html",
+    "category": "identity",
+    "kym_status": "mapped",
+    "notes": "Final specification (published 2025-02-22 per the document header). KYM reuses building blocks (PKCE, DPoP, PAR simulated) but does not claim FAPI 2.0 conformance or certification."
+  },
+  {
+    "id": "openid-grant-management",
+    "name": "Grant Management for OAuth 2.0",
+    "body": "OpenID Foundation",
+    "url": "https://openid.net/specs/oauth-v2-grant-management.html",
+    "category": "identity",
+    "kym_status": "mapped",
+    "notes": "The former FAPI Grant Management URL now states the specification was renamed to oauth-v2-grant-management; the page title shows 'Draft'. Conceptual mapping to KYM grant and mandate lifecycle only."
+  },
+  {
+    "id": "openid-ssf",
+    "name": "OpenID Shared Signals Framework (SSF) 1.0",
+    "body": "OpenID Foundation",
+    "url": "https://openid.net/specs/openid-sharedsignals-framework-1_0.html",
+    "category": "identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual mapping for propagating revocation and risk signals. No SSF transmitter or receiver implemented."
+  },
+  {
+    "id": "openid-caep",
+    "name": "OpenID Continuous Access Evaluation Profile (CAEP) 1.0",
+    "body": "OpenID Foundation",
+    "url": "https://openid.net/specs/openid-caep-1_0.html",
+    "category": "identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual mapping to KYM per-request revocation and risk re-evaluation. No CAEP events are emitted."
+  },
+  {
+    "id": "w3c-rdf",
+    "name": "RDF 1.1 Concepts and Abstract Syntax",
+    "body": "W3C",
+    "url": "https://www.w3.org/TR/rdf11-concepts/",
+    "category": "semantic",
+    "kym_status": "implemented",
+    "notes": "KYM ontology and graph data are handled with rdflib. An RDF 1.2 Concepts page also exists at w3.org/TR/rdf12-concepts/; its maturity was not checked."
+  },
+  {
+    "id": "w3c-owl2",
+    "name": "OWL 2 Web Ontology Language",
+    "body": "W3C",
+    "url": "https://www.w3.org/TR/owl2-overview/",
+    "category": "semantic",
+    "kym_status": "mapped",
+    "notes": "KYM ontology vocabulary is authored; no OWL reasoner is used for authorization decisions."
+  },
+  {
+    "id": "w3c-json-ld",
+    "name": "JSON-LD 1.1",
+    "body": "W3C",
+    "url": "https://www.w3.org/TR/json-ld11/",
+    "category": "semantic",
+    "kym_status": "implemented",
+    "notes": "JSON-LD contexts and serialization via rdflib."
+  },
+  {
+    "id": "w3c-shacl",
+    "name": "Shapes Constraint Language (SHACL)",
+    "body": "W3C",
+    "url": "https://www.w3.org/TR/shacl/",
+    "category": "semantic",
+    "kym_status": "implemented",
+    "notes": "Validation via pySHACL."
+  },
+  {
+    "id": "w3c-odrl",
+    "name": "ODRL Information Model 2.2",
+    "body": "W3C",
+    "url": "https://www.w3.org/TR/odrl-model/",
+    "category": "semantic",
+    "kym_status": "implemented",
+    "notes": "ODRL terms are reused in the KYM ontology. No ODRL policy engine is used and ODRL profile conformance is not claimed."
+  },
+  {
+    "id": "w3c-prov-o",
+    "name": "PROV-O: The PROV Ontology",
+    "body": "W3C",
+    "url": "https://www.w3.org/TR/prov-o/",
+    "category": "semantic",
+    "kym_status": "implemented",
+    "notes": "PROV-O terms are reused to describe provenance of decisions and evidence."
+  },
+  {
+    "id": "w3c-vc-data-model",
+    "name": "Verifiable Credentials Data Model v2.0",
+    "body": "W3C",
+    "url": "https://www.w3.org/TR/vc-data-model-2.0/",
+    "category": "identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual mapping only: the KYM mandate is a signed JWT, not a Verifiable Credential."
+  },
+  {
+    "id": "fdx",
+    "name": "Financial Data Exchange (FDX) API",
+    "body": "Financial Data Exchange",
+    "url": "https://financialdataexchange.org/",
+    "category": "financial",
+    "kym_status": "mapped",
+    "notes": "Conceptual mapping of data-access scopes only. The specification itself was not reviewed in detail and FDX membership/licensing terms are not assessed."
+  },
+  {
+    "id": "google-ap2",
+    "name": "Agent Payments Protocol (AP2)",
+    "body": "Google (google-agentic-commerce, open source)",
+    "url": "https://github.com/google-agentic-commerce/AP2",
+    "category": "agentic_commerce",
+    "kym_status": "mapped",
+    "notes": "Version v0.2.0 (tagged 2026-04-28) observed. Conceptual mapping only; see docs/research/ap2-mapping.md. KYM does not implement AP2 messages or SD-JWT mandates."
+  },
+  {
+    "id": "visa-intelligent-commerce",
+    "name": "Visa Intelligent Commerce",
+    "body": "Visa",
+    "url": "https://developer.visa.com/docs/visa-intelligent-commerce",
+    "category": "agentic_commerce",
+    "kym_status": "mapped",
+    "notes": "Developer documentation page confirmed reachable; specification contents not reviewed in detail. Conceptual mapping only."
+  },
+  {
+    "id": "visa-trusted-agent-protocol",
+    "name": "Visa Trusted Agent Protocol",
+    "body": "Visa",
+    "url": "https://github.com/visa/trusted-agent-protocol",
+    "category": "agentic_commerce",
+    "kym_status": "mapped",
+    "notes": "Public repository confirmed reachable; contents not reviewed in detail. Conceptual mapping only."
+  },
+  {
+    "id": "mastercard-agent-pay",
+    "name": "Mastercard Agent Pay",
+    "body": "Mastercard",
+    "url": "https://www.mastercard.com/us/en/business/artificial-intelligence/mastercard-agent-pay.html",
+    "category": "agentic_commerce",
+    "kym_status": "mapped",
+    "notes": "Product page confirmed reachable; technical specification contents not reviewed. Conceptual mapping only."
+  },
+  {
+    "id": "agentic-commerce-protocol",
+    "name": "Agentic Commerce Protocol (ACP)",
+    "body": "OpenAI and Stripe (open source)",
+    "url": "https://github.com/agentic-commerce-protocol/agentic-commerce-protocol",
+    "category": "agentic_commerce",
+    "kym_status": "mapped",
+    "notes": "Public repository confirmed reachable (also https://www.agenticcommerce.dev/); contents not reviewed in detail. Conceptual mapping only."
+  },
+  {
+    "id": "x402",
+    "name": "x402 payments protocol",
+    "body": "x402 project (repository under github.com/coinbase)",
+    "url": "https://github.com/coinbase/x402",
+    "category": "agentic_commerce",
+    "kym_status": "mapped",
+    "notes": "Described by its repository as a payments protocol built on HTTP. Conceptual mapping only."
+  },
+  {
+    "id": "mcp",
+    "name": "Model Context Protocol (MCP)",
+    "body": "Model Context Protocol project",
+    "url": "https://modelcontextprotocol.io/specification/latest",
+    "category": "agentic_commerce",
+    "kym_status": "simulated",
+    "notes": "KYM exposes a restricted tool interface sandbox with a tool-list shape modelled on MCP. Discovery is not permission: listing a tool grants no authority. Not tested against real MCP clients. The 'latest' URL resolved to the 2026-07-28 specification revision on 2026-11-26."
+  },
+  {
+    "id": "a2a",
+    "name": "Agent2Agent (A2A) Protocol",
+    "body": "A2A project (a2aproject)",
+    "url": "https://a2a-protocol.org/latest/specification/",
+    "category": "agentic_commerce",
+    "kym_status": "mapped",
+    "notes": "The specification page lists 1.0.0 as the latest released version. Conceptual mapping only."
+  },
+  {
+    "id": "asd-ste100",
+    "name": "ASD-STE100 Simplified Technical English",
+    "body": "ASD (AeroSpace and Defence Industries Association of Europe)",
+    "url": "https://asd-ste100.org/",
+    "category": "controlled_language",
+    "kym_status": "mapped",
+    "notes": "Referenced as inspiration for controlled-language principles. KYM-CNL does not claim ASD-STE100 conformance."
+  },
+  {
+    "id": "spiffe-spire",
+    "name": "SPIFFE / SPIRE",
+    "body": "SPIFFE project",
+    "url": "https://spiffe.io/docs/latest/spiffe-about/overview/",
+    "category": "workload_identity",
+    "kym_status": "mapped",
+    "notes": "Not used. Demo keys stored in local files; real deployments could use SPIFFE IDs and SVIDs for agent workload identity."
+  },
+  {
+    "id": "opa",
+    "name": "Open Policy Agent (OPA)",
+    "body": "OPA project",
+    "url": "https://www.openpolicyagent.org/docs",
+    "category": "security_guidance",
+    "kym_status": "not_implemented",
+    "notes": "Not used. KYM uses a typed Python policy engine; a conceptual mapping is documented."
+  },
+  {
+    "id": "cedar",
+    "name": "Cedar policy language",
+    "body": "AWS (open source)",
+    "url": "https://docs.cedarpolicy.com/",
+    "category": "security_guidance",
+    "kym_status": "not_implemented",
+    "notes": "Not used. KYM uses a typed Python policy engine; a conceptual mapping is documented."
+  },
+  {
+    "id": "nist-sp-800-63-4",
+    "name": "NIST SP 800-63-4 Digital Identity Guidelines",
+    "body": "NIST",
+    "url": "https://pages.nist.gov/800-63-4/",
+    "category": "identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual reference for authenticator assurance of the customer approving mandates. The demo uses a simulated session, not passkeys; no assurance level is claimed."
+  },
+  {
+    "id": "nist-sp-800-207",
+    "name": "NIST SP 800-207 Zero Trust Architecture",
+    "body": "NIST",
+    "url": "https://csrc.nist.gov/pubs/sp/800/207/final",
+    "category": "security_guidance",
+    "kym_status": "mapped",
+    "notes": "Conceptual alignment: deny-by-default policy decision point with per-request evaluation."
+  },
+  {
+    "id": "nist-ai-rmf",
+    "name": "NIST AI Risk Management Framework",
+    "body": "NIST",
+    "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+    "category": "security_guidance",
+    "kym_status": "mapped",
+    "notes": "Conceptual reference only. No AI RMF assessment performed."
+  },
+  {
+    "id": "owasp-agentic-top10",
+    "name": "OWASP Top 10 for Agentic Applications 2026 (and Agentic AI - Threats and Mitigations)",
+    "body": "OWASP Gen AI Security Project",
+    "url": "https://genai.owasp.org/top-10-for-agentic-applications-2026/",
+    "category": "security_guidance",
+    "kym_status": "mapped",
+    "notes": "Referenced in the threat model by item name. Earlier guide: https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/ (dated 2025-02-17)."
+  },
+  {
+    "id": "owasp-llm-top10",
+    "name": "OWASP Top 10 for LLM Applications",
+    "body": "OWASP Gen AI Security Project",
+    "url": "https://genai.owasp.org/llm-top-10/",
+    "category": "security_guidance",
+    "kym_status": "mapped",
+    "notes": "The 2025 edition item names (e.g. LLM01 Prompt Injection, LLM06 Excessive Agency) were verified on this page; a 2026 edition with different numbering also exists. Referenced in the threat model."
+  },
+  {
+    "id": "owasp-api-security-top10",
+    "name": "OWASP API Security Top 10 (2023)",
+    "body": "OWASP",
+    "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/",
+    "category": "security_guidance",
+    "kym_status": "mapped",
+    "notes": "Referenced in the threat model by item name (e.g. API1 Broken Object Level Authorization, API5 Broken Function Level Authorization)."
+  },
+  {
+    "id": "microsoft-entra-agent-id",
+    "name": "Microsoft Entra Agent ID",
+    "body": "Microsoft",
+    "url": "https://learn.microsoft.com/en-us/entra/agent-id/what-are-agent-identities",
+    "category": "workload_identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual reference for non-human agent identities. Not used."
+  },
+  {
+    "id": "microsoft-entra-workload-id",
+    "name": "Microsoft Entra Workload ID",
+    "body": "Microsoft",
+    "url": "https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-overview",
+    "category": "workload_identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual reference for workload identities. Not used."
+  },
+  {
+    "id": "aws-iam-sts",
+    "name": "AWS Security Token Service (STS) and IAM OIDC federation",
+    "body": "Amazon Web Services",
+    "url": "https://docs.aws.amazon.com/STS/latest/APIReference/",
+    "category": "workload_identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual reference for short-lived credentials. OIDC federation page: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc.html. Not used."
+  },
+  {
+    "id": "aws-bedrock-agentcore-identity",
+    "name": "Amazon Bedrock AgentCore Identity",
+    "body": "Amazon Web Services",
+    "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity.html",
+    "category": "workload_identity",
+    "kym_status": "mapped",
+    "notes": "Vendor documentation on identity and credential management for agent applications. Conceptual reference only; not used."
+  },
+  {
+    "id": "google-workload-identity-federation",
+    "name": "Google Cloud Workload Identity Federation",
+    "body": "Google Cloud",
+    "url": "https://docs.cloud.google.com/iam/docs/workload-identity-federation",
+    "category": "workload_identity",
+    "kym_status": "mapped",
+    "notes": "Conceptual reference for external workload identity without long-lived keys. Not used."
+  },
+  {
+    "id": "google-agent-identity",
+    "name": "Google Cloud Agent Identity",
+    "body": "Google Cloud",
+    "url": "https://docs.cloud.google.com/iam/docs/agent-identity-overview",
+    "category": "workload_identity",
+    "kym_status": "mapped",
+    "notes": "Vendor documentation page 'Agent Identity overview'. Conceptual reference only; not used."
+  },
+  {
+    "id": "ietf-rfc3161",
+    "name": "RFC 3161 - Time-Stamp Protocol (TSP)",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc3161",
+    "category": "security_guidance",
+    "kym_status": "not_implemented",
+    "notes": "Production-hardening option for externally timestamping evidence ledger checkpoints. Not implemented."
+  },
+  {
+    "id": "ietf-rfc6962",
+    "name": "RFC 6962 - Certificate Transparency",
+    "body": "IETF",
+    "url": "https://www.rfc-editor.org/rfc/rfc6962",
+    "category": "security_guidance",
+    "kym_status": "not_implemented",
+    "notes": "Reference for Merkle-tree transparency logs, a production-hardening option for the evidence ledger. Not implemented."
+  },
+  {
+    "id": "kym-financial-mandate-rar",
+    "name": "KYM kym_financial_mandate RAR authorization_details type",
+    "body": "KYM (this project)",
+    "url": "https://example.org/kym/v1#",
+    "category": "oauth",
+    "kym_status": "proposed",
+    "notes": "Experimental extension. The RFC 9396 authorization_details type 'kym_financial_mandate' carries mandate constraints. The URL is a non-resolving placeholder namespace; not registered or standardized."
+  },
+  {
+    "id": "kym-mandate-jwt-claims",
+    "name": "KYM mandate JWT claims (https://example.org/kym/mandate_id etc.)",
+    "body": "KYM (this project)",
+    "url": "https://example.org/kym/mandate_id",
+    "category": "oauth",
+    "kym_status": "proposed",
+    "notes": "Experimental private claims added to access tokens for mandate binding, using URL-style names under the non-resolving example.org namespace. Not registered with IANA."
+  },
+  {
+    "id": "kym-ontology-v1",
+    "name": "KYM ontology v1",
+    "body": "KYM (this project)",
+    "url": "https://example.org/kym/v1#",
+    "category": "semantic",
+    "kym_status": "proposed",
+    "notes": "Authored vocabulary reusing PROV-O and ODRL terms; non-resolving placeholder namespace. No reasoner is used for authorization."
+  },
+  {
+    "id": "kym-cnl",
+    "name": "KYM-CNL (controlled natural language)",
+    "body": "KYM (this project)",
+    "url": "https://example.org/kym/cnl",
+    "category": "controlled_language",
+    "kym_status": "proposed",
+    "notes": "Experimental controlled language for expressing mandates in readable form. Placeholder URL; no external standard conformance claimed (see ASD-STE100 note)."
+  },
+  {
+    "id": "kym-evidence-ledger",
+    "name": "KYM Evidence Ledger",
+    "body": "KYM (this project)",
+    "url": "https://example.org/kym/ledger",
+    "category": "security_guidance",
+    "kym_status": "proposed",
+    "notes": "Ed25519-signed, hash-chained evidence ledger with signed checkpoints over RFC 8785 canonical JSON. Demo keys in local files; no external witness, timestamping or WORM storage. Placeholder URL."
+  }
+]

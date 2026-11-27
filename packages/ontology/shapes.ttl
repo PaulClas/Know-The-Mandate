@@ -1,0 +1,147 @@
+@prefix kym:  <https://example.org/kym/v1#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+
+# SHACL shapes for instantiated KYM mandate graphs (experimental).
+# Shapes check completeness and consistency at mandate creation/amendment time.
+# They are NOT evaluated per transaction; runtime authorization uses the compiled policy.
+
+kym:MandateShape a sh:NodeShape ;
+    sh:targetClass kym:Mandate ;
+    sh:property [ sh:path kym:hasPrincipal ; sh:minCount 1 ; sh:maxCount 1 ; sh:class kym:Customer ;
+                  sh:message "A mandate must have exactly one principal that is a Customer." ] ;
+    sh:property [ sh:path kym:hasMandatary ; sh:minCount 1 ; sh:maxCount 1 ; sh:class kym:AIAgent ;
+                  sh:message "A mandate must have exactly one mandatary that is a registered AIAgent." ] ;
+    sh:property [ sh:path kym:hasPurpose ; sh:minCount 1 ; sh:message "A mandate must state a purpose." ] ;
+    sh:property [ sh:path kym:hasPermission ; sh:minCount 1 ; sh:class kym:Permission ;
+                  sh:message "A mandate must contain at least one permission. Missing authority means denial." ] ;
+    sh:property [ sh:path kym:validFrom ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ;
+                  sh:message "validFrom is required and must be an xsd:dateTime." ] ;
+    sh:property [ sh:path kym:validUntil ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ;
+                  sh:message "validUntil is required: open-ended financial authority is not allowed." ] ;
+    sh:property [ sh:path kym:mandateVersion ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ] ;
+    sh:property [ sh:path kym:policyVersion ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path kym:ontologyVersion ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path kym:cryptographicDigest ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^sha256:[0-9a-f]{64}$" ;
+                  sh:message "The canonical sha256 digest must be bound to the mandate graph." ] ;
+    sh:property [ sh:path kym:currency ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[A-Z]{3}$" ] ;
+    sh:property [ sh:path kym:maximumDailyAmount ; sh:datatype xsd:integer ; sh:minInclusive 1 ] ;
+    sh:property [ sh:path kym:maximumMonthlyAmount ; sh:datatype xsd:integer ; sh:minInclusive 1 ] ;
+    sh:property [ sh:path kym:maximumDelegationDepth ; sh:datatype xsd:integer ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path kym:delegationAllowed ; sh:datatype xsd:boolean ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "validUntil must be later than validFrom." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:validFrom ?from ; kym:validUntil ?value .
+                FILTER (?value <= ?from)
+            }""" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "The daily limit must not exceed the monthly limit." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:maximumDailyAmount ?value ; kym:maximumMonthlyAmount ?m .
+                FILTER (?value > ?m)
+            }""" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "An action cannot be both permitted and prohibited." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:hasPermission/kym:authorizesAction ?value ; kym:prohibitsAction ?value .
+            }""" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "A mandate that does not allow delegation must have maximum delegation depth 0." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:delegationAllowed false ; kym:maximumDelegationDepth ?value .
+                FILTER (?value > 0)
+            }""" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "A daily or monthly limit is set but no per-mandate currency is declared." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:maximumMonthlyAmount ?value .
+                FILTER NOT EXISTS { $this kym:currency ?c }
+            }""" ;
+    ] .
+
+kym:PermissionShape a sh:NodeShape ;
+    sh:targetClass kym:Permission ;
+    sh:property [ sh:path kym:authorizesAction ; sh:minCount 1 ; sh:maxCount 1 ; sh:class kym:FinancialAction ;
+                  sh:message "A permission must name exactly one known financial action." ] ;
+    sh:property [ sh:path kym:appliesToResource ; sh:minCount 1 ; sh:message "A permission must name at least one resource." ] ;
+    sh:property [ sh:path kym:hasConstraint ; sh:maxCount 1 ; sh:class kym:Constraint ] .
+
+# Bank policy shape (bank-policy-1.0.0): money-moving permissions must be bounded.
+kym:MoneyMovingPermissionShape a sh:NodeShape ;
+    sh:targetClass kym:MoneyMovingPermission ;
+    sh:property [ sh:path kym:hasConstraint ; sh:minCount 1 ;
+                  sh:message "Money-moving permissions require constraints." ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Money-moving permissions require a maximum per-transaction amount." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:authorizesAction ?value .
+                FILTER NOT EXISTS { $this kym:hasConstraint/kym:maximumAmount ?m }
+            }""" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Money-moving permissions require a bounded set of counterparties (beneficiary, merchant, merchant category or destination account)." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:authorizesAction ?value .
+                FILTER NOT EXISTS { $this kym:hasConstraint/kym:allowedBeneficiary ?b }
+                FILTER NOT EXISTS { $this kym:hasConstraint/kym:allowedMerchant ?m }
+                FILTER NOT EXISTS { $this kym:hasConstraint/kym:allowedMerchantCategory ?c }
+                FILTER NOT EXISTS { $this kym:hasConstraint/kym:allowedDestinationAccount ?d }
+            }""" ;
+    ] .
+
+kym:ConstraintShape a sh:NodeShape ;
+    sh:targetClass kym:Constraint ;
+    sh:property [ sh:path kym:maximumAmount ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:maxCount 1 ;
+                  sh:message "Amounts must be positive integers in minor currency units." ] ;
+    sh:property [ sh:path kym:currency ; sh:pattern "^[A-Z]{3}$" ; sh:maxCount 1 ] .
+
+kym:ObligationShape a sh:NodeShape ;
+    sh:targetClass kym:Obligation ;
+    sh:property [ sh:path kym:humanApprovalAbove ; sh:datatype xsd:integer ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path kym:requiredApprovals ; sh:datatype xsd:integer ; sh:minInclusive 1 ] .
+
+kym:ChildMandateShape a sh:NodeShape ;
+    sh:targetSubjectsOf kym:derivedFromMandate ;
+    sh:property [ sh:path kym:derivedFromMandate ; sh:maxCount 1 ; sh:class kym:MandateVersion ;
+                  sh:message "A child mandate must derive from exactly one existing parent mandate." ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "A child mandate cannot expire after its parent." ;
+        sh:select """
+            PREFIX kym: <https://example.org/kym/v1#>
+            SELECT $this ?value WHERE {
+                $this kym:derivedFromMandate ?p ; kym:validUntil ?value .
+                ?p kym:validUntil ?pu .
+                FILTER (?value > ?pu)
+            }""" ;
+    ] .

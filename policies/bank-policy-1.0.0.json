@@ -1,0 +1,55 @@
+{
+  "policy_version": "bank-policy-1.0.0",
+  "description": "Meridian Bank demo policy. Synthetic; not a real bank policy; no compliance claim.",
+  "limits": {
+    "max_single_payment_minor": 1000000,
+    "max_mandate_validity_days": 366,
+    "max_delegation_depth": 2,
+    "allowed_purposes": [
+      "household_bill_management", "personal_finance_analysis", "personal_shopping", "savings_optimization",
+      "business_treasury", "supplier_payments", "bill_payment_subtask", "scenario_demo", "unverified_probe"
+    ],
+    "forbidden_agent_actions": ["investments.trade"]
+  },
+  "agents": {
+    "eligible_for_mandate": ["VERIFIED"],
+    "restricted_allowed_actions": ["accounts.read", "balances.read"]
+  },
+  "approval": {
+    "approval_ttl_seconds": 900,
+    "decision_ttl_seconds": 60,
+    "bank_human_approval_above_minor": 500000
+  },
+  "risk": {
+    "review_at": 60,
+    "deny_at": 90,
+    "weights": {
+      "amount_anomaly": 25,
+      "unusual_beneficiary": 20,
+      "new_merchant": 15,
+      "velocity": 15,
+      "geographic_mismatch": 25,
+      "suspicious_pattern": 20,
+      "repeated_auth_failures": 20,
+      "agent_incident_history": 10
+    },
+    "parameters": {
+      "amount_anomaly_multiple": 3.0,
+      "velocity_window_minutes": 60,
+      "velocity_max_payments": 3,
+      "structuring_band_percent": 10,
+      "auth_failure_window_minutes": 60,
+      "auth_failure_threshold": 3
+    }
+  },
+  "trust": {
+    "weights": {
+      "provenance_confidence": 0.25,
+      "identity_assurance": 0.25,
+      "security_controls": 0.2,
+      "incident_penalty_per_incident": 10,
+      "success_rate": 0.3
+    },
+    "note": "Trust score is informational and an input to risk signals only. It can never override a denial."
+  }
+}

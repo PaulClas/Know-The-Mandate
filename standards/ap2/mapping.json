@@ -1,0 +1,61 @@
+{
+  "ap2_version_observed": "v0.2.0 (release tag, published 2026-04-28); main branch HEAD e1ea56db72a6385bce3e5c1112b3a56ce60acb43 (committed 2026-04-29); legacy v0.1.0 (2025-09-16) also read for earlier terminology",
+  "date_verified": "2026-11-26",
+  "status": "conceptual_mapping",
+  "artifacts": [
+    {
+      "ap2_artifact": "Open Checkout Mandate (vct mandate.checkout.open.1)",
+      "role": "User-approved, agent-bound (cnf) constraints on what a closed Checkout Mandate may contain; documented constraint types are Allowed Merchants and Line Items. Supports the 'Human Not Present' mode.",
+      "kym_concept": "customer intent",
+      "notes": "Closest KYM analogue is the customer-approved mandate constraints. AP2 constraints concern the commerce checkout; KYM mandates constrain bank operations. Conceptual mapping only."
+    },
+    {
+      "ap2_artifact": "Closed Checkout Mandate (vct mandate.checkout.1)",
+      "role": "Binds the agent's authorization to a specific merchant-signed Checkout JWT via a hash of that JWT; verified by the Merchant, which returns a Checkout Receipt.",
+      "kym_concept": "checkout details",
+      "notes": "KYM treats merchant checkout details as an input to the operation that is hashed into the operation hash; KYM does not parse or verify AP2 checkout JWTs."
+    },
+    {
+      "ap2_artifact": "Open Payment Mandate (vct mandate.payment.open.1)",
+      "role": "User-approved constraints over the closed Payment Mandate. Documented constraint types: Agent Recurrence, Allowed Payees, Allowed Payment Instruments, Allowed Payment Initiation Service Providers (PISPs), Amount Range, Budget, Reference (link to the open Checkout Mandate), Execution Date.",
+      "kym_concept": "customer intent",
+      "notes": "Conceptually similar to KYM mandate limits (amount, payee, time window, cumulative budget). AP2 states that budget evaluation requires tracking previously closed mandates; KYM models this as atomic budget reservations. Similarity is conceptual; KYM does not use AP2 constraint types."
+    },
+    {
+      "ap2_artifact": "Closed Payment Mandate (vct mandate.payment.1)",
+      "role": "Proof to the Credential Provider, Network and Merchant Payment Processor that the agent is authorized to pay for a particular Checkout, bound to the Checkout via a hash; the payment credential is released only after verification.",
+      "kym_concept": "payment authorization",
+      "notes": "Analogous to KYM approval and decision artifacts bound to the exact operation hash. AP2 verifiers are merchant-side and payment-network roles, not the customer's bank policy engine."
+    },
+    {
+      "ap2_artifact": "Checkout Receipt and Payment Receipt",
+      "role": "Signed or returned results from the verifier (Merchant, Merchant Payment Processor) after accepting or rejecting a mandate. Rejection receipts are used to prevent an agent from presenting overlapping closed mandates for one open mandate.",
+      "kym_concept": "execution evidence",
+      "notes": "Analogous to KYM evidence ledger entries recording decision and execution outcome. Receipt schema fields are not reproduced here."
+    },
+    {
+      "ap2_artifact": "Mandate chain: open mandate with cnf agent key, closed mandate signed by the agent key (key binding)",
+      "role": "Cryptographic chain from the user-approved open mandate to the closed mandate presented to a verifier; the agent's key is endorsed in the open mandate's cnf claim.",
+      "kym_concept": "payment authorization",
+      "notes": "Conceptually parallels sender-constrained tokens and parent-mandate constraints in KYM (cnf.jkt in DPoP-bound tokens). Different formats: AP2 documents SD-JWT based mandates; KYM uses JWT access tokens plus a server-signed decision."
+    },
+    {
+      "ap2_artifact": "Trusted Surface and mandate delegation models (User Credential via OpenID4VP; Trusted Agent Provider)",
+      "role": "A non-agentic surface that shows mandate content to the user and obtains informed consent before a user-signed mandate is created.",
+      "kym_concept": "customer intent",
+      "notes": "KYM simulates customer approval in a simulated bank-authenticated session (not passkeys). No OpenID4VP or SD-JWT VC is implemented."
+    },
+    {
+      "ap2_artifact": "Verification and dispute evidence (Checkout/Payment Mandates and Receipts brought together)",
+      "role": "AP2 states the mandates and receipts can provide a non-repudiable picture of a transaction; retention and retrieval requirements are out of scope of the specification.",
+      "kym_concept": "execution evidence",
+      "notes": "KYM adds an Ed25519-signed, hash-chained evidence ledger with signed checkpoints. This is KYM's own design, not part of AP2."
+    },
+    {
+      "ap2_artifact": "(Not defined in the AP2 documents reviewed) bank-side policy and risk constraints",
+      "role": "AP2 mandates carry constraints that verifiers evaluate; the pages reviewed do not define a bank's own policy, AML or risk evaluation of the customer's account.",
+      "kym_concept": "bank-side constraints",
+      "notes": "KYM proposes beyond AP2: a deny-by-default decision point intersecting customer authority, agent capabilities, OAuth, mandate, parent mandate, bank policy and risk. This row records a gap/extension, not an AP2 artifact."
+    }
+  ]
+}

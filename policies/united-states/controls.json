@@ -1,0 +1,256 @@
+[
+  {
+    "id": "US-DFA1033-01",
+    "jurisdiction": "US",
+    "source": "Dodd-Frank Act s. 1033 (12 U.S.C. 5533) - Consumer rights to access information",
+    "source_type": "enacted_law",
+    "source_url": "https://www.govinfo.gov/link/uscode/12/5533",
+    "provision": "12 U.S.C. 5533(a) (covered person shall make available to a consumer, upon request, information in its control or possession concerning the consumer financial product or service, subject to rules prescribed by the Bureau, in electronic form usable by consumers); 5533(b) (exceptions)",
+    "source_version": "U.S. Code (statute text read via the Cornell LII mirror; official govinfo link provided)",
+    "date_verified": "2026-11-26",
+    "current_status": "Statute in force. It is a data-access right and, as read, says nothing about initiating payments. The implementing CFPB rule's compliance dates are stayed (see US-CFPB1033-02).",
+    "applicability": "Covered persons offering consumer financial products or services. Applies to consumer data access requests; scope of 'representative' (who may request on the consumer's behalf) is under CFPB reconsideration.",
+    "related_kym_capability": "customer_permission",
+    "implementation_status": "mapped",
+    "limitations": "KYM does not implement a 1033 developer interface. The statute does not decide whether an AI agent can be a consumer's 'representative'.",
+    "evidence_required": [
+      "Consumer request or authorization record",
+      "Evidence of the categories of information made available and exceptions applied"
+    ]
+  },
+  {
+    "id": "US-CFPB1033-02",
+    "jurisdiction": "US",
+    "source": "CFPB Personal Financial Data Rights Rule (12 CFR part 1033) - current status",
+    "source_type": "enacted_law",
+    "source_url": "https://www.consumerfinance.gov/compliance/compliance-resources/other-applicable-requirements/personal-financial-data-rights/",
+    "provision": "12 CFR 1033.121 (compliance dates); 89 FR 90838 (Nov. 18, 2024)",
+    "source_version": "Final rule issued 2024-10-22, published 2024-11-18 (89 FR 90838), effective 2025-01-17; CFPB compliance page last modified 2026-01-06; eCFR checked 2026-11-20",
+    "date_verified": "2026-11-26",
+    "current_status": "Codified at 12 CFR part 1033, but compliance dates are STAYED: the CFPB states that on 2025-10-29 the compliance dates were stayed by the court in Forcht Bank, N.A., et al. v. CFPB, No. 5:24-cv-304-DCR (E.D. Ky.). The codified 1033.121(b) dates (first tier 2026-04-01) remain in the eCFR text, whose version history for part 1033 shows no amendment after 2025-01-17. The CFPB issued an ANPR on reconsideration on 2025-08-22 and said it planned an NPRM to extend compliance dates; the CFPB's Aug. 2026 Unified Agenda (published 2026-08-14) lists a planned rulemaking to reconsider certain aspects of the rule. Litigation developments after 2026-01-06 and any later proposal or final rule were NOT independently verified.",
+    "applicability": "Data providers (depository and non-depository institutions) and authorized third parties as defined in the rule, on its original tiered schedule. Whether and when any obligation applies to Meridian Bank (fictional) is not determined; treat the rule as not currently enforceable on its original schedule.",
+    "related_kym_capability": "third_party_oversight",
+    "implementation_status": "mapped",
+    "limitations": "KYM mappings to 1033 are design references only and must be re-checked against the court docket and CFPB publications before any reliance. Status may have changed after the last confirmed source date.",
+    "evidence_required": [
+      "Current docket status for Forcht Bank v. CFPB, No. 5:24-cv-304-DCR (E.D. Ky.)",
+      "Current CFPB reconsideration rulemaking status and revised compliance dates",
+      "Counsel determination of applicable compliance date for each institution"
+    ]
+  },
+  {
+    "id": "US-CFPB1033-03",
+    "jurisdiction": "US",
+    "source": "CFPB Personal Financial Data Rights Rule - authorized third party obligations",
+    "source_type": "enacted_law",
+    "source_url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1033",
+    "provision": "12 CFR 1033.401 (third party authorization; authorization disclosure signed electronically or in writing; express informed consent); 1033.421(b) (limit scope, duration and frequency of collection; maximum one year after most recent authorization; reauthorization)",
+    "source_version": "eCFR text retrieved 2026-11-26 (version history: last amendment 2025-01-17)",
+    "date_verified": "2026-11-26",
+    "current_status": "Codified, but the rule's compliance dates are stayed and the rule is under reconsideration (see US-CFPB1033-02). Provisions are described as written; they may be amended.",
+    "applicability": "Third parties seeking covered data on behalf of a consumer to provide a product or service the consumer requested.",
+    "related_kym_capability": "consent_management",
+    "implementation_status": "simulated",
+    "limitations": "KYM simulates scoped, time-limited permissions with expiry and revocation; it does not implement the rule's authorization disclosure format, certification statement or reauthorization process.",
+    "evidence_required": [
+      "Signed authorization disclosure per authorization",
+      "Scope, duration and frequency of collection",
+      "Reauthorization records at the one-year anniversary"
+    ]
+  },
+  {
+    "id": "US-CFPB1033-04",
+    "jurisdiction": "US",
+    "source": "CFPB Personal Financial Data Rights Rule - covered data, authentication and data access vs payment initiation",
+    "source_type": "enacted_law",
+    "source_url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1033",
+    "provision": "12 CFR 1033.211 (covered data incl. (c) information to initiate payment to or from a Regulation E account, e.g. account and routing number); 1033.331(b) (data provider must authenticate consumer and third party and confirm authorization before making data available)",
+    "source_version": "eCFR text retrieved 2026-11-26 (version history: last amendment 2025-01-17)",
+    "date_verified": "2026-11-26",
+    "current_status": "Codified; compliance dates stayed (see US-CFPB1033-02). The rule makes available data that can be used to initiate payments (account and routing numbers) but, as read from 1033.211 and 1033.331, does not itself create authority for a third party to initiate a payment.",
+    "applicability": "Data providers and authorized third parties.",
+    "related_kym_capability": "data_access_vs_payment_separation",
+    "implementation_status": "simulated",
+    "limitations": "KYM keeps data-access scopes strictly separate from payment authority and never treats access to payment-initiation information as permission to pay. The legal relationship between 1033 data access and payment authorization under EFTA/Regulation E and network rules is not analysed here.",
+    "evidence_required": [
+      "Separate grant records for data-access scopes and payment authority",
+      "Authentication records for both the consumer and the third party",
+      "Denial evidence for payment operations attempted with data-access-only credentials"
+    ]
+  },
+  {
+    "id": "US-CFPB1033-05",
+    "jurisdiction": "US",
+    "source": "CFPB Advance Notice of Proposed Rulemaking: Personal Financial Data Rights Reconsideration (90 FR 40986)",
+    "source_type": "proposed_regulation",
+    "source_url": "https://www.consumerfinance.gov/rules-policy/notice-opportunities-comment/archive-closed/personal-financial-data-rights-reconsideration/",
+    "provision": "ANPR questions on (1) who can serve as a 'representative' making a request on behalf of the consumer; (2) fees; (3) data security threat and cost-benefit; (4) data privacy threat picture",
+    "source_version": "ANPR issued and published 2025-08-22; Docket CFPB-2025-0037; RIN 3170-AB39",
+    "date_verified": "2026-11-26",
+    "current_status": "ANPR only (comment period closed); not a proposed or final rule. The Aug. 2026 Unified Agenda lists a planned reconsideration rulemaking. The CFPB has not, per the sources reviewed, decided who may act as a 'representative'; any outcome affecting AI agents is unknown.",
+    "applicability": "Directly relevant to the question of whether and how an AI agent may act as a consumer's representative for data requests.",
+    "related_kym_capability": "mandate_law",
+    "implementation_status": "mapped",
+    "limitations": "Because the 'representative' definition is open, KYM makes no assumption that an AI agent is a representative under section 1033.",
+    "evidence_required": [
+      "Monitoring record of CFPB reconsideration outputs",
+      "Legal analysis of agent operator status under any final representative definition"
+    ]
+  },
+  {
+    "id": "US-REGE-01",
+    "jurisdiction": "US",
+    "source": "Electronic Fund Transfer Act / Regulation E (12 CFR part 1005)",
+    "source_type": "enacted_law",
+    "source_url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1005",
+    "provision": "12 CFR 1005.2(m) (definition of 'unauthorized electronic fund transfer', including that it excludes a transfer initiated by a person furnished the access device by the consumer unless the consumer has notified the institution that transfers by that person are no longer authorized); 1005.6 (consumer liability for unauthorized transfers); 1005.3 (coverage)",
+    "source_version": "eCFR text retrieved 2026-11-26",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. The definition text was verified; how it applies to transfers initiated by an AI agent that was given credentials or tokens by the consumer is NOT settled by the sources reviewed and is not asserted.",
+    "applicability": "EFTs that debit or credit a consumer's account at a financial institution (1005.3(a)). Business accounts and non-EFT payment rails are outside the scope of this record.",
+    "related_kym_capability": "revocation",
+    "implementation_status": "mapped",
+    "limitations": "KYM's immediate bank-side revocation is designed so that a consumer can cut off an agent's authority, which aligns conceptually with the notice-of-no-longer-authorized concept in 1005.2(m). KYM makes no claim about liability allocation, error resolution, preauthorized transfer rules or disclosures under Regulation E.",
+    "evidence_required": [
+      "Record of access device / credential issuance to an agent and the customer notification of revocation",
+      "Evidence of the exact operation authorized and executed",
+      "Dispute and error-resolution handling in a real deployment"
+    ]
+  },
+  {
+    "id": "US-GLBA-01",
+    "jurisdiction": "US",
+    "source": "Gramm-Leach-Bliley Act safeguards: Interagency Guidelines Establishing Information Security Standards (e.g. 12 CFR part 30, appendix B) and 15 U.S.C. 6801",
+    "source_type": "enacted_law",
+    "source_url": "https://www.ecfr.gov/current/title-12/chapter-I/part-30/appendix-Appendix%20B%20to%20Part%2030",
+    "provision": "Appendix B to 12 CFR part 30, sections II-III (information security program; assess and manage risk; oversee service provider arrangements); 15 U.S.C. 6801 (protection of nonpublic personal information)",
+    "source_version": "eCFR text retrieved 2026-11-26",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. The OCC version is cited; other federal banking agencies publish parallel guidelines (not re-verified here). The FTC Safeguards Rule (16 CFR part 314) applies to non-bank financial institutions and was not reviewed here.",
+    "applicability": "National banks and federal savings associations (OCC version). Applicability to other institutions depends on the primary federal regulator.",
+    "related_kym_capability": "security",
+    "implementation_status": "mapped",
+    "limitations": "KYM demonstrates selected controls (short-lived signed decisions, sender-constrained tokens, tamper-evident evidence). It is not an information security program, and demo keys are stored in local files.",
+    "evidence_required": [
+      "Written information security program and risk assessment covering agent interfaces",
+      "Service provider oversight records for agent platforms"
+    ]
+  },
+  {
+    "id": "US-GLBA-02",
+    "jurisdiction": "US",
+    "source": "Regulation P (12 CFR part 1016) - Privacy of Consumer Financial Information",
+    "source_type": "enacted_law",
+    "source_url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1016",
+    "provision": "12 CFR 1016.1 (purpose and scope: privacy notices; conditions for disclosing nonpublic personal information to nonaffiliated third parties; opt-out right)",
+    "source_version": "eCFR text retrieved 2026-11-26",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Only the purpose and scope section was read; detailed notice, opt-out and exception provisions were not analysed.",
+    "applicability": "Financial institutions covered by Regulation P; disclosures to agent operators or third parties would need analysis against the notice, opt-out and exception provisions.",
+    "related_kym_capability": "data_minimization",
+    "implementation_status": "mapped",
+    "limitations": "KYM limits fields released to agents by permission scope but implements no GLBA privacy notices or opt-out handling.",
+    "evidence_required": [
+      "Privacy notice and opt-out records",
+      "Analysis of whether agent-directed disclosure fits a Regulation P exception"
+    ]
+  },
+  {
+    "id": "US-TPRM-01",
+    "jurisdiction": "US",
+    "source": "Interagency Guidance on Third-Party Relationships: Risk Management (OCC, FDIC, Federal Reserve)",
+    "source_type": "supervisory_guidance",
+    "source_url": "https://www.federalregister.gov/documents/2023/06/09/2023-12340/interagency-guidance-on-third-party-relationships-risk-management",
+    "provision": "general (risk management life cycle: planning, due diligence, contract negotiation, ongoing monitoring, termination); 88 FR 37920; Federal Reserve SR 23-4",
+    "source_version": "Final guidance published 2023-06-09 (88 FR 37920); SR 23-4 page retrieved 2026-11-26",
+    "date_verified": "2026-11-26",
+    "current_status": "Final interagency guidance (non-binding supervisory guidance). It states the principles can support risk management for all third-party relationships, including relationships with new structures such as those with some financial technology companies.",
+    "applicability": "Banking organizations supervised by the OCC, FDIC and Federal Reserve engaging third parties; likely relevant to agent platform operators and fintech intermediaries.",
+    "related_kym_capability": "third_party_oversight",
+    "implementation_status": "mapped",
+    "limitations": "KYM models third-party and agent-operator registry entries with synthetic data; it does not perform due diligence, contracting or monitoring.",
+    "evidence_required": [
+      "Third-party inventory including agent operators",
+      "Due diligence and contract terms; ongoing monitoring",
+      "Termination and offboarding evidence"
+    ]
+  },
+  {
+    "id": "US-BSA-01",
+    "jurisdiction": "US",
+    "source": "Bank Secrecy Act regulations for banks (31 CFR part 1020): AML program and Customer Identification Program",
+    "source_type": "enacted_law",
+    "source_url": "https://www.ecfr.gov/current/title-31/subtitle-B/chapter-X/part-1020",
+    "provision": "31 CFR 1020.210 (anti-money laundering program requirements for banks); 31 CFR 1020.220 (customer identification program requirements for banks)",
+    "source_version": "eCFR text retrieved 2026-11-26",
+    "date_verified": "2026-11-26",
+    "current_status": "In force as retrieved. Possible pending changes to AML/CFT program rules were not reviewed. Suspicious activity reporting provisions were not reviewed.",
+    "applicability": "Banks as defined in 31 CFR part 1020.",
+    "related_kym_capability": "financial_crime_controls",
+    "implementation_status": "simulated",
+    "limitations": "KYM includes simulated KYC, transaction-monitoring and sanctions screening with synthetic data. It is not an AML program, performs no real screening and files no reports.",
+    "evidence_required": [
+      "CIP verification record for the account holder",
+      "AML risk assessment covering agent-initiated payments",
+      "Monitoring alerts and dispositions in a real deployment"
+    ]
+  },
+  {
+    "id": "US-UCC4A-01",
+    "jurisdiction": "US",
+    "source": "Uniform Commercial Code Article 4A - Funds Transfers (as enacted by each state)",
+    "source_type": "enacted_law",
+    "source_url": "https://www.uniformlaws.org/acts/ucc4a",
+    "provision": "UCC 4A-201 (security procedure: procedure established by agreement of customer and receiving bank to verify that a payment order is that of the customer or to detect error); 4A-202(a) (a payment order is the authorized order of the person identified as sender if that person authorized it or is otherwise bound by it under the law of agency)",
+    "source_version": "Uniform text read via Cornell LII (UCC Article 4A, 2012); Uniform Law Commission page checked for URL validity; state enactments and variations not checked",
+    "date_verified": "2026-11-26",
+    "current_status": "Uniform text verified. Article 4A is state law; each state's enactment and any variations were NOT checked. The interplay with consumer EFT rules (Regulation E) was not analysed.",
+    "applicability": "Wire and other funds transfers governed by state UCC Article 4A, subject to state law and exclusions not analysed here. 4A-202(a) points to the law of agency to decide whether a payment order is authorized, so there is no uniform national answer for AI-agent instructions.",
+    "related_kym_capability": "payment_authorization",
+    "implementation_status": "mapped",
+    "limitations": "KYM's bank-side policy decision bound to the exact operation hash is conceptually similar to a security procedure, but KYM does not claim to satisfy the 'commercially reasonable security procedure' tests of UCC 4A-202(c) or any state's version.",
+    "evidence_required": [
+      "Customer-bank agreement defining the security procedure covering agent-initiated payment orders",
+      "Evidence of the verification performed for each order",
+      "State-specific legal review"
+    ]
+  },
+  {
+    "id": "US-ESIGN-01",
+    "jurisdiction": "US",
+    "source": "Electronic Signatures in Global and National Commerce Act (E-SIGN), 15 U.S.C. 7001(h) - electronic agents",
+    "source_type": "enacted_law",
+    "source_url": "https://www.govinfo.gov/link/uscode/15/7001",
+    "provision": "15 U.S.C. 7001(h) (a contract or other record relating to a transaction in or affecting interstate or foreign commerce may not be denied legal effect, validity, or enforceability solely because its formation, creation, or delivery involved the action of one or more electronic agents so long as the action of any such electronic agent is legally attributable to the person to be bound)",
+    "source_version": "U.S. Code (text read via Cornell LII; official govinfo link provided)",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. The attribution condition ('legally attributable to the person to be bound') is the operative limit. The state UETA counterparts were not reviewed.",
+    "applicability": "Transactions in or affecting interstate or foreign commerce involving electronic records or signatures. Does not by itself make an AI system a legal agent or decide attribution.",
+    "related_kym_capability": "mandate_law",
+    "implementation_status": "mapped",
+    "limitations": "The statute addresses enforceability of contracts formed by electronic agents given attribution; it does not decide who is bound for an AI agent's acts or whether a consumer is bound. Consumer-specific provisions of E-SIGN were not reviewed.",
+    "evidence_required": [
+      "Evidence of attribution: which person's authorization the agent's act is attributable to (signed mandate)",
+      "Records demonstrating the agent acted within the customer-signed mandate"
+    ]
+  },
+  {
+    "id": "US-AGENCY-01",
+    "jurisdiction": "US",
+    "source": "State agency and contract law (common law of agency, e.g. as summarized in the ALI Restatement (Third) of Agency) - KYM design note",
+    "source_type": "kym_proposal",
+    "source_url": "https://www.ali.org/",
+    "provision": "general (no specific section verified)",
+    "source_version": "unverified (no Restatement text was read; only the ALI site was confirmed reachable)",
+    "date_verified": null,
+    "current_status": "unverified: this is a KYM design note, not a verified legal requirement. US agency and contract law is state law and varies; there is no single US law governing AI-agent mandates. Restatements are secondary authority, not enacted law. No claim is made that an AI system is an 'agent' at law.",
+    "applicability": "Question of whether and how a consumer or business can be bound by an AI agent's acts, and whether the bank can rely on an agent's apparent authority. Must be analysed per state.",
+    "related_kym_capability": "mandate_law",
+    "implementation_status": "mapped",
+    "limitations": "KYM models principal / delegate / scope / limits as a technical design that resembles actual and apparent authority concepts. Not legal advice and not verified against any state's law.",
+    "evidence_required": [
+      "State-by-state legal analysis of authority and attribution for AI-agent acts",
+      "Customer-signed mandate with explicit scope and limits"
+    ]
+  }
+]

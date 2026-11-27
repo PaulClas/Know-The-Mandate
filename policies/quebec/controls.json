@@ -1,0 +1,235 @@
+[
+  {
+    "id": "QC-CCQ-01",
+    "jurisdiction": "CA-QC",
+    "source": "Civil Code of Québec - Mandate: nature and scope",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/ccq-1991",
+    "provision": "art. 2130 (mandate is a contract by which the mandator confers on the mandatary the power to represent him in the performance of a juridical act with a third person); art. 2135 (general terms confer simple administration only; other acts require express mandate)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Art. 2130 defines the mandate as a contract between persons; art. 2135 provides that a mandate expressed in general terms confers only the power to perform acts of simple administration and other acts require an express mandate.",
+    "applicability": "Private-law relationships governed by the Civil Code of Québec. The KYM mandate artifact is modelled on the structure of a mandate (principal, delegate, scope, limits) as a design analogy.",
+    "related_kym_capability": "mandate_law",
+    "implementation_status": "mapped",
+    "limitations": "KYM does NOT assume an AI agent is legally a mandatary: art. 2130 speaks of a contract between persons, and no authority reviewed here recognizes an AI system as a party. The KYM 'mandate' is a technical authorization record; whether it constitutes a Civil Code mandate, and who the mandatary is (e.g. the agent operator), is a legal question not decided here.",
+    "evidence_required": [
+      "Express, itemized scope of the authorized acts (no general-terms grants for payments)",
+      "Identity of the principal and of the legal person operating the agent",
+      "Legal opinion on characterization of the agent relationship"
+    ]
+  },
+  {
+    "id": "QC-CCQ-02",
+    "jurisdiction": "CA-QC",
+    "source": "Civil Code of Québec - Obligations of the mandatary towards the mandator",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/ccq-1991",
+    "provision": "art. 2138 (prudence and diligence; honesty and loyalty in the best interests of the mandator; avoid conflicts of interest); art. 2139 (duty to inform)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Art. 2138 requires a mandatary to fulfill the mandate accepted, act with prudence and diligence, act honestly and faithfully in the best interests of the mandator, and avoid placing himself in a position of conflict of interest.",
+    "applicability": "Where a person (not an AI system) acts as mandatary. A human or legal-person operator of an agent may owe such duties to the customer; this is not assessed here.",
+    "related_kym_capability": "mandate_law",
+    "implementation_status": "mapped",
+    "limitations": "KYM enforces technical limits (amount, payee, time) and records evidence; it cannot establish that an agent operator acted prudently or loyally. Duty of loyalty and conflict-of-interest checks are not implemented.",
+    "evidence_required": [
+      "Record of instructions received and actions taken (evidence ledger)",
+      "Conflict-of-interest disclosures of the agent operator",
+      "Customer-facing reporting of actions taken under the mandate"
+    ]
+  },
+  {
+    "id": "QC-CCQ-03",
+    "jurisdiction": "CA-QC",
+    "source": "Civil Code of Québec - Substitution and delegation by the mandatary",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/ccq-1991",
+    "provision": "art. 2140 (mandatary must fulfill the mandate himself unless authorized to appoint a substitute); art. 2141 (accountability for substitute; direct action against substitute); art. 2142 (may be assisted by another and delegate powers for that purpose unless prohibited; remains liable)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Art. 2140 provides that the mandatary fulfills the mandate himself unless authorized by the mandator to appoint another person; art. 2141 distinguishes unauthorized substitutes (mandatary accountable as if he had acted himself) from authorized ones (accountable only for selection and instructions), and gives the mandator a direct action against the substitute; art. 2142 allows assistance and delegation of powers unless prohibited.",
+    "applicability": "Chains of delegation (agent calling sub-agents or tools). KYM's parent-mandate constraint is a design analogy to the prohibition of unauthorized substitution.",
+    "related_kym_capability": "mandate_law",
+    "implementation_status": "simulated",
+    "limitations": "KYM's rule that a child mandate can never exceed its parent is a technical constraint, not a legal characterization of sub-agents as substitutes (art. 2140-2141) or assistants (art. 2142). Legal classification is unresolved.",
+    "evidence_required": [
+      "Delegation chain from customer mandate to executing agent",
+      "Explicit authorization (or prohibition) of substitution in the mandate",
+      "Evidence that child mandates were intersected with the parent mandate"
+    ]
+  },
+  {
+    "id": "QC-CCQ-04",
+    "jurisdiction": "CA-QC",
+    "source": "Civil Code of Québec - Obligations of the parties towards third persons",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/ccq-1991",
+    "provision": "art. 2157 (mandatary acting within limits in the mandator's name is not personally liable); art. 2158 (mandatary exceeding powers personally liable unless third person aware or mandator ratified); art. 2160 (mandator liable for acts within limits of the mandate and for excess acts if ratified)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Third-party effects depend on whether the mandatary stayed within the limits of the mandate, and on the third person's awareness and ratification.",
+    "applicability": "Effect of an agent's act on the bank (as third person) and on the customer (as mandator) when payments are instructed by an agent.",
+    "related_kym_capability": "mandate_law",
+    "implementation_status": "mapped",
+    "limitations": "KYM's deny-by-default evaluation keeps operations within recorded mandate limits and records the exact decision, which helps show what the limits were. It does not allocate liability between customer, bank and operator; that is a legal and contractual matter, and interactions with payment-rail rules are not analysed.",
+    "evidence_required": [
+      "Mandate limits as they stood at the time of each operation",
+      "Decision record showing within-limit / out-of-limit determination",
+      "Customer ratification records if any out-of-limit act is later ratified"
+    ]
+  },
+  {
+    "id": "QC-CCQ-05",
+    "jurisdiction": "CA-QC",
+    "source": "Civil Code of Québec - Termination of mandate: revocation and renunciation",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/ccq-1991",
+    "provision": "art. 2175 (termination by revocation, renunciation, extinction of power or death); art. 2176 (mandator may revoke); art. 2178 (mandatary may renounce by notifying mandator); art. 2180 (appointment of new mandatary equals revocation of the first once notified); art. 2181 (where notice of revocation was given only to the mandatary, the revocation does not affect a third person who deals with him while unaware of it)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Art. 2181 is the key third-party rule: revocation notified only to the mandatary does not affect a third person who deals with the mandatary while unaware. A mandator who revokes without serious reason at an inopportune moment may owe reparation.",
+    "applicability": "Customer revocation of an agent's authority, and the bank's position as a third person that must be told of the revocation.",
+    "related_kym_capability": "revocation",
+    "implementation_status": "simulated",
+    "limitations": "KYM revokes a mandate at the bank (the party that evaluates every operation) and checks revocation on each request, so a revocation recorded at the bank is effective immediately in the demo. Notice to the bank is assumed to be the customer's act in the bank's own channel; other notice paths and the legal effect of timing are not analysed. Whether art. 2181 applies to a technical agent is not decided.",
+    "evidence_required": [
+      "Revocation request with timestamp and authenticated customer session",
+      "Proof that subsequent operations were denied after the revocation timestamp",
+      "Record of notifications sent to the agent operator"
+    ]
+  },
+  {
+    "id": "QC-P39-01",
+    "jurisdiction": "CA-QC",
+    "source": "Act respecting the protection of personal information in the private sector (CQLR c. P-39.1) - automated decisions",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/p-39.1",
+    "provision": "s. 12.1 (decision based exclusively on automated processing of personal information: inform the person; on request disclose the information used, the reasons and principal factors and parameters, and the right to correction; opportunity to submit observations to a member of personnel able to review)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15; added by 2021, c. 25 (Law 25), s. 110",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Section 12.1 applies to a person carrying on an enterprise who uses personal information to render a decision based exclusively on automated processing. Failure to inform or to allow observations can attract monetary administrative penalties (see s. 90.1(5)).",
+    "applicability": "Decisions about individuals made exclusively by automated processing, which may include an automated allow/deny decision of a policy decision point. Whether a given KYM decision is a 'decision' within s. 12.1 about an individual is not determined here.",
+    "related_kym_capability": "automated_decision_transparency",
+    "implementation_status": "simulated",
+    "limitations": "KYM produces human-readable decision explanations with the factors considered, and models a request-for-review path. It has not been validated against the s. 12.1 notice and review requirements, and uses synthetic data only. Because KYM decisions can involve human approval, whether they are 'exclusively' automated depends on the operation.",
+    "evidence_required": [
+      "Notice to the person that a decision was automated, no later than when the decision is communicated",
+      "Explanation of principal factors and parameters on request",
+      "Record that the person could submit observations to a reviewer"
+    ]
+  },
+  {
+    "id": "QC-P39-02",
+    "jurisdiction": "CA-QC",
+    "source": "Act respecting the protection of personal information in the private sector - consent and communication to third persons",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/p-39.1",
+    "provision": "s. 13 (no communication of personal information to a third person without consent; express consent for sensitive information); s. 14 (consent clear, free, informed, for specific purposes, requested for each purpose in clear and simple language, presented separately if in writing, valid only for the time necessary)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force.",
+    "applicability": "Enterprises carrying on an enterprise in Québec that communicate personal information to third persons such as agent operators or accredited recipients.",
+    "related_kym_capability": "consent_management",
+    "implementation_status": "simulated",
+    "limitations": "KYM simulates purpose-specific consent records with expiry. It does not verify that consent satisfies s. 14 and does not carry out the French-language presentation required in practice beyond showing en/fr consent summaries.",
+    "evidence_required": [
+      "Consent text per purpose, presented separately from other information, in the customer's language",
+      "Consent timestamp, scope, duration and withdrawal",
+      "Record that sensitive information received express consent"
+    ]
+  },
+  {
+    "id": "QC-P39-03",
+    "jurisdiction": "CA-QC",
+    "source": "Act respecting the protection of personal information in the private sector - collection limits",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/p-39.1",
+    "provision": "s. 4 (determine purposes before collecting); s. 5 (collect only the information necessary for the purposes determined)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force.",
+    "applicability": "Collection of personal information by enterprises in Québec, including data an agent requests via a data-access permission.",
+    "related_kym_capability": "data_minimization",
+    "implementation_status": "simulated",
+    "limitations": "KYM data scopes limit fields returned to an agent to those named in the permission. Whether the scopes are 'necessary' for a stated purpose is a judgment not made by the demo.",
+    "evidence_required": [
+      "Purpose statement attached to each data-access permission",
+      "Fields returned per request versus fields permitted"
+    ]
+  },
+  {
+    "id": "QC-P39-04",
+    "jurisdiction": "CA-QC",
+    "source": "Act respecting the protection of personal information in the private sector - confidentiality incidents and safeguards",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/p-39.1",
+    "provision": "s. 3.5 (reasonable measures on a confidentiality incident; prompt notice to the Commission d'accès à l'information if risk of serious injury); s. 10 (security measures; referenced in s. 90.1)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Section 3.5 text verified; the text of s. 10 and of the register-of-incidents provisions was not separately re-read.",
+    "applicability": "Enterprises holding personal information in Québec.",
+    "related_kym_capability": "incident_investigation",
+    "implementation_status": "simulated",
+    "limitations": "KYM's incident view and evidence ledger are synthetic. There is no incident register, notification to the CAI or risk-of-injury assessment.",
+    "evidence_required": [
+      "Tamper-evident record of access events involving personal information",
+      "Incident register entries and notifications"
+    ]
+  },
+  {
+    "id": "QC-CAI-01",
+    "jurisdiction": "CA-QC",
+    "source": "Commission d'accès à l'information du Québec - guidance for private-sector enterprises",
+    "source_type": "supervisory_guidance",
+    "source_url": "https://www.cai.gouv.qc.ca/protection-renseignements-personnels/information-entreprises-privees",
+    "provision": "general (pages on consent, use and communication, security and confidentiality incidents; consent page: https://www.cai.gouv.qc.ca/protection-renseignements-personnels/information-entreprises-privees/consentement-personnes-entreprises)",
+    "source_version": "CAI website retrieved 2026-11-26 (French-language pages)",
+    "date_verified": "2026-11-26",
+    "current_status": "The CAI publishes guidance pages for private-sector enterprises on consent, collection, use/communication, retention, incidents and sanctions. The content of individual pages (including on automated decisions) was not reviewed in detail by the KYM authors.",
+    "applicability": "Enterprises subject to the Québec private sector Act.",
+    "related_kym_capability": "consent_management",
+    "implementation_status": "mapped",
+    "limitations": "Only the existence and structure of the CAI guidance was verified. No claim is made about specific CAI positions on AI agents.",
+    "evidence_required": [
+      "Review of the current CAI guidance on consent and automated decisions by Québec privacy counsel"
+    ]
+  },
+  {
+    "id": "QC-AMF-01",
+    "jurisdiction": "CA-QC",
+    "source": "Autorité des marchés financiers (AMF) - guidelines for Québec-regulated financial institutions (third-party risk, operational risk): UNVERIFIED",
+    "source_type": "supervisory_guidance",
+    "source_url": "https://lautorite.qc.ca/en",
+    "provision": "general (specific guideline not identified)",
+    "source_version": "unverified",
+    "date_verified": null,
+    "current_status": "unverified: the AMF website returned errors (HTTP 403/404) to automated retrieval during research, so no AMF guideline title, date or provision could be confirmed. Any AMF expectation on third-party or operational risk, or on AI use, remains to be identified and verified by a human.",
+    "applicability": "Financial institutions authorized or regulated by the AMF in Québec (e.g. credit unions, insurers, trust companies). Whether Meridian Bank is AMF-regulated is not assumed (federally regulated banks are supervised by OSFI).",
+    "related_kym_capability": "third_party_oversight",
+    "implementation_status": "not_implemented",
+    "limitations": "Placeholder to prompt verification. No mapping is asserted.",
+    "evidence_required": [
+      "Identification and verification of applicable AMF guidelines by Québec regulatory counsel"
+    ]
+  },
+  {
+    "id": "QC-CFL-01",
+    "jurisdiction": "CA-QC",
+    "source": "Charter of the French language (CQLR c. C-11) - contracts of adhesion",
+    "source_type": "enacted_law",
+    "source_url": "https://www.legisquebec.gouv.qc.ca/en/document/cs/c-11",
+    "provision": "s. 55 (contracts pre-determined by one party and related documents must be drawn up in French; a non-French version binds only if, after the French version is remitted, such is the parties' express wish)",
+    "source_version": "LégisQuébec consolidation current to 2026-10-15",
+    "date_verified": "2026-11-26",
+    "current_status": "In force. Section 55 text verified. Exceptions listed in the section were not analysed.",
+    "applicability": "Potentially relevant to standard-form consent or mandate terms presented to Québec customers. Whether KYM consent artifacts are 'contracts' or 'related documents' within s. 55 is not determined.",
+    "related_kym_capability": "consent_management",
+    "implementation_status": "mapped",
+    "limitations": "KYM provides English and French consent summaries as illustrative UI text only. The French text is not legally reviewed and must not be treated as a compliant French version.",
+    "evidence_required": [
+      "Legally reviewed French version of consent and mandate terms",
+      "Record of the language version presented and accepted"
+    ]
+  }
+]

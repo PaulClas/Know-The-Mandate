@@ -1,0 +1,130 @@
+"""Command line tools: seed, reset, verify-ledger, schema, benchmark, scenarios."""
+from __future__ import annotations
+
+import argparse
+import json
+import statistics
+import sys
+import time
+
+from . import config, db, ledger, schemas
+
+
+def cmd_seed(_):
+    from . import seed
+
+    db.init_db()
+    with db.write() as s:
+        seed.seed(s)
+    print("seeded" if True else "")
+
+
+def cmd_reset(_):
+    from . import scenarios
+
+    print(json.dumps(scenarios.reset()))
+
+
+def cmd_verify(_):
+    db.init_db()
+    with db.read() as s:
+        r = ledger.verify_authoritative(s)
+    print(json.dumps({k: r[k] for k in ("ok", "events_checked", "checkpoints_checked", "head_hash", "problems")}, indent=2))
+    return 0 if r["ok"] else 1
+
+
+def cmd_schema(_):
+    out = config.PACKAGES / "mandate-schema" / "mandate.schema.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(schemas.mandate_json_schema(), indent=2, sort_keys=True) + "\n")
+    print(f"wrote {out}")
+
+
+def cmd_scenarios(a):
+    from . import scenarios
+
+    db.init_db()
+    with db.write() as s:
+        from . import seed
+
+        seed.seed(s)
+    rc = 0
+    for c in scenarios.CATALOG:
+        if a.ids and c["id"] not in a.ids:
+            continue
+        r = scenarios.run(c["id"])
+        print(f"{'PASS' if r['passed'] else 'FAIL'}  {c['id']}  {c['title']}  ({r['summary']})")
+        rc |= 0 if r["passed"] else 1
+    return rc
+
+
+def cmd_benchmark(a):
+    """Deterministic authorization benchmark: evaluates the PDP on a fixed snapshot and the full gateway path. Real measurements only."""
+    sys.path.insert(0, str(config.ROOT / "tests"))
+    from helpers import make_inputs, make_mandate
+
+    from . import policy
+
+    inputs = make_inputs(make_mandate())
+    n = a.n
+    lat = []
+    for _ in range(n):
+        t = time.perf_counter()
+        policy.evaluate(inputs)
+        lat.append((time.perf_counter() - t) * 1000)
+    out = {"pdp_pure_evaluation": {"n": n, **_pct(lat)}}
+    from . import demo, scenarios, sandbox
+
+    db.init_db()
+    with db.write() as s:
+        from . import seed
+
+        seed.seed(s)
+    http = sandbox.http()
+    m = demo.new_mandate("customer_001", scenarios._bill_cnl(maximum=250, monthly=9999, approval=9999))
+    client, tok = demo.connect(http, "agent_billpay_001", m, "customer_001")
+    lat2 = []
+    import uuid
+
+    for _ in range(a.http_n):
+        t = time.perf_counter()
+        client.call(tok, "GET", "/bank/accounts/account_001/balances")
+        lat2.append((time.perf_counter() - t) * 1000)
+    out["http_gateway_read_end_to_end"] = {"n": a.http_n, **_pct(lat2)}
+    lat3 = []
+    for _ in range(a.http_n):
+        t = time.perf_counter()
+        client.call(tok, "POST", "/bank/payments", json_body={"account_id": "account_001", "beneficiary_id": "beneficiary_hydro_quebec", "amount_minor": 100, "currency": "CAD", "purpose": "household_bill_management"}, idempotency_key=uuid.uuid4().hex)
+        lat3.append((time.perf_counter() - t) * 1000)
+    out["http_gateway_payment_end_to_end"] = {"n": a.http_n, **_pct(lat3)}
+    from .metrics import METRICS
+
+    out["server_side_measurements"] = METRICS.snapshot()["latency_ms"]
+    out["environment"] = {"note": "Single-process SQLite, in-process ASGI test client. Numbers are indicative of this machine only.", "python": sys.version.split()[0]}
+    print(json.dumps(out, indent=2))
+
+
+def _pct(v: list[float]) -> dict:
+    s = sorted(v)
+    pick = lambda p: round(s[min(len(s) - 1, int(round(p / 100 * (len(s) - 1))))], 4)  # noqa: E731
+    return {"p50_ms": pick(50), "p95_ms": pick(95), "p99_ms": pick(99), "mean_ms": round(statistics.mean(v), 4)}
+
+
+def main():
+    p = argparse.ArgumentParser(prog="kym")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    for name, fn in (("seed", cmd_seed), ("reset", cmd_reset), ("verify-ledger", cmd_verify), ("schema", cmd_schema)):
+        sub.add_parser(name).set_defaults(fn=fn)
+    sc = sub.add_parser("scenarios")
+    sc.add_argument("ids", nargs="*")
+    sc.set_defaults(fn=cmd_scenarios)
+    b = sub.add_parser("benchmark")
+    b.add_argument("-n", type=int, default=5000)
+    b.add_argument("--http-n", type=int, default=100)
+    b.set_defaults(fn=cmd_benchmark)
+    a = p.parse_args()
+    sys.exit(a.fn(a) or 0)
+
+
+if __name__ == "__main__":
+    main()

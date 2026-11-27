@@ -1,0 +1,36 @@
+[project]
+name = "kym"
+version = "0.1.0"
+description = "KYM - Know Your Mandate: proof of concept for governing financial authority delegated to AI agents (experimental, synthetic data only)"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi==0.165.0",
+  "uvicorn[standard]==0.54.0",
+  "pydantic==2.14.4",
+  "sqlalchemy==2.1.9",
+  "alembic==1.20.1",
+  "rdflib==7.6.0",
+  "pyshacl==0.40.2",
+  "lark==1.3.1",
+  "pyjwt==2.15.1",
+  "cryptography==50.0.2",
+  "rfc8785==0.1.4",
+  "jsonschema==4.26.0",
+  "httpx==0.29.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0", "hypothesis==6.170.17", "ruff==0.17.6"]
+
+[tool.pytest.ini_options]
+pythonpath = ["apps/api"]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+src = ["apps/api"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E501", "B008"]

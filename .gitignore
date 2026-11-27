@@ -1,0 +1,14 @@
+.venv/
+.kym-data/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+node_modules/
+.next/
+.env
+.env.local
+test-results/
+playwright-report/
+*.egg-info/

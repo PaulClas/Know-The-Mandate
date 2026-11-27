@@ -1,0 +1,420 @@
+{
+  "$defs": {
+    "AggregateConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum_daily_amount_minor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum Daily Amount Minor"
+        },
+        "maximum_monthly_amount_minor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum Monthly Amount Minor"
+        },
+        "maximum_transaction_count_monthly": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum Transaction Count Monthly"
+        }
+      },
+      "title": "AggregateConstraints",
+      "type": "object"
+    },
+    "Constraints": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_beneficiaries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Beneficiaries",
+          "type": "array"
+        },
+        "allowed_countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Countries",
+          "type": "array"
+        },
+        "allowed_destination_accounts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Destination Accounts",
+          "type": "array"
+        },
+        "allowed_merchant_categories": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Merchant Categories",
+          "type": "array"
+        },
+        "allowed_merchants": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Merchants",
+          "type": "array"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        },
+        "maximum_amount_minor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum Amount Minor"
+        }
+      },
+      "title": "Constraints",
+      "type": "object"
+    },
+    "Delegation": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "default": false,
+          "title": "Allowed",
+          "type": "boolean"
+        },
+        "maximum_depth": {
+          "default": 0,
+          "maximum": 5,
+          "minimum": 0,
+          "title": "Maximum Depth",
+          "type": "integer"
+        }
+      },
+      "title": "Delegation",
+      "type": "object"
+    },
+    "Lineage": {
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "minimum": 1,
+          "title": "Depth",
+          "type": "integer"
+        },
+        "parent_mandate_id": {
+          "title": "Parent Mandate Id",
+          "type": "string"
+        },
+        "parent_mandate_version": {
+          "title": "Parent Mandate Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "parent_mandate_id",
+        "parent_mandate_version",
+        "depth"
+      ],
+      "title": "Lineage",
+      "type": "object"
+    },
+    "Mandatary": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "client_id": {
+          "title": "Client Id",
+          "type": "string"
+        },
+        "operator_id": {
+          "title": "Operator Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent_id",
+        "operator_id",
+        "client_id"
+      ],
+      "title": "Mandatary",
+      "type": "object"
+    },
+    "Obligations": {
+      "additionalProperties": false,
+      "properties": {
+        "human_approval_above_minor": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Human Approval Above Minor"
+        },
+        "notify_customer": {
+          "default": true,
+          "title": "Notify Customer",
+          "type": "boolean"
+        },
+        "required_approvals": {
+          "default": 1,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Required Approvals",
+          "type": "integer"
+        }
+      },
+      "title": "Obligations",
+      "type": "object"
+    },
+    "Permission": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "constraints": {
+          "$ref": "#/$defs/Constraints",
+          "default": {
+            "allowed_beneficiaries": [],
+            "allowed_countries": [],
+            "allowed_destination_accounts": [],
+            "allowed_merchant_categories": [],
+            "allowed_merchants": [],
+            "currency": null,
+            "maximum_amount_minor": null
+          }
+        },
+        "resources": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Resources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "action",
+        "resources"
+      ],
+      "title": "Permission",
+      "type": "object"
+    },
+    "Principal": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "individual",
+            "business"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "title": "Principal",
+      "type": "object"
+    },
+    "Validity": {
+      "additionalProperties": false,
+      "properties": {
+        "budget_timezone": {
+          "default": "America/Toronto",
+          "title": "Budget Timezone",
+          "type": "string"
+        },
+        "expires_at": {
+          "title": "Expires At",
+          "type": "string"
+        },
+        "not_before": {
+          "title": "Not Before",
+          "type": "string"
+        }
+      },
+      "required": [
+        "not_before",
+        "expires_at"
+      ],
+      "title": "Validity",
+      "type": "object"
+    }
+  },
+  "$id": "https://example.org/kym/v1/mandate.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "aggregate_constraints": {
+      "$ref": "#/$defs/AggregateConstraints",
+      "default": {
+        "maximum_daily_amount_minor": null,
+        "maximum_monthly_amount_minor": null,
+        "maximum_transaction_count_monthly": null
+      }
+    },
+    "currency": {
+      "default": "CAD",
+      "title": "Currency",
+      "type": "string"
+    },
+    "delegation": {
+      "$ref": "#/$defs/Delegation",
+      "default": {
+        "allowed": false,
+        "maximum_depth": 0
+      }
+    },
+    "jurisdictions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Jurisdictions",
+      "type": "array"
+    },
+    "lineage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Lineage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "mandatary": {
+      "$ref": "#/$defs/Mandatary"
+    },
+    "mandate_id": {
+      "title": "Mandate Id",
+      "type": "string"
+    },
+    "obligations": {
+      "$ref": "#/$defs/Obligations",
+      "default": {
+        "human_approval_above_minor": null,
+        "notify_customer": true,
+        "required_approvals": 1
+      }
+    },
+    "ontology_version": {
+      "default": "1.0.0",
+      "title": "Ontology Version",
+      "type": "string"
+    },
+    "permissions": {
+      "items": {
+        "$ref": "#/$defs/Permission"
+      },
+      "minItems": 1,
+      "title": "Permissions",
+      "type": "array"
+    },
+    "policy_version": {
+      "default": "bank-policy-1.0.0",
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "principal": {
+      "$ref": "#/$defs/Principal"
+    },
+    "prohibitions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Prohibitions",
+      "type": "array"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "validity": {
+      "$ref": "#/$defs/Validity"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "mandate_id",
+    "principal",
+    "mandatary",
+    "purpose",
+    "permissions",
+    "validity"
+  ],
+  "title": "KYM Mandate (experimental)",
+  "type": "object"
+}

@@ -1,0 +1,151 @@
+@prefix kym:  <https://example.org/kym/v1#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+# EXPERIMENTAL. The namespace https://example.org/kym/v1# is a placeholder (example.org) for a proposed
+# vocabulary. It is NOT a standard, is not registered, and carries no stability guarantee.
+# Open-world OWL semantics MUST NOT be used for authorization: missing authorization means denial at runtime.
+
+<https://example.org/kym/v1> a owl:Ontology ;
+    dct:title "KYM Mandate Ontology (experimental)"@en ;
+    dct:description "Vocabulary for delegated financial authority, reusing PROV-O and ODRL. Experimental; example.org namespace."@en ;
+    owl:versionInfo "1.0.0" ;
+    owl:versionIRI <https://example.org/kym/v1/1.0.0> ;
+    owl:imports <http://www.w3.org/ns/prov-o#> , <http://www.w3.org/ns/odrl/2/> .
+
+kym:Principal a owl:Class ; rdfs:subClassOf prov:Agent ; rdfs:label "Principal"@en ; rdfs:comment "A party that can hold or grant financial authority."@en .
+kym:Customer a owl:Class ; rdfs:subClassOf kym:Principal ; rdfs:label "Customer"@en ; rdfs:comment "A bank customer (individual or business) that can grant a mandate over resources it controls."@en .
+kym:Human a owl:Class ; rdfs:subClassOf kym:Principal , prov:Person ; rdfs:label "Human"@en ; rdfs:comment "A natural person."@en .
+kym:LegalEntity a owl:Class ; rdfs:subClassOf kym:Principal ; rdfs:label "Legal entity"@en ; rdfs:comment "A party with legal personality. AI agents are NOT legal entities."@en .
+kym:Organization a owl:Class ; rdfs:subClassOf kym:LegalEntity , prov:Organization ; rdfs:label "Organization"@en ; rdfs:comment "A legal entity that is an organization."@en .
+kym:AuthorizedRepresentative a owl:Class ; rdfs:subClassOf kym:Human ; rdfs:label "Authorized representative"@en ; rdfs:comment "A human authorized to act or sign for a business customer."@en .
+kym:AIAgent a owl:Class ; rdfs:subClassOf prov:SoftwareAgent ; rdfs:label "AI agent"@en ; rdfs:comment "A non-human software identity registered in the KYM agent registry. Not a legal person."@en .
+kym:AgentOperator a owl:Class ; rdfs:subClassOf kym:LegalEntity ; rdfs:label "Agent operator"@en ; rdfs:comment "The legal entity operating the deployed agent."@en .
+kym:AgentDeveloper a owl:Class ; rdfs:subClassOf kym:LegalEntity ; rdfs:label "Agent developer"@en ; rdfs:comment "The party that built the agent software."@en .
+kym:FinancialInstitution a owl:Class ; rdfs:subClassOf kym:Organization ; rdfs:label "Financial institution"@en ; rdfs:comment "A bank or similar institution governing access to its own infrastructure."@en .
+kym:Mandate a owl:Class ; rdfs:subClassOf prov:Entity , odrl:Policy ; rdfs:label "Mandate"@en ; rdfs:comment "A bank-validated, customer-approved statement of delegated financial authority. Immutable per version."@en .
+kym:MandateVersion a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Mandate version"@en ; rdfs:comment "A specific immutable version of a mandate."@en .
+kym:Delegation a owl:Class ; rdfs:subClassOf prov:Delegation ; rdfs:label "Delegation"@en ; rdfs:comment "A bank-validated record by which a mandate delegates a subset of its authority."@en .
+kym:Consent a owl:Class ; rdfs:subClassOf prov:Activity ; rdfs:label "Consent"@en ; rdfs:comment "The activity of a customer approving a mandate version."@en .
+kym:ConsentReceipt a owl:Class ; rdfs:subClassOf kym:Evidence ; rdfs:label "Consent receipt"@en ; rdfs:comment "Evidence of customer consent bound to a mandate digest."@en .
+kym:AuthorizationGrant a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Authorization grant"@en ; rdfs:comment "An OAuth grant that references a mandate; it is technical permission, not authority."@en .
+kym:FinancialResource a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Financial resource"@en ; rdfs:comment "An asset over which authority can be delegated."@en .
+kym:BankAccount a owl:Class ; rdfs:subClassOf kym:FinancialResource ; rdfs:label "Bank account"@en ; rdfs:comment "A deposit account."@en .
+kym:PaymentInstrument a owl:Class ; rdfs:subClassOf kym:FinancialResource ; rdfs:label "Payment instrument"@en ; rdfs:comment "A card or other instrument."@en .
+kym:FinancialAction a owl:Class ; rdfs:subClassOf odrl:Action ; rdfs:label "Financial action"@en ; rdfs:comment "Root of the financial action taxonomy. Subclass relations carry NO implicit authority."@en .
+kym:Permission a owl:Class ; rdfs:subClassOf odrl:Permission ; rdfs:label "Permission"@en ; rdfs:comment "A grant of authority for one exact action over exact resources."@en .
+kym:Prohibition a owl:Class ; rdfs:subClassOf odrl:Prohibition ; rdfs:label "Prohibition"@en ; rdfs:comment "An explicit denial. Prohibitions override permissions."@en .
+kym:Obligation a owl:Class ; rdfs:subClassOf odrl:Duty ; rdfs:label "Obligation"@en ; rdfs:comment "A duty such as human approval or customer notification."@en .
+kym:Constraint a owl:Class ; rdfs:subClassOf odrl:Constraint ; rdfs:label "Constraint"@en ; rdfs:comment "A financial, temporal or operational limit."@en .
+kym:Purpose a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Purpose"@en ; rdfs:comment "Declared purpose of a mandate. A declared purpose is not proof of intent."@en .
+kym:Merchant a owl:Class ; rdfs:subClassOf kym:LegalEntity ; rdfs:label "Merchant"@en ; rdfs:comment "A seller that receives payment."@en .
+kym:Beneficiary a owl:Class ; rdfs:subClassOf kym:LegalEntity ; rdfs:label "Beneficiary"@en ; rdfs:comment "A payee that receives funds."@en .
+kym:Transaction a owl:Class ; rdfs:subClassOf prov:Activity ; rdfs:label "Transaction"@en ; rdfs:comment "An attempted or completed financial operation."@en .
+kym:TransactionProposal a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Transaction proposal"@en ; rdfs:comment "A prepared but unauthorized financial operation."@en .
+kym:RiskAssessment a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Risk assessment"@en ; rdfs:comment "Synthetic transaction risk signals and score."@en .
+kym:PolicyDecision a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Policy decision"@en ; rdfs:comment "A deterministic ALLOW/DENY/REQUIRE_HUMAN_APPROVAL/REFER_TO_RISK_REVIEW decision."@en .
+kym:Approval a owl:Class ; rdfs:subClassOf prov:Activity ; rdfs:label "Approval"@en ; rdfs:comment "A human approval bound to an exact transaction payload."@en .
+kym:Revocation a owl:Class ; rdfs:subClassOf prov:Activity ; rdfs:label "Revocation"@en ; rdfs:comment "The activity of withdrawing a mandate."@en .
+kym:Evidence a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Evidence"@en ; rdfs:comment "A recorded artifact supporting reconstruction of a decision."@en .
+kym:LedgerEvent a owl:Class ; rdfs:subClassOf kym:Evidence ; rdfs:label "Ledger event"@en ; rdfs:comment "A signed, hash-chained KYM Evidence Ledger event."@en .
+kym:ResponsibilityAssignment a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Responsibility assignment"@en ; rdfs:comment "Factual attribution of which party performed or controlled a step. Not a liability finding."@en .
+kym:Jurisdiction a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Jurisdiction"@en ; rdfs:comment "A legal jurisdiction (e.g. CA, CA-QC, US)."@en .
+kym:RegulatoryControl a owl:Class ; rdfs:subClassOf prov:Entity ; rdfs:label "Regulatory control"@en ; rdfs:comment "A mapped regulatory concept; mapping is not a compliance claim."@en .
+
+kym:ReadFinancialData a owl:Class ; rdfs:subClassOf kym:FinancialAction ; rdfs:label "Read financial data"@en ; rdfs:comment "Action group. Does not grant authority over its member actions."@en .
+kym:AnalyzeFinancialData a owl:Class ; rdfs:subClassOf kym:FinancialAction ; rdfs:label "Analyze financial data"@en ; rdfs:comment "Action group. Does not grant authority over its member actions."@en .
+kym:PrepareFinancialOperation a owl:Class ; rdfs:subClassOf kym:FinancialAction ; rdfs:label "Prepare financial operation"@en ; rdfs:comment "Action group. Does not grant authority over its member actions."@en .
+kym:ExecuteFinancialOperation a owl:Class ; rdfs:subClassOf kym:FinancialAction ; rdfs:label "Execute financial operation"@en ; rdfs:comment "Action group. Does not grant authority over its member actions."@en .
+kym:ManageFinancialAuthority a owl:Class ; rdfs:subClassOf kym:FinancialAction ; rdfs:label "Manage financial authority"@en ; rdfs:comment "Action group. Does not grant authority over its member actions."@en .
+kym:ReadAccount a owl:Class ; rdfs:subClassOf kym:ReadFinancialData ; rdfs:label "Read account"@en ; kym:actionId "accounts.read" ; kym:cnlVerb "READ_ACCOUNT" ; kym:oauthScope "accounts.read" .
+kym:ReadBalance a owl:Class ; rdfs:subClassOf kym:ReadFinancialData ; rdfs:label "Read balance"@en ; kym:actionId "balances.read" ; kym:cnlVerb "READ_BALANCE" ; kym:oauthScope "balances.read" .
+kym:ReadTransactions a owl:Class ; rdfs:subClassOf kym:ReadFinancialData ; rdfs:label "Read transactions"@en ; kym:actionId "transactions.read" ; kym:cnlVerb "READ_TRANSACTIONS" ; kym:oauthScope "transactions.read" .
+kym:ReadAccountOwner a owl:Class ; rdfs:subClassOf kym:ReadFinancialData ; rdfs:label "Read account owner"@en ; kym:actionId "accounts.owner.read" ; kym:cnlVerb "READ_ACCOUNT_OWNER" ; kym:oauthScope "accounts.read" .
+kym:TransmitFinancialData a owl:Class ; rdfs:subClassOf kym:ReadFinancialData ; rdfs:label "Transmit financial data to another party"@en ; kym:actionId "data.transmit_external" ; kym:cnlVerb "TRANSMIT_DATA_EXTERNAL" .
+kym:CategorizeTransactions a owl:Class ; rdfs:subClassOf kym:AnalyzeFinancialData ; rdfs:label "Categorize transactions"@en ; kym:actionId "analysis.categorize" ; kym:cnlVerb "CATEGORIZE_TRANSACTIONS" .
+kym:AnalyzeCashFlow a owl:Class ; rdfs:subClassOf kym:AnalyzeFinancialData ; rdfs:label "Analyze cash flow"@en ; kym:actionId "analysis.cashflow" ; kym:cnlVerb "ANALYZE_CASH_FLOW" .
+kym:GenerateBudget a owl:Class ; rdfs:subClassOf kym:AnalyzeFinancialData ; rdfs:label "Generate budget"@en ; kym:actionId "analysis.budget" ; kym:cnlVerb "GENERATE_BUDGET" .
+kym:PreparePayment a owl:Class ; rdfs:subClassOf kym:PrepareFinancialOperation ; rdfs:label "Prepare payment"@en ; kym:actionId "payments.prepare" ; kym:cnlVerb "PREPARE_PAYMENT" ; kym:oauthScope "payments.prepare" .
+kym:PrepareTransfer a owl:Class ; rdfs:subClassOf kym:PrepareFinancialOperation ; rdfs:label "Prepare transfer"@en ; kym:actionId "transfers.prepare" ; kym:cnlVerb "PREPARE_TRANSFER" ; kym:oauthScope "payments.prepare" .
+kym:PrepareInvestmentOrder a owl:Class ; rdfs:subClassOf kym:PrepareFinancialOperation ; rdfs:label "Prepare investment order"@en ; kym:actionId "investments.prepare" ; kym:cnlVerb "PREPARE_INVESTMENT_ORDER" ; kym:oauthScope "payments.prepare" .
+kym:InitiatePayment a owl:Class ; rdfs:subClassOf kym:ExecuteFinancialOperation ; rdfs:label "Initiate payment"@en ; kym:actionId "payments.initiate" ; kym:cnlVerb "INITIATE_PAYMENT" ; kym:oauthScope "payments.initiate" .
+kym:PayInvoice a owl:Class ; rdfs:subClassOf kym:ExecuteFinancialOperation ; rdfs:label "Pay invoice"@en ; kym:actionId "payments.pay_invoice" ; kym:cnlVerb "PAY_INVOICE" ; kym:oauthScope "payments.initiate" .
+kym:PurchaseGoods a owl:Class ; rdfs:subClassOf kym:ExecuteFinancialOperation ; rdfs:label "Purchase goods"@en ; kym:actionId "purchases.goods" ; kym:cnlVerb "PURCHASE_GOODS" ; kym:oauthScope "payments.initiate" .
+kym:ExecuteTransfer a owl:Class ; rdfs:subClassOf kym:ExecuteFinancialOperation ; rdfs:label "Execute internal transfer"@en ; kym:actionId "transfers.execute" ; kym:cnlVerb "EXECUTE_TRANSFER" ; kym:oauthScope "transfers.initiate" .
+kym:ExecuteExternalTransfer a owl:Class ; rdfs:subClassOf kym:ExecuteFinancialOperation ; rdfs:label "Execute external transfer"@en ; kym:actionId "transfers.external" ; kym:cnlVerb "EXTERNAL_TRANSFER" ; kym:oauthScope "transfers.initiate" .
+kym:ExecuteInvestmentOrder a owl:Class ; rdfs:subClassOf kym:ExecuteFinancialOperation ; rdfs:label "Execute investment order"@en ; kym:actionId "investments.trade" ; kym:cnlVerb "EXECUTE_INVESTMENT_ORDER" ; kym:oauthScope "investments.trade" .
+kym:RequestMandate a owl:Class ; rdfs:subClassOf kym:ManageFinancialAuthority ; rdfs:label "Request mandate"@en ; kym:actionId "mandates.request" ; kym:cnlVerb "REQUEST_MANDATE" .
+kym:RequestDelegation a owl:Class ; rdfs:subClassOf kym:ManageFinancialAuthority ; rdfs:label "Delegate authority"@en ; kym:actionId "mandates.delegate" ; kym:cnlVerb "DELEGATE" .
+kym:RevokeMandate a owl:Class ; rdfs:subClassOf kym:ManageFinancialAuthority ; rdfs:label "Revoke mandate"@en ; kym:actionId "mandates.revoke" ; kym:cnlVerb "REVOKE_MANDATE" .
+
+kym:grantsMandate a owl:ObjectProperty ; rdfs:domain kym:Customer ; rdfs:range kym:Mandate ; rdfs:label "grants mandate"@en .
+kym:hasPrincipal a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Principal ; rdfs:label "has principal"@en .
+kym:hasMandatary a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:AIAgent ; rdfs:label "has mandatary"@en .
+kym:operatesAgent a owl:ObjectProperty ; rdfs:domain kym:AgentOperator ; rdfs:range kym:AIAgent ; rdfs:label "operates agent"@en .
+kym:developsAgent a owl:ObjectProperty ; rdfs:domain kym:AgentDeveloper ; rdfs:range kym:AIAgent ; rdfs:label "develops agent"@en .
+kym:represents a owl:ObjectProperty ; rdfs:domain kym:AuthorizedRepresentative ; rdfs:range kym:Customer ; rdfs:label "represents"@en .
+kym:ownsAccount a owl:ObjectProperty ; rdfs:domain kym:Customer ; rdfs:range kym:BankAccount ; rdfs:label "owns account"@en .
+kym:controlsResource a owl:ObjectProperty ; rdfs:domain kym:Principal ; rdfs:range kym:FinancialResource ; rdfs:label "controls resource"@en .
+kym:authorizesAction a owl:ObjectProperty ; rdfs:domain kym:Permission ; rdfs:range kym:FinancialAction ; rdfs:label "authorizes action"@en .
+kym:prohibitsAction a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:FinancialAction ; rdfs:label "prohibits action"@en .
+kym:appliesToResource a owl:ObjectProperty ; rdfs:domain kym:Permission ; rdfs:range kym:FinancialResource ; rdfs:label "applies to resource"@en .
+kym:hasPurpose a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Purpose ; rdfs:label "has purpose"@en .
+kym:hasConstraint a owl:ObjectProperty ; rdfs:domain kym:Permission ; rdfs:range kym:Constraint ; rdfs:label "has constraint"@en .
+kym:imposesObligation a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Obligation ; rdfs:label "imposes obligation"@en .
+kym:delegatesTo a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Mandate ; rdfs:label "delegates to"@en .
+kym:derivedFromMandate a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Mandate ; rdfs:label "derived from mandate"@en .
+kym:requiresApproval a owl:ObjectProperty ; rdfs:domain kym:Transaction ; rdfs:range kym:Approval ; rdfs:label "requires approval"@en .
+kym:approvedBy a owl:ObjectProperty ; rdfs:domain kym:Approval ; rdfs:range kym:Human ; rdfs:label "approved by"@en .
+kym:executedBy a owl:ObjectProperty ; rdfs:domain kym:Transaction ; rdfs:range prov:Agent ; rdfs:label "executed by"@en .
+kym:evaluatedBy a owl:ObjectProperty ; rdfs:domain kym:PolicyDecision ; rdfs:range prov:Agent ; rdfs:label "evaluated by"@en .
+kym:governedByPolicy a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range prov:Entity ; rdfs:label "governed by policy"@en .
+kym:evidencedBy a owl:ObjectProperty ; rdfs:domain prov:Entity ; rdfs:range kym:LedgerEvent ; rdfs:label "evidenced by"@en .
+kym:revokedBy a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Revocation ; rdfs:label "revoked by"@en .
+kym:supersedes a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Mandate ; rdfs:label "supersedes"@en .
+kym:subjectToJurisdiction a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Jurisdiction ; rdfs:label "subject to jurisdiction"@en .
+kym:allowedBeneficiary a owl:ObjectProperty ; rdfs:domain kym:Constraint ; rdfs:range kym:Beneficiary ; rdfs:label "allowed beneficiary"@en .
+kym:authorizedUnderMandate a owl:ObjectProperty ; rdfs:domain kym:Transaction ; rdfs:range kym:Mandate ; rdfs:label "authorized under mandate (KYM extension for dispute queries)"@en .
+kym:hasDecision a owl:ObjectProperty ; rdfs:domain kym:Transaction ; rdfs:range kym:PolicyDecision ; rdfs:label "has decision"@en .
+kym:hasApproval a owl:ObjectProperty ; rdfs:domain kym:Transaction ; rdfs:range kym:Approval ; rdfs:label "has approval"@en .
+kym:hasAgent a owl:ObjectProperty ; rdfs:domain kym:Transaction ; rdfs:range kym:AIAgent ; rdfs:label "has agent"@en .
+kym:hasPermission a owl:ObjectProperty ; rdfs:domain kym:Mandate ; rdfs:range kym:Permission ; rdfs:label "has permission"@en .
+
+kym:maximumAmount a owl:DatatypeProperty ; rdfs:domain kym:Constraint ; rdfs:range xsd:integer ; rdfs:comment "Maximum per-transaction amount in integer minor currency units."@en .
+kym:maximumDailyAmount a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:integer ; rdfs:comment "Aggregate daily limit, minor units, budget-timezone calendar day."@en .
+kym:maximumMonthlyAmount a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:integer ; rdfs:comment "Aggregate monthly limit, minor units, budget-timezone calendar month."@en .
+kym:maximumTransactionCount a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:integer ; rdfs:comment "Maximum number of money-moving transactions per month."@en .
+kym:currency a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:comment "ISO 4217 alphabetic currency code."@en .
+kym:validFrom a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:dateTime ; rdfs:comment "Start of validity (UTC)."@en .
+kym:validUntil a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:dateTime ; rdfs:comment "End of validity (UTC)."@en .
+kym:maximumDelegationDepth a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:integer ; rdfs:comment "Maximum remaining delegation depth."@en .
+kym:allowedMerchantCategory a owl:DatatypeProperty ; rdfs:domain kym:Constraint ; rdfs:range xsd:string ; rdfs:comment "Allowed merchant category code."@en .
+kym:allowedCountry a owl:DatatypeProperty ; rdfs:domain kym:Constraint ; rdfs:range xsd:string ; rdfs:comment "Allowed counterparty country (ISO 3166-1 alpha-2)."@en .
+kym:riskThreshold a owl:DatatypeProperty ; rdfs:domain kym:PolicyDecision ; rdfs:range xsd:integer ; rdfs:comment "Risk score threshold applied."@en .
+kym:mandateVersion a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:integer ; rdfs:comment "Mandate version number."@en .
+kym:policyVersion a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:comment "Bank policy version."@en .
+kym:ontologyVersion a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:comment "Ontology version."@en .
+kym:cryptographicDigest a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:comment "sha256 digest of the canonical (RFC 8785) content."@en .
+kym:humanApprovalAbove a owl:DatatypeProperty ; rdfs:domain kym:Obligation ; rdfs:range xsd:integer ; rdfs:comment "Amounts strictly above this (minor units) require human approval."@en .
+kym:requiredApprovals a owl:DatatypeProperty ; rdfs:domain kym:Obligation ; rdfs:range xsd:integer ; rdfs:comment "Number of distinct human approvers required."@en .
+kym:delegationAllowed a owl:DatatypeProperty ; rdfs:domain kym:Mandate ; rdfs:range xsd:boolean ; rdfs:comment "Whether delegation is permitted."@en .
+kym:actionId a owl:DatatypeProperty ; rdfs:domain kym:FinancialAction ; rdfs:range xsd:string ; rdfs:comment "Canonical action identifier."@en .
+kym:cnlVerb a owl:DatatypeProperty ; rdfs:domain kym:FinancialAction ; rdfs:range xsd:string ; rdfs:comment "KYM-CNL verb."@en .
+kym:oauthScope a owl:DatatypeProperty ; rdfs:domain kym:FinancialAction ; rdfs:range xsd:string ; rdfs:comment "Illustrative bank-defined OAuth scope."@en .
+kym:amountMinor a owl:DatatypeProperty ; rdfs:domain kym:Transaction ; rdfs:range xsd:integer ; rdfs:comment "Transaction amount in minor units."@en .
+kym:expiresAt a owl:DatatypeProperty ; rdfs:domain kym:Approval ; rdfs:range xsd:dateTime ; rdfs:comment "Approval expiry."@en .
+
+kym:MoneyMovingPermission a owl:Class ; rdfs:subClassOf kym:Permission ; rdfs:label "Money-moving permission"@en ;
+    rdfs:comment "A permission whose action executes a financial operation. Bank policy requires bounded constraints."@en .
+kym:allowedMerchant a owl:ObjectProperty ; rdfs:domain kym:Constraint ; rdfs:range kym:Merchant ; rdfs:label "allowed merchant"@en .
+kym:hasSignatory a owl:ObjectProperty ; rdfs:domain kym:Customer ; rdfs:range kym:AuthorizedRepresentative ; rdfs:label "has signatory"@en .
+kym:hasOperator a owl:ObjectProperty ; rdfs:domain kym:AIAgent ; rdfs:range kym:AgentOperator ; rdfs:label "has operator"@en .
+kym:lifecycleStatus a owl:DatatypeProperty ; rdfs:comment "Projection of authoritative lifecycle state into the graph for querying. The authoritative state is the mandate state record, not this triple."@en .
+kym:operationalStatus a owl:DatatypeProperty ; rdfs:comment "Agent operational status projection."@en .
+kym:authorizedAt a owl:DatatypeProperty ; rdfs:range xsd:dateTime .
+kym:decision a owl:DatatypeProperty ; rdfs:domain kym:PolicyDecision ; rdfs:range xsd:string .
+kym:allowedDestinationAccount a owl:ObjectProperty ; rdfs:domain kym:Constraint ; rdfs:range kym:BankAccount ; rdfs:label "allowed destination account"@en .

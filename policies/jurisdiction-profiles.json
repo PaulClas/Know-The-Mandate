@@ -1,0 +1,44 @@
+[
+  {
+    "jurisdiction": "CA",
+    "name": "Canada (federal)",
+    "summary": "Meridian Bank (fictional) is modelled as a federally regulated financial institution. The Consumer-Driven Banking Act (assented 2026-03-26) creates a data-sharing framework supervised by the Bank of Canada, but most of its provisions are not yet in force as of the 2026-11-12 consolidation; regulations and supervisory guidelines are still proposed or in draft. Payment initiation (write access) is not part of the Act as read; the Department of Finance describes it as a possible later phase. Privacy is governed federally by PIPEDA; payment-service providers by the Retail Payment Activities Act; AML by the PCMLTFA and FINTRAC; prudential expectations by OSFI guidelines. All mappings are illustrative, not legal advice and not certified.",
+    "key_distinctions": [
+      "Data access and payment initiation are distinct: the CDBA as enacted is about consumer-directed data sharing; payment initiation is not established by it.",
+      "Most CDBA provisions, including express-consent rules (ss. 85-90), are not yet in force; commencement is by order in council.",
+      "Bank of Canada is the supervisor under the CDBA and the RPAA; OSFI supervises federally regulated financial institutions.",
+      "The RPAA defines payment functions that include initiation and authorization of electronic funds transfers.",
+      "PIPEDA is the baseline private-sector privacy law outside provinces with substantially similar laws (Quebec has its own).",
+      "OSFI B-13, B-10 and E-21 are supervisory guidelines, not statutes."
+    ],
+    "consent_languages": ["en", "fr"]
+  },
+  {
+    "jurisdiction": "CA-QC",
+    "name": "Quebec",
+    "summary": "Quebec private law is civil law. The Civil Code of Quebec's mandate provisions (arts. 2130 ff.) supply a mature vocabulary for delegated authority: mandate scope, duties of the mandatary, substitution and delegation, third-party effects and revocation. KYM uses this vocabulary as a design analogy only and does not assume an AI agent is legally a mandatary. Personal information handling by private enterprises is governed by the Act respecting the protection of personal information in the private sector as amended by Law 25, including s. 12.1 on decisions based exclusively on automated processing. Applicable AMF guidance was not verified. French-language consent text is relevant to the Charter of the French language (s. 55 on contracts of adhesion); the demo's French is not legally reviewed.",
+    "key_distinctions": [
+      "Mandate (arts. 2130 ff.) is a civil-law contract between persons; an AI agent is not assumed to be a mandatary.",
+      "Substitution and delegation (arts. 2140-2142) inform why child mandates cannot exceed the parent.",
+      "Art. 2181: revocation notified only to the mandatary does not bind a third person who deals with him unaware, which is why KYM treats bank-side revocation as authoritative.",
+      "Law 25 s. 12.1 requires notice, an explanation on request and an opportunity for review for decisions based exclusively on automated processing.",
+      "Consent under the Quebec private sector Act must be clear, free, informed, specific and requested in clear and simple language (s. 14).",
+      "AMF guidance relevant to Meridian was not verified (marked unverified in controls)."
+    ],
+    "consent_languages": ["en", "fr"]
+  },
+  {
+    "jurisdiction": "US",
+    "name": "United States",
+    "summary": "There is no single US law governing AI-agent mandates. Agency, contract and funds-transfer authorization are largely state law (including UCC Article 4A, which defers to the law of agency on authorization), overlaid by federal consumer financial law (EFTA/Regulation E), GLBA, the Bank Secrecy Act and interagency third-party risk guidance. Section 1033 of Dodd-Frank gives consumers a data access right; the CFPB's implementing rule (12 CFR part 1033) has its compliance dates stayed by a federal court (Forcht Bank v. CFPB, E.D. Ky., per the CFPB) and is under reconsideration, including the meaning of 'representative'. Status after January 2026 was not independently verified. All mappings are illustrative, not legal advice and not certified.",
+    "key_distinctions": [
+      "Section 1033 and the CFPB rule address data access; they do not themselves grant authority to initiate payments.",
+      "The CFPB rule's compliance dates are stayed and the rule is being reconsidered; its 'representative' scope is an open question relevant to AI agents.",
+      "Regulation E's definition of 'unauthorized electronic fund transfer' turns on actual authority and on consumer notice; its application to AI-agent initiated transfers is not settled by sources reviewed.",
+      "UCC 4A-202(a) makes a payment order authorized if the sender authorized it or is otherwise bound under the law of agency, so state agency law governs.",
+      "E-SIGN 15 U.S.C. 7001(h) protects contracts formed by electronic agents only where the agent's action is legally attributable to the person to be bound.",
+      "Interagency third-party risk guidance (2023) is supervisory guidance, not a binding rule."
+    ],
+    "consent_languages": ["en"]
+  }
+]
