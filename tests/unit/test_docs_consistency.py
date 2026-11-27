@@ -78,3 +78,13 @@ def test_community_health_files_exist():
     for p in ("LICENSE", "NOTICE", "README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "SUPPORT.md", "CHANGELOG.md", "GOVERNANCE.md", "MAINTAINERS.md",
               ".github/pull_request_template.md", ".github/CODEOWNERS", ".github/dependabot.yml", ".github/workflows/ci.yml", ".github/workflows/security.yml"):
         assert (ROOT / p).exists(), p
+
+
+def test_dockerfile_pins_match_pyproject():
+    """The image pins its own dependencies; they must not drift from pyproject.toml."""
+    import tomllib
+
+    proj = tomllib.loads(read("pyproject.toml"))["project"]
+    declared = set(proj["dependencies"]) | set(proj["optional-dependencies"]["postgres"])
+    pinned = set(re.findall(r'"([^"\s]+==[^"\s]+)"', read("docker/Dockerfile.api")))
+    assert declared == pinned, f"only in pyproject: {declared - pinned}; only in Dockerfile: {pinned - declared}"

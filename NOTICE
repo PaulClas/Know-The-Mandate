@@ -10,6 +10,7 @@ This product includes software developed by third parties under their own licens
 including (non-exhaustive): FastAPI, Pydantic, SQLAlchemy, Alembic, rdflib, pySHACL,
 Lark, PyJWT, cryptography, rfc8785, jsonschema, httpx, uvicorn (Python); Next.js,
 React, Tailwind CSS, TanStack Query, React Flow, Recharts, lucide-react (JavaScript).
+Two optional or transitive components are LGPL-3.0: `psycopg` (PostgreSQL driver, optional `postgres` extra, used unmodified and dynamically) and `@img/sharp-libvips` (image library bundled with Next.js, used unmodified). Nothing here is copied into this repository.
 Run `pip-audit` / `npm ls` and consult each package for exact license terms.
 
 Standards referenced (IETF RFCs, W3C Recommendations, OpenID Foundation specifications)

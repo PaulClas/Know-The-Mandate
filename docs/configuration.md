@@ -6,7 +6,7 @@ KYM is configured only through environment variables (see [.env.example](../.env
 |---|---|---|
 | `KYM_ENV` | `demo` | `demo` enables no-password sessions, `POST /api/demo/reset` and the red-team endpoints. **Any other value disables them (fail closed).** KYM has no production mode; see the [security review](security/security-review.md) |
 | `KYM_DATA_DIR` | `.kym-data` | SQLite file, signing keys (`keys/`), exported ledger checkpoints, demo agent credentials |
-| `KYM_DATABASE_URL` | `sqlite:///$KYM_DATA_DIR/kym.db` | SQLAlchemy URL. PostgreSQL: `postgresql+psycopg://user:pass@host:5432/kym` |
+| `KYM_DATABASE_URL` | `sqlite:///$KYM_DATA_DIR/kym.db` | SQLAlchemy URL. PostgreSQL: `postgresql+psycopg://user:pass@host:5432/kym` (needs the `postgres` extra: `pip install -e ".[postgres]"`; `make install` includes it) |
 | `KYM_ISSUER` | `https://bank.example` | OAuth issuer identifier placed in tokens and metadata |
 | `KYM_PUBLIC_BASE_URL` | empty | Set when behind a proxy so the DPoP `htu` claim is validated against the public URL |
 | `KYM_DEMO_SESSION_SECRET` | random per install | Signs demo sessions. Unset means a random secret is generated into `KYM_DATA_DIR/keys/session-secret` |

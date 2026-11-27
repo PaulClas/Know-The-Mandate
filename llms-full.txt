@@ -565,7 +565,7 @@ Machine-checkable evidence: `make redteam` (23 attacks, 3 designs), `tests/secur
 3. Attack it: each suspected weakness got a reproducing test *before* the fix, then a regression test after (`redteam.py`).
 4. Record what was **fixed**, what is **accepted** and what is **open**. Nothing is hidden by wording.
 
-Framework sources checked on 2026-11-26: OWASP API Security Top 10 2023 (category names verified at api-security.owasp.org) and the existence of the *OWASP Top 10 for Agentic Applications 2026* (published 2025-12-09; its item list was **not** reproduced or mapped item-by-item here because the list was not retrieved). NIST CSF 2.0 function names (Govern, Identify, Protect, Detect, Respond, Recover) and the OWASP LLM Top 10 (2025) identifiers used below are cited from the authors' knowledge and **not re-verified in this session**.
+Framework sources checked on 2026-11-26 against the official publications: OWASP API Security Top 10 2023 (category names, api-security.owasp.org); OWASP Top 10 for LLM Applications 2025 (LLM01-LLM10 names, genai.owasp.org/llm-top-10); OWASP Top 10 for Agentic Applications 2026 (ASI01-ASI10 names, genai.owasp.org/top-10-for-agentic-applications-2026); NIST CSF 2.0 categories `PR.AA` (Identity Management, Authentication, and Access Control; `PR.AA-05` covers access permissions and authorizations defined in policy, managed, enforced and reviewed) and `DE.CM` (Continuous Monitoring), read from NIST's published CSF 2.0 reference data. Only names and identifiers were checked; the *mapping* of KYM behaviour to each item is the authors' indicative judgement, not an assessment by OWASP or NIST.
 
 ## 2. Findings register
 

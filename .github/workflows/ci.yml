@@ -15,11 +15,15 @@ concurrency:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.13" }
-      - run: pip install uv && uv venv .venv && uv pip install --python .venv/bin/python -e ".[dev]"
+        with: { python-version: "${{ matrix.python }}" }
+      - run: pip install uv && uv venv .venv && uv pip install --python .venv/bin/python -e ".[dev,postgres]"
       - run: .venv/bin/ruff check apps tests scripts examples
       - run: .venv/bin/python -m pytest tests --cov --cov-report=term --cov-report=xml
       - run: PYTHONPATH=apps/api .venv/bin/python -m kym.cli scenarios
@@ -27,6 +31,7 @@ jobs:
       - run: PYTHONPATH=apps/api .venv/bin/python -m kym.cli redteam
         env: { KYM_DATA_DIR: /tmp/kym-ci-redteam }
       - uses: actions/upload-artifact@v4
+        if: matrix.python == '3.13'
         with: { name: coverage-xml, path: coverage.xml }
 
   web:

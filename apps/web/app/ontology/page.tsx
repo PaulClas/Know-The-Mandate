@@ -108,7 +108,7 @@ function Graph({ nodes, edges, sel, onSelect }: { nodes: GraphNode[]; edges: { s
     return { rn, re };
   }, [nodes, edges, sel]);
   return (
-    <ReactFlow nodes={rn} edges={re} fitView minZoom={0.1} nodesDraggable onNodeClick={(_, n) => onSelect(nodes.find((x) => x.id === n.id)!)} proOptions={{ hideAttribution: true }}>
+    <ReactFlow nodes={rn} edges={re} fitView minZoom={0.1} nodesDraggable onNodeClick={(_, n) => onSelect(nodes.find((x) => x.id === n.id)!)}>
       <Background />
       <Controls showInteractive={false} />
       <MiniMap pannable zoomable nodeColor={(n) => COLOR[nodes.find((x) => x.id === n.id)?.category ?? ""] ?? "#64748b"} />

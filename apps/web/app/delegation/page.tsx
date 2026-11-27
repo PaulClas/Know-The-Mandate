@@ -67,7 +67,7 @@ function Graph({ nodes, edges, sel, setSel }: { nodes: DelegationNode[]; edges: 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
       <Card className="h-[560px] overflow-hidden" data-testid="delegation-graph">
-        <ReactFlow nodes={rf.rn} edges={rf.re} fitView onNodeClick={(_, n) => setSel(n.id)} onPaneClick={() => setSel(null)} nodesDraggable={false} proOptions={{ hideAttribution: true }}>
+        <ReactFlow nodes={rf.rn} edges={rf.re} fitView onNodeClick={(_, n) => setSel(n.id)} onPaneClick={() => setSel(null)} nodesDraggable={false}>
           <Background />
           <Controls showInteractive={false} />
         </ReactFlow>

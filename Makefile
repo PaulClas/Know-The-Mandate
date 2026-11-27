@@ -24,7 +24,7 @@ help:
 
 install:
 	uv venv --python 3.13 .venv
-	$(PIP) -e ".[dev]"
+	$(PIP) -e ".[dev,postgres]"
 
 install-web:
 	cd apps/web && npm install
