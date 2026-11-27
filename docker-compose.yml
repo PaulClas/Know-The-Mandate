@@ -18,7 +18,7 @@ services:
     environment:
       KYM_DATABASE_URL: postgresql+psycopg://kym:${KYM_POSTGRES_PASSWORD:-kym-demo-only}@postgres:5432/kym
       KYM_DATA_DIR: /data
-      KYM_DEMO_SESSION_SECRET: ${KYM_DEMO_SESSION_SECRET:-demo-only-session-secret-do-not-use-in-production}
+      KYM_ENV: ${KYM_ENV:-demo}
     depends_on: { postgres: { condition: service_healthy } }
     ports: ["127.0.0.1:8000:8000"]
     volumes: [kymdata:/data]

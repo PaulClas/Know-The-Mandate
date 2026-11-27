@@ -65,6 +65,8 @@ def execute_authorized(s, tx: db.Transaction, cert: dict) -> str:
     dest = s.get(db.Account, op["counterparty_id"]) if op.get("counterparty_kind") == "account" else None
     if acct.currency != tx.currency or acct.status != "OPEN":
         return _fail(s, tx, "account unavailable or currency mismatch")
+    if dest is not None and (dest.currency != tx.currency or dest.status != "OPEN"):
+        return _fail(s, tx, "destination account unavailable or currency mismatch (no FX in this simulator)")
     if acct.balance_minor - acct.reserved_minor < tx.amount_minor:
         return _fail(s, tx, "INSUFFICIENT_FUNDS")
     acct.reserved_minor += tx.amount_minor

@@ -27,6 +27,7 @@ from . import (
     mandates,
     oauth,
     policy,
+    security,
     seed,
     taxonomy,
 )
@@ -45,6 +46,10 @@ TAGS = [
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    import logging
+
+    if config.is_demo():
+        logging.getLogger("uvicorn.error").warning("KYM_ENV=demo: no-password sessions and destructive reset are ENABLED. Synthetic data only. Never expose this publicly.")
     db.init_db()
     with db.write() as s:
         seed.seed(s)
@@ -55,6 +60,7 @@ app = FastAPI(
     title="KYM - Know Your Mandate (experimental proof of concept)", version="0.1.0", lifespan=lifespan, openapi_tags=TAGS,
     description="Bank the agent. Verify the mandate. Govern the execution. Record the evidence.\n\nSynthetic data only. Sandbox security mechanisms. Not compliant or certified with any regulation or standard.",
 )
+app.middleware("http")(security.security_middleware)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], allow_methods=["*"], allow_headers=["*"])
 
 
@@ -75,12 +81,24 @@ async def _agent_err(_, e: agents_mod.AgentError):
 
 
 @app.exception_handler(oauth.OAuthError)
-async def _oauth_err(_, e: oauth.OAuthError):
+async def _oauth_err(request: Request, e: oauth.OAuthError):
+    if e.error == "invalid_client":
+        security.FAILED_CLIENT_AUTH.record(security.client_ip(request))
     return JSONResponse(e.body(), status_code=e.status, headers={"Cache-Control": "no-store"})
 
 
 def _caller(request: Request, method: str | None = None) -> gateway.Caller:
     return gateway.Caller(method or request.method, gateway.public_url(str(request.url), request.url.path), request.headers.get("authorization"), request.headers.get("dpop"))
+
+
+async def _json_obj(request: Request) -> dict:
+    try:
+        body = await request.json()
+    except ValueError as e:
+        raise HTTPException(400, "request body must be valid JSON") from e
+    if not isinstance(body, dict):
+        raise HTTPException(400, "request body must be a JSON object")
+    return body
 
 
 async def _params(request: Request) -> dict:
@@ -117,6 +135,8 @@ def create_session(body: LoginBody):
         return {"token": auth.login(body.user_id), "user": {"id": body.user_id, **auth.DEMO_USERS[body.user_id]}, "warning": "demo session; no real authentication"}
     except KeyError as e:
         raise HTTPException(404, "unknown demo user") from e
+    except PermissionError as e:
+        raise HTTPException(403, str(e)) from e
 
 
 @app.get("/api/session/users", tags=["session"])
@@ -644,13 +664,13 @@ def bank_beneficiaries(request: Request):
 
 @app.post("/bank/payments/proposals", tags=["bank"])
 async def bank_prepare(request: Request):
-    body = await request.json()
+    body = await _json_obj(request)
     return _out(gateway.handle(_caller(request), {**body, "kind": "PREPARE"}))
 
 
 @app.post("/bank/payments", tags=["bank"])
 async def bank_payment(request: Request, idempotency_key: str | None = Header(default=None)):
-    body = await request.json()
+    body = await _json_obj(request)
     if not idempotency_key:
         return JSONResponse({"error": "invalid_request", "error_description": "Idempotency-Key header required"}, status_code=400)
     return _out(gateway.handle(_caller(request), {**body, "kind": "PAYMENT"}, idempotency_key=idempotency_key))
@@ -658,7 +678,7 @@ async def bank_payment(request: Request, idempotency_key: str | None = Header(de
 
 @app.post("/bank/transfers", tags=["bank"])
 async def bank_transfer(request: Request, idempotency_key: str | None = Header(default=None)):
-    body = await request.json()
+    body = await _json_obj(request)
     if not idempotency_key:
         return JSONResponse({"error": "invalid_request", "error_description": "Idempotency-Key header required"}, status_code=400)
     return _out(gateway.handle(_caller(request), {**body, "kind": "TRANSFER"}, idempotency_key=idempotency_key))
@@ -695,8 +715,9 @@ def _client_creds(request: Request, params: dict) -> dict:
 @app.post("/oauth/par", tags=["oauth"], status_code=201)
 def oauth_par(request: Request, params: dict = Depends(_params)):
     params = _client_creds(request, params)
-    with db.write() as s:
+    with db.read() as s:  # scrypt runs OUTSIDE the global write lock so bad credentials cannot stall every writer
         client = oauth.authenticate_client(s, params.get("client_id"), params.get("client_secret"))
+    with db.write() as s:
         return oauth.pushed_authorization_request(s, client, params)
 
 
@@ -716,9 +737,11 @@ def oauth_token(request: Request, params: dict = Depends(_params)):
     params = _client_creds(request, params)
     err: oauth.OAuthError | None = None
     out: dict = {}
+    with db.read() as s:
+        client = oauth.authenticate_client(s, params.get("client_id"), params.get("client_secret"))
     with db.write() as s:
         try:
-            out = oauth.token_endpoint(s, params, dpop=request.headers.get("dpop"), url=gateway.public_url(str(request.url), request.url.path))
+            out = oauth.token_endpoint(s, params, dpop=request.headers.get("dpop"), url=gateway.public_url(str(request.url), request.url.path), client=client)
         except oauth.OAuthError as e:
             err = e  # commit side effects of failed attempts (burned authorization code, recorded DPoP jti) before answering
     if err:
@@ -737,8 +760,9 @@ def oauth_introspect(request: Request, params: dict = Depends(_params)):
 @app.post("/oauth/revoke", tags=["oauth"])
 def oauth_revoke(request: Request, params: dict = Depends(_params)):
     params = _client_creds(request, params)
-    with db.write() as s:
+    with db.read() as s:
         client = oauth.authenticate_client(s, params.get("client_id"), params.get("client_secret"))
+    with db.write() as s:
         oauth.revoke_token(s, client, params.get("token", ""))
     return JSONResponse({}, status_code=200)
 
@@ -825,7 +849,11 @@ def run_scenario(scenario_id: str, user: User = Depends(require_role("admin", "i
 
 @app.post("/api/demo/reset", tags=["scenarios"])
 def demo_reset(user: User = Depends(require_role("admin"))):
+    """DESTRUCTIVE (deletes the evidence ledger and exported checkpoints). Demo only; refused when KYM_ENV != demo."""
     from . import scenarios
+
+    if not config.is_demo():
+        raise HTTPException(403, "reset is disabled outside KYM_ENV=demo")
 
     return scenarios.reset()
 
@@ -910,7 +938,7 @@ def verify_uploaded_package(pkg: dict, user: User = Depends(current_user)):
     """Offline-style verification of an exported evidence package (uses only the package contents)."""
     from . import disputes
 
-    return disputes.verify_package(pkg)
+    return disputes.verify_package(pkg, trusted_keys=keys.public_key_registry())
 
 
 @app.get("/api/responsibility/matrix", tags=["transactions"])
@@ -971,7 +999,7 @@ async def mcp_endpoint(request: Request):
     """Minimal MCP-shaped adapter (sandbox, not a conformant MCP server). Tool discovery is not permission."""
     from . import adapters
 
-    return JSONResponse(adapters.mcp_handle(await request.json(), _caller(request, "POST")))
+    return JSONResponse(adapters.mcp_handle(await _json_obj(request), _caller(request, "POST")))
 
 
 # ---- ontology
@@ -1113,3 +1141,24 @@ def ontology_query(body: QueryBody, user: User = Depends(current_user)):
         return o.safe_sparql(g, body.query)
     except o.SparqlError as e:
         raise HTTPException(400, str(e)) from e
+
+
+@app.get("/api/redteam", tags=["scenarios"])
+def redteam_catalog(user: User = Depends(current_user)):
+    from . import redteam
+
+    return [{"id": a[0], "title": a[1], "category": a[2], "refs": a[3]} for a in redteam.ATTACKS]
+
+
+@app.post("/api/redteam/run", tags=["scenarios"])
+def redteam_run(attack_id: str | None = None, user: User = Depends(require_role("admin", "investigator"))):
+    """Executable proof: runs attacks against scope-only and OAuth+static-RAR baselines and against KYM. Demo only (creates synthetic mandates and transactions)."""
+    from . import redteam
+
+    if not config.is_demo():
+        raise HTTPException(403, "red-team runs are disabled outside KYM_ENV=demo")
+    if attack_id:
+        if attack_id not in {a[0] for a in redteam.ATTACKS}:
+            raise HTTPException(404, "unknown attack")
+        return redteam.run_attack(attack_id)
+    return redteam.run_all()

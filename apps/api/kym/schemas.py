@@ -44,6 +44,14 @@ class Constraints(Strict):
             raise ValueError("currency must be an ISO 4217 alphabetic code")
         return v
 
+    @field_validator("allowed_beneficiaries", "allowed_merchants", "allowed_destination_accounts", "allowed_merchant_categories", "allowed_countries")
+    @classmethod
+    def _ids(cls, v):
+        for x in v:
+            if not ID_RE.match(x):  # identifiers become IRIs in the semantic graph: no spaces, brackets or quotes
+                raise ValueError(f"invalid identifier {x!r}")
+        return v
+
 
 class Permission(Strict):
     action: str
@@ -55,6 +63,14 @@ class Permission(Strict):
     def _action(cls, v):
         if not taxonomy.is_known(v):
             raise ValueError(f"unknown action {v}")
+        return v
+
+    @field_validator("resources")
+    @classmethod
+    def _res(cls, v):
+        for x in v:
+            if not ID_RE.match(x):
+                raise ValueError(f"invalid resource identifier {x!r}")
         return v
 
 

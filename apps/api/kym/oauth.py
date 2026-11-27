@@ -21,7 +21,7 @@ from datetime import timedelta
 from urllib.parse import urlsplit
 
 import jwt
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from . import agents as agents_mod
 from . import clock, config, db, keys, kyc, ledger, mandates, taxonomy
@@ -193,6 +193,7 @@ def verify_dpop(s, proof: str | None, *, method: str, url: str, access_token: st
         return False, "DPoP key does not match the token's cnf.jkt", jkt
     if s.get(db.DpopSeen, claims["jti"]):
         return False, "DPoP proof replay detected (jti already used)", jkt
+    s.execute(delete(db.DpopSeen).where(db.DpopSeen.seen_at < clock.iso(clock.now() - timedelta(seconds=300))))  # bounded replay cache
     s.add(db.DpopSeen(jti=claims["jti"], seen_at=clock.iso()))
     s.flush()
     return True, "DPoP proof valid and bound to the token key", jkt
@@ -233,9 +234,9 @@ def _issue(s, *, agent: db.Agent, row: db.MandateRow, details: list[dict], jkt: 
     return token, claims
 
 
-def token_endpoint(s, params: dict, *, dpop: str | None, url: str) -> dict:
+def token_endpoint(s, params: dict, *, dpop: str | None, url: str, client: db.Agent | None = None) -> dict:
     gt = params.get("grant_type")
-    client = authenticate_client(s, params.get("client_id"), params.get("client_secret"))
+    client = client or authenticate_client(s, params.get("client_id"), params.get("client_secret"))
     if gt == "authorization_code":
         return _code_grant(s, client, params, dpop, url)
     if gt == GRANT_TOKEN_EXCHANGE:

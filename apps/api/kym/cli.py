@@ -58,6 +58,38 @@ def cmd_scenarios(a):
     return rc
 
 
+def cmd_redteam(a):
+    from . import redteam, seed
+
+    db.init_db()
+    with db.write() as s:
+        seed.seed(s)
+    rep = redteam.run_all()
+    out = config.ROOT / "docs" / "redteam"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "latest.json").write_text(json.dumps(rep, indent=2))
+    (out / "latest.md").write_text(redteam.to_markdown(rep))
+    sm = rep["summary"]
+    for r in rep["attacks"]:
+        k = r["results"].get("kym", {}).get("blocked")
+        print(f"{'BLOCKED  ' if k else ('GAP      ' if r['expected_gap'] else 'FAILED   ')}{r['id']:28s} {r['results'].get('kym', {}).get('detail', r['error'])}")
+    print(f"\nblocked (excl. honest case): scope-only {sm['scope_only']['blocked']}/{sm['scope_only']['applicable']}  OAuth+static-RAR {sm['rar_static']['blocked']}/{sm['rar_static']['applicable']}  KYM {sm['kym']['blocked']}/{sm['kym']['applicable']}")
+    print(f"KYM not blocked: {sm['kym_not_blocked']}  errors: {sm['errors']}")
+    return 0 if not sm["errors"] and sm["kym_not_blocked"] == ["in_mandate_malicious"] else 1
+
+
+def cmd_verify_package(a):
+    from . import disputes
+
+    pkg = json.loads(open(a.file).read())
+    trusted = json.loads(open(a.keys).read()) if a.keys else None
+    r = disputes.verify_package(pkg, trusted_keys=trusted)
+    print(json.dumps(r, indent=2))
+    if trusted is None:
+        print("WARNING: no --keys given; verified against keys embedded in the package (internal consistency only).", file=sys.stderr)
+    return 0 if r["ok"] else 1
+
+
 def cmd_benchmark(a):
     """Deterministic authorization benchmark: evaluates the PDP on a fixed snapshot and the full gateway path. Real measurements only."""
     sys.path.insert(0, str(config.ROOT / "tests"))
@@ -118,6 +150,11 @@ def main():
     sc = sub.add_parser("scenarios")
     sc.add_argument("ids", nargs="*")
     sc.set_defaults(fn=cmd_scenarios)
+    sub.add_parser("redteam").set_defaults(fn=cmd_redteam)
+    vp = sub.add_parser("verify-package")
+    vp.add_argument("file")
+    vp.add_argument("--keys", help="JSON file with the trusted public key registry (obtained out of band)")
+    vp.set_defaults(fn=cmd_verify_package)
     b = sub.add_parser("benchmark")
     b.add_argument("-n", type=int, default=5000)
     b.add_argument("--http-n", type=int, default=100)

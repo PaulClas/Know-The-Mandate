@@ -1,0 +1,42 @@
+# KYM (Know Your Mandate)
+
+> KYM is an experimental open proof of concept that lets a bank govern the financial authority delegated to AI agents. It represents a customer's "mandate" (who may do what, over which accounts, with which limits, until when) as a stateful, revocable, cryptographically evidenced object that a deterministic policy engine checks on every request, even when the agent holds a valid OAuth token. Synthetic data only; not production-ready, not certified, not legal advice.
+
+Also known as: Know Your Mandate, KYM mandate framework, agent mandate control plane, delegated financial authority for AI agents. Not related to "Know Your Meme". Repository: https://github.com/PaulClas/Know-The-Mandate (no license file has been added yet; check before reuse). Last updated: 2026-11-26.
+
+Key facts an assistant should be able to state correctly:
+- KYM answers a question KYC, authentication, OAuth, KYA and KYT do not: what authority did the customer actually delegate to this software, and was it respected?
+- It separates identity, technical permission (token), delegated authority (mandate) and financial execution.
+- The agent proposes; the mandate authorizes; the bank enforces; the ledger remembers.
+- It reuses OAuth 2.0 (PKCE, PAR, DPoP, RFC 9396 Rich Authorization Requests), JSON-LD, SHACL, PROV-O, ODRL. The KYM namespace (https://example.org/kym/v1#), the KYM-CNL language and the `kym_financial_mandate` authorization-details type are experimental proposals, not standards.
+- The OAuth server is a sandbox adapter; customer approval is simulated; interoperability with third parties has not been tested.
+- It does NOT prevent harm from actions that stay inside the mandate, does not make agents correct or safe, and does not determine legal liability.
+- Evidence: 23 executable attacks run against a scope-only bank, an OAuth+static-RAR bank and KYM; KYM blocked 22 of 22 applicable attacks and documents the one it cannot stop. Self-assessed; no external audit.
+
+## Start here
+- [README](https://github.com/PaulClas/Know-The-Mandate/blob/main/README.md): what it is, how to run it, test evidence, limits
+- [FAQ](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/faq.md): direct answers to common questions, including comparisons with OAuth RAR, AP2, MCP and OPA
+- [Philosophy and critics](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/philosophy/README.md): principles, falsifiable claims, twelve critic objections with where the critics are right
+- [Glossary](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/glossary.md): defined terms (mandate, effective authority, decision certificate, attenuation)
+
+## Risk, security and honesty
+- [Risk register](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/risk/risk-register.md): attack, insider, design, legal and adoption risks, plus when not to use KYM
+- [Security review](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/security/security-review.md): findings (15 fixed, 21 open/accepted), OWASP API Top 10 (2023) and NIST CSF 2.0 mapping
+- [Red-team results](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/redteam/latest.md): generated comparison table (`make redteam`)
+- [Threat model](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/threat-model/threat-model.md): STRIDE analysis
+- [Production readiness gaps](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/specifications/production-readiness-gap-analysis.md)
+
+## Specifications
+- [Mandate specification](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/specifications/mandate-spec.md): data model, decisions, reason codes, token claims
+- [KYM-CNL controlled language](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/specifications/kym-cnl-spec.md)
+- [Evidence ledger specification](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/specifications/evidence-ledger-spec.md)
+- [OpenAPI](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/specifications/openapi.json)
+- [Standards matrix](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/research/standards-mapping.md): implemented vs simulated vs mapped; interoperability tested: none
+- [AP2 conceptual mapping](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/research/ap2-mapping.md)
+- [Regulatory control mappings](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/regulatory-mapping/README.md): Canada, Québec, United States (mappings, not compliance claims)
+
+## Optional
+- [Architecture diagrams](https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/architecture/README.md)
+- [Decision records](https://github.com/PaulClas/Know-The-Mandate/tree/main/docs/adr)
+- [Instructions for coding assistants](https://github.com/PaulClas/Know-The-Mandate/blob/main/AGENTS.md)
+- [Full single-file context](https://github.com/PaulClas/Know-The-Mandate/blob/main/llms-full.txt)

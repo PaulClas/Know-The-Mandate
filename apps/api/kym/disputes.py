@@ -114,15 +114,29 @@ def build_package(s, tx_id: str) -> dict:
         "limitations": ["A valid signature demonstrates integrity and control of a signing key under stated assumptions; it does not establish legally effective consent.",
                         "Demo keys are server-held; synthetic data only."],
     }
-    pkg["verification"] = verify_package(pkg)
+    pkg["verification"] = verify_package(pkg, trusted_keys=keys.public_key_registry())
     return pkg
 
 
-def verify_package(pkg: dict) -> dict:
-    """Offline verification using only the package contents: event hashes, signatures, spine linkage, checkpoints, decision replay."""
-    pub = {v["kid"]: v["x"] for v in pkg["public_keys"].values() if "x" in v and v.get("alg") == "Ed25519"}
-    spine = {x["sequence"]: x for x in pkg["chain_spine"]}
+def _ed_keys(reg: dict) -> dict:
+    return {v["kid"]: v["x"] for v in reg.values() if isinstance(v, dict) and "x" in v and v.get("alg") == "Ed25519"}
+
+
+def verify_package(pkg: dict, trusted_keys: dict | None = None) -> dict:
+    """Verify event hashes, signatures, spine linkage, checkpoints and decision replay.
+
+    `trusted_keys` MUST be supplied by the verifier (obtained out of band). Without it the package's own embedded keys are
+    used, which only proves internal consistency: an attacker can forge a package with their own keys. The report says which mode ran.
+    """
     problems = []
+    embedded = _ed_keys(pkg.get("public_keys", {}))
+    if trusted_keys is not None:
+        pub = _ed_keys(trusted_keys)
+        if embedded != pub:
+            problems.append({"check": "untrusted_package_keys", "detail": "keys embedded in the package differ from the verifier's trusted keys"})
+    else:
+        pub = embedded
+    spine = {x["sequence"]: x for x in pkg["chain_spine"]}
     prev = ledger.GENESIS
     for seq in sorted(spine):
         if spine[seq]["previous_hash"] != prev:
@@ -153,7 +167,7 @@ def verify_package(pkg: dict) -> dict:
         problems.append({"check": "decision_replay", "detail": "replaying stored inputs produced a different decision"})
     if pkg.get("consent") and pkg["consent"].get("signature_valid") is False:
         problems.append({"check": "consent_signature", "detail": "consent receipt signature invalid"})
-    return {"ok": not problems, "events_verified": ev_ok, "events_in_package": len(pkg["ledger_events"]), "spine_length": len(spine), "problems": problems, "verified_at": clock.iso(),
+    return {"ok": not problems, "key_trust": "PINNED_BY_VERIFIER" if trusted_keys is not None else "UNPINNED_EMBEDDED_KEYS (internal consistency only)", "events_verified": ev_ok, "events_in_package": len(pkg["ledger_events"]), "spine_length": len(spine), "problems": problems, "verified_at": clock.iso(),
             "assumptions": ["Verification proves integrity and signing-key control under the listed public keys; it cannot detect wholesale replacement of the database and keys beyond external checkpoints."]}
 
 

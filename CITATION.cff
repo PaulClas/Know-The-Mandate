@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use or discuss KYM, please cite it as below. KYM is an experimental proof of concept with synthetic data; it is not a standard."
+title: "KYM (Know Your Mandate): a control plane and evidence ledger for financial authority delegated to AI agents"
+type: software
+version: 0.1.0
+date-released: 2026-11-26
+authors:
+  - family-names: Clas
+    given-names: Paul
+repository-code: "https://github.com/PaulClas/Know-The-Mandate"
+abstract: >-
+  KYM is an experimental open proof of concept in which a fictional bank (Meridian Bank) represents a customer's
+  delegated financial authority to an AI agent as a stateful, revocable mandate, evaluates it deterministically on
+  every request even when the agent holds a valid OAuth token, and records the exercise of authority in a signed,
+  hash-chained evidence ledger. It reuses OAuth 2.0 (PKCE, PAR, DPoP, RFC 9396), JSON-LD, SHACL, PROV-O and ODRL.
+  Synthetic data only; sandbox security mechanisms; not certified or production-ready.
+keywords:
+  - AI agents
+  - agentic banking
+  - delegated authority
+  - mandate
+  - OAuth
+  - Rich Authorization Requests
+  - DPoP
+  - authorization
+  - policy enforcement
+  - evidence ledger
+  - open banking
+  - SHACL
+  - JSON-LD

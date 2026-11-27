@@ -13,6 +13,7 @@ Setup: `make demo`, open http://localhost:3000, `make reset-demo` first for a cl
 | 4:00 | Scenarios → F, J | "Revocation beats a still-valid token; an approval can't be substituted." | F: retry denied `MANDATE_REVOKED`. J: CAD 190 vs approved CAD 180 rejected |
 | 4:20 | Ledger → Verify integrity; Scenario L | "The ledger remembers." | Chain verifies; tampered copies fail |
 | 4:40 | Disputes | "Who did what, provably — and what remains a legal question." | Pick a transaction → timeline, responsibility matrix, can/cannot establish, download package |
+| 4:50 | Prove it (`/proof`) | "Don't take my word for it." | Run all attacks: scope-only 0/10, OAuth + static RAR 3/10, KYM 22/22 — and point at the one KYM cannot stop |
 | 5:00 | Close | "The agent proposes. The mandate authorizes. The bank enforces. The ledger remembers." | |
 
 Honest caveats to state: synthetic data; sandbox OAuth; simulated approvals; not compliant or certified.

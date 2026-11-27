@@ -75,3 +75,5 @@ Specs that need an active mandate create one by running Scenario C as `admin_001
 ### Recorded outcome (2026-11-26)
 
 Final run against the live API with `PW_START_WEB=1 npx playwright test`: **25 passed, 0 failed** (~57 s) on Chromium, after `npx tsc --noEmit`, `npm run lint` and `npm run build` were clean. An earlier run had 2 failures caused by test-order assumptions (no active mandate for the bill payment agent / no transactions on a fresh database); the helper `ensureActiveMandate` now guarantees both, and the suite was re-run in full.
+
+**Update (after the security/discoverability pass):** `PW_START_WEB=1 npx playwright test` → **30 passed, 0 failed** on Chromium against the live API, including `e2e/discover.spec.ts` (about-page FAQPage JSON-LD, `robots.txt`, `sitemap.xml`, `llms.txt`, and the in-browser red-team run showing KYM 22/22, scope-only 0/10 and the honest-gap row). `tsc`, `eslint` and `next build` clean.

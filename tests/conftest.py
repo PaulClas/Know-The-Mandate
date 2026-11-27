@@ -30,7 +30,10 @@ def isolated_state(request):
         return
     client = request.getfixturevalue("client")
     assert client is not None
-    from kym import demo
+    from kym import demo, security
 
+    security.REQUESTS.reset()
+    security.FAILED_CLIENT_AUTH.reset()
+    security.REJECT_EVENTS.reset()
     demo.prepare_isolated_state()
     yield

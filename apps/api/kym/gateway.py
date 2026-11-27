@@ -28,6 +28,7 @@ from . import (
     oauth,
     policy,
     risk,
+    security,
     taxonomy,
 )
 from .metrics import METRICS
@@ -181,6 +182,8 @@ def normalize_operation(s, spec: dict, principal_id: str) -> tuple[dict, dict | 
         cp_kind, cp_id = ("beneficiary", spec["beneficiary_id"]) if spec.get("beneficiary_id") else ("merchant", spec["merchant_id"])
     else:
         if spec.get("to_account_id"):
+            if spec["to_account_id"] == spec["account_id"]:
+                raise BadRequest("source and destination accounts must differ")
             dest = s.get(db.Account, spec["to_account_id"])
             internal = bool(dest and dest.owner_id == principal_id)
             action, cp_kind, cp_id = ("transfers.execute" if internal else "transfers.external"), "account", spec["to_account_id"]
@@ -216,9 +219,17 @@ def _handle(s, caller: Caller, spec: dict, idem: str | None, dry_run: bool) -> t
     try:
         claims, facts = oauth.verify_access_token(s, token, method=caller.method, url=caller.url, dpop=caller.dpop)
     except oauth.TokenInvalid as e:
-        ledger.append(s, "TOKEN_REJECTED", actor_id="unauthenticated", actor_type="unknown", correlation_id=corr, payload={"reason": str(e)[:160], "path": caller.url.split("?")[0][-60:]})
+        _record_token_rejected(s, corr, str(e), caller.url)
         return 401, {"error": "invalid_token", "error_description": "access token could not be verified"}
     return _process(s, claims, facts, spec, idem, dry_run, corr)
+
+
+def _record_token_rejected(s, corr: str, reason: str, url: str = "") -> None:
+    """Unauthenticated callers must not be able to flood the signed evidence ledger: excess rejections are counted, not written."""
+    if security.REJECT_EVENTS.allow("global"):
+        ledger.append(s, "TOKEN_REJECTED", actor_id="unauthenticated", actor_type="unknown", correlation_id=corr, payload={"reason": reason[:160], "path": url.split("?")[0][-60:]})
+    else:
+        METRICS.count("token_rejected_suppressed")
 
 
 def _process(s, claims: dict, facts: dict, spec: dict, idem: str | None, dry_run: bool, corr: str) -> tuple[int, dict]:
@@ -236,6 +247,8 @@ def _process(s, claims: dict, facts: dict, spec: dict, idem: str | None, dry_run
     if money_moving:
         op_h = bank.op_hash(op, facts.get("mandate_id") or "", facts.get("mandate_version") or 0, principal_id, agent_id)
 
+    if idem is not None and (not isinstance(idem, str) or not 1 <= len(idem) <= 128):
+        return 400, {"error": "invalid_request", "error_description": "Idempotency-Key must be 1-128 characters"}
     tx = None
     if idem and money_moving and not dry_run:
         tx = s.execute(select(db.Transaction).where(db.Transaction.agent_id == agent_id, db.Transaction.idempotency_key == idem)).scalar_one_or_none()
@@ -367,7 +380,7 @@ def list_accounts(caller: Caller) -> tuple[int, dict]:
         try:
             claims, facts = oauth.verify_access_token(s, _token_from(caller), method=caller.method, url=caller.url, dpop=caller.dpop)
         except oauth.TokenInvalid as e:
-            ledger.append(s, "TOKEN_REJECTED", actor_id="unauthenticated", actor_type="unknown", correlation_id=corr, payload={"reason": str(e)[:160]})
+            _record_token_rejected(s, corr, str(e))
             return 401, {"error": "invalid_token"}
         ids = [a.id for a in s.execute(select(db.Account).where(db.Account.owner_id == facts["sub"])).scalars()]
         allowed, last = [], None
@@ -425,7 +438,7 @@ def authorize_delegation(s, caller: Caller, parent_mandate_id: str) -> tuple[boo
     try:
         claims, facts = oauth.verify_access_token(s, _token_from(caller), method=caller.method, url=caller.url, dpop=caller.dpop)
     except oauth.TokenInvalid as e:
-        ledger.append(s, "TOKEN_REJECTED", actor_id="unauthenticated", actor_type="unknown", correlation_id=corr, payload={"reason": str(e)[:160]})
+        _record_token_rejected(s, corr, str(e))
         return False, {"decision": "DENY", "reason_codes": ["INVALID_TOKEN"], "trace": []}, {}
     now = clock.now()
     req = {"action": "mandates.delegate", "account_id": None, "amount_minor": None, "currency": None, "purpose": None, "counterparty_kind": None, "counterparty_id": None, "op_hash": ""}

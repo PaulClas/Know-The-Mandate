@@ -1,0 +1,17 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "KYM (Know Your Mandate)",
+  "alternateName": ["Know Your Mandate", "KYM mandate framework"],
+  "description": "Experimental open proof of concept for governing the financial authority a customer delegates to AI agents: a stateful, revocable mandate checked deterministically on every request, with a signed hash-chained evidence ledger. Synthetic data only; sandbox security; not production-ready or certified.",
+  "codeRepository": "https://github.com/PaulClas/Know-The-Mandate",
+  "version": "0.1.0",
+  "dateModified": "2026-11-26",
+  "programmingLanguage": ["Python", "TypeScript"],
+  "applicationCategory": "Financial technology; authorization; AI agent governance",
+  "keywords": ["AI agents", "agentic banking", "delegated authority", "OAuth", "RFC 9396", "DPoP", "policy decision point", "evidence ledger", "SHACL", "JSON-LD", "open banking"],
+  "author": [{"@type": "Person", "familyName": "Clas", "givenName": "Paul"}],
+  "developmentStatus": "concept",
+  "softwareRequirements": ["Python >= 3.12", "Node.js >= 20"],
+  "isAccessibleForFree": true
+}

@@ -20,3 +20,6 @@ KYM is a proof of concept. Gaps below are **not** closed in this repository.
 | Interoperability | None tested | Conformance suites; AP2/MCP/A2A/ACP integrations against real counterparties |
 
 Known functional limits: the SPARQL timeout cannot kill a running worker thread; ambiguity detection is rule-based; the CNL template in the Studio cannot express "move some savings" transfers (use the CNL editor); `risk-review` clearing is a record only — the agent must resubmit.
+
+
+See also: [security review](../security/security-review.md) (open items O-01 to O-21) and [risk register](../risk/risk-register.md) (strategic and adoption risks).

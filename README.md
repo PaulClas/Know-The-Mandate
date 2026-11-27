@@ -4,9 +4,21 @@
 
 > **The agent proposes. The mandate authorizes. The bank enforces. The ledger remembers.**
 
-KYM is an **experimental proof of concept** of an authorization control plane and cryptographically verifiable evidence ledger that lets a bank govern the *financial authority* delegated to AI agents. It runs locally with no paid services, API keys, real credentials or external AI.
+**KYM (Know Your Mandate) is an experimental framework that lets a bank represent, enforce and prove the financial authority a customer has delegated to an AI agent.** The customer's authority is captured as a *mandate*, checked deterministically on every request (even when the agent holds a valid OAuth token), and recorded in a signed, hash-chained evidence ledger. It runs locally with no paid services, API keys, real credentials or external AI.
 
-> ⚠️ **Synthetic demo. Not compliant, certified, audited or production-ready.** All customers, accounts, agents, KYC and "sanctions" data are fictional. Authentication, signing keys and approvals use clearly labelled sandbox mechanisms. Nothing here is legal advice or a claim of conformance with any law, regulation or standard. See [docs/specifications/production-readiness-gap-analysis.md](docs/specifications/production-readiness-gap-analysis.md).
+> ⚠️ **Synthetic demo. Not compliant, certified, audited or production-ready.** All customers, accounts, agents, KYC and "sanctions" data are fictional. Authentication, signing keys and approvals use clearly labelled sandbox mechanisms. Nothing here is legal advice or a claim of conformance with any law, regulation or standard. KYM is **not** related to "Know Your Meme".
+
+## At a glance (for people and AI assistants)
+
+| Question | Short answer |
+|---|---|
+| What is it? | A mandate registry + deterministic policy decision/enforcement point + signed evidence ledger + simulated bank, for AI-agent financial authority |
+| What does it add to OAuth? | State and per-request decisions: cumulative budgets, instant revocation, single-use approvals, delegation lineage, evidence. It *uses* OAuth (PKCE, PAR, DPoP, RFC 9396 RAR) |
+| Is it a standard? | No. The namespace (`https://example.org/kym/v1#`), KYM-CNL and the `kym_financial_mandate` RAR type are experimental proposals |
+| What can it NOT do? | Stop wrong-but-permitted actions inside a mandate; make agents safe; decide legal liability; guarantee compliance |
+| What is the evidence? | `make redteam`: 23 attacks against a scope-only bank, an OAuth+static-RAR bank and KYM. KYM blocks 22/22 applicable attacks; static RAR 3/10; scope-only 0/10; one attack is documented as unstoppable. Self-assessed |
+| Is it production-ready? | No: see [security review](docs/security/security-review.md) and [risk register](docs/risk/risk-register.md) |
+| Where do I learn more? | [FAQ](docs/faq.md) · [Philosophy and critics](docs/philosophy/README.md) · [Glossary](docs/glossary.md) · [Docs index](docs/README.md) · [llms.txt](llms.txt) |
 
 ## The idea
 
@@ -39,6 +51,25 @@ A valid access token never implies an authorized financial operation. **Scenario
 | Protocol adapters (MCP-shaped, AP2 conceptual mapping, extension interfaces) | [adapters.py](apps/api/kym/adapters.py) | See the standards matrix for what is real vs. mapped |
 | Agent sandbox (6 deterministic agents, restricted tools) and scenarios A–M | [sandbox.py](apps/api/kym/sandbox.py), [scenarios.py](apps/api/kym/scenarios.py) | Every step uses the real HTTP API, PDP and ledger |
 | Web UI (Next.js) | [apps/web](apps/web) | 12 pages incl. Mandate Studio, ontology explorer, playground, ledger, disputes |
+
+## Philosophy in brief
+
+Authority is not identity and not permission; the agent never decides what it may do; the bank enforces observable facts, not intentions; authority can only narrow when delegated; humans approve exact operations; evidence is checkable by someone who does not trust the bank; and the claims are narrow enough to be falsified. Read the full argument, twelve steelmanned critic objections (and where the critics are right) in **[docs/philosophy](docs/philosophy/README.md)**.
+
+## Risks and disclosures
+
+KYM's authors publish what could go wrong: **[risk register](docs/risk/risk-register.md)** (hacking, insider abuse, design flaws, legal exposure, adoption failure, "when not to use KYM", pre-mortem) and **[security review](docs/security/security-review.md)** (15 vulnerabilities found and fixed in a self-review, 21 open or accepted items, OWASP API Top 10 and NIST CSF mapping). The largest open issues: no real authentication in the demo, plaintext keys, a single-process lock, no maker–checker for operators, approval-fatigue unmeasured, no external audit.
+
+## Prove it (or break it)
+
+```bash
+make redteam      # 23 attacks x 3 designs, same real token; writes docs/redteam/latest.md
+make test         # unit, property-based, integration, security
+make scenarios    # demonstration scenarios A-M
+make verify-ledger
+```
+
+The red-team harness compares a **scope-only bank**, an **OAuth + static RAR bank** (a steelman of "RAR is enough") and **KYM**, and includes an attack KYM cannot stop (`in_mandate_malicious`). It runs in the UI at `/proof`. Add an attack that KYM fails and you have improved the project. After `make redteam`, run `make reset-demo` for a clean demo state.
 
 ## Run it
 
@@ -76,11 +107,12 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 
 | Suite | Result |
 |---|---|
-| `make test` — unit, property-based (Hypothesis), integration, security | **183 passed, 0 failed** (~25 s), run twice consecutively |
+| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **208 passed, 0 failed** |
 | `make scenarios` — scenarios A–M against the real engine (SQLite), run three times in a row on one database | **13/13 passed each time**; `make verify-ledger` afterwards: 767 events, 8 checkpoints, chain intact |
 | Same 13 scenarios + Alembic migration against **PostgreSQL 14** | **13/13 passed** |
 | `ruff check apps tests` | clean |
-| Web: `tsc`, `eslint`, `next build`, Playwright (Chromium, live API) | clean; **25 passed, 0 failed** ([apps/web/README.md](apps/web/README.md)) |
+| `make redteam` (23 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 22/22** applicable blocked; 1 documented honest gap; 0 harness errors ([results](docs/redteam/latest.md)) |
+| Web: `tsc`, `eslint`, `next build`, Playwright (Chromium, live API) | clean; **30 passed, 0 failed** ([apps/web/README.md](apps/web/README.md)) ([apps/web/README.md](apps/web/README.md)) |
 | `make benchmark` (single process, SQLite, in-process ASGI client) | PDP pure evaluation p50 0.076 ms / p95 0.088 ms / p99 0.135 ms (n=20 000); full gateway payment p50 18.9 ms / p95 24.7 ms / p99 37.0 ms (n=300). Raw output: [docs/benchmarks/latest.json](docs/benchmarks/latest.json) |
 
 
@@ -116,7 +148,9 @@ packages/mandate-schema/       generated JSON Schema
 policies/            bank policy (versioned) and regulatory control mappings
 standards/           standards matrix data, AP2 mapping
 tests/               unit, integration, security (+ web e2e under apps/web/e2e)
-docs/                architecture, ADRs, specifications, research, threat model, regulatory mapping
+docs/                architecture, ADRs, specifications, research, threat model, regulatory mapping,
+                     security review, risk register, philosophy, FAQ, glossary, red-team results
+llms.txt / llms-full.txt / CITATION.cff / codemeta.json   machine-readable summaries for AI assistants and citation
 ```
 
 The repository layout deliberately omits empty placeholder services (`services/*`, `scenarios/*` directories): logical components live in one modular monolith with explicit module boundaries ([ADR-0001](docs/adr/0001-modular-monolith.md)).

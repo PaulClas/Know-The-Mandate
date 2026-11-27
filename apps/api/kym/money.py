@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
 
+MAX_MINOR = 10**15  # well inside BIGINT; rejects overflow before it can reach the database
 EXPONENT = {"JPY": 0, "KRW": 0, "BHD": 3, "KWD": 3}
 
 
@@ -42,4 +43,6 @@ def require_minor(value, name: str = "amount") -> int:
         raise MoneyError(f"{name} must be an integer in minor currency units")
     if value < 0:
         raise MoneyError(f"{name} must not be negative")
+    if value > MAX_MINOR:
+        raise MoneyError(f"{name} exceeds the supported maximum")
     return value

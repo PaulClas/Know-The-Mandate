@@ -35,8 +35,8 @@ def mcp_handle(payload: dict, caller: gateway.Caller) -> dict:
         return {"jsonrpc": "2.0", "id": rid, "result": {"tools": TOOLS, "_note": "Discovery only. Calling a tool still requires a valid mandate-bound token and passes the policy enforcement point."}}
     if method != "tools/call":
         return {"jsonrpc": "2.0", "id": rid, "error": {"code": -32601, "message": "method not supported by this sandbox adapter"}}
-    p = payload.get("params", {})
-    name, a = p.get("name"), p.get("arguments", {})
+    p = payload.get("params") if isinstance(payload.get("params"), dict) else {}
+    name, a = p.get("name"), p.get("arguments") if isinstance(p.get("arguments"), dict) else {}
     if name == "get_accounts":
         st, body = gateway.list_accounts(caller)
     elif name in ("get_balance", "get_transactions"):

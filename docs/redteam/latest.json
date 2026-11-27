@@ -1,0 +1,642 @@
+{
+  "generated_at": "2026-11-27T01:07:51.773Z",
+  "attacks": [
+    {
+      "id": "beneficiary_swap",
+      "title": "Beneficiary swap with a valid token",
+      "category": "authorization",
+      "refs": [
+        "STRIDE:E",
+        "OWASP-API5",
+        "OWASP-LLM06"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "executed"
+        },
+        "rar_static": {
+          "blocked": true,
+          "detail": "denied"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "HTTP 403 DENY ['BENEFICIARY_NOT_AUTHORIZED']"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 513
+    },
+    {
+      "id": "over_limit",
+      "title": "Single payment above the per-transaction limit",
+      "category": "authorization",
+      "refs": [
+        "STRIDE:E",
+        "OWASP-LLM06"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "executed"
+        },
+        "rar_static": {
+          "blocked": true,
+          "detail": "denied"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "HTTP 403 DENY ['TRANSACTION_LIMIT_EXCEEDED']"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 229
+    },
+    {
+      "id": "budget_drain",
+      "title": "Many small in-limit payments drain the cumulative budget",
+      "category": "authorization",
+      "refs": [
+        "STRIDE:E",
+        "OWASP-API6"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "moved 68600 vs monthly limit 50000"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "moved 68600 vs monthly limit 50000"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "moved 49000 vs monthly limit 50000"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 391
+    },
+    {
+      "id": "budget_race",
+      "title": "Concurrent requests race the cumulative budget",
+      "category": "concurrency",
+      "refs": [
+        "STRIDE:T",
+        "OWASP-API6"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "moved 80000 vs limit 30000"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "moved 80000 vs limit 30000"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "moved 30000 vs limit 30000 under 8 concurrent requests"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 353
+    },
+    {
+      "id": "revoked_mandate",
+      "title": "Use of a still-valid token after the mandate is revoked",
+      "category": "lifecycle",
+      "refs": [
+        "STRIDE:E",
+        "NIST-CSF:PR.AA"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "token still verifies offline: executed"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "executed"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "HTTP 403 ['MANDATE_REVOKED']"
+        }
+      },
+      "note": "Baselines assume offline JWT validation. With immediate online token revocation they would also block; KYM adds mandate-level revocation that cascades to children independent of token plumbing.",
+      "error": null,
+      "ms": 260
+    },
+    {
+      "id": "stolen_token",
+      "title": "Stolen or shared bearer token replayed by another party",
+      "category": "credential",
+      "refs": [
+        "STRIDE:S",
+        "OWASP-API2",
+        "RFC9449"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "bearer token accepted from any holder"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "bearer token accepted"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "HTTP 403 ['INVALID_TOKEN'] (DPoP key mismatch)"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 284
+    },
+    {
+      "id": "dpop_replay",
+      "title": "Replay of a captured DPoP proof",
+      "category": "credential",
+      "refs": [
+        "STRIDE:S",
+        "RFC9449"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "no proof-of-possession concept"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "no proof-of-possession concept"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "first 201, replay 403"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 235
+    },
+    {
+      "id": "approval_threshold_bypass",
+      "title": "High-value payment without human approval",
+      "category": "human-in-the-loop",
+      "refs": [
+        "STRIDE:E",
+        "NIST-CSF:PR.AA"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "executed without any human approval"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "executed without any human approval"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "HTTP 202 REQUIRE_HUMAN_APPROVAL"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 230
+    },
+    {
+      "id": "approval_substitution",
+      "title": "Approved CAD 180, agent submits CAD 190",
+      "category": "human-in-the-loop",
+      "refs": [
+        "STRIDE:T"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "executed (no approval concept)"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "executed (no approval concept)"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "approved 180.00, submitted 190.00: HTTP 202 ['APPROVAL_INVALID', 'HUMAN_APPROVAL_REQUIRED']"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 239
+    },
+    {
+      "id": "approval_replay",
+      "title": "Reuse of a one-time approval",
+      "category": "human-in-the-loop",
+      "refs": [
+        "STRIDE:R"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "executed repeatedly"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "executed repeatedly"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "first 201, replay 202 ['APPROVAL_INVALID', 'HUMAN_APPROVAL_REQUIRED']"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 248
+    },
+    {
+      "id": "prompt_injection",
+      "title": "Injected document instructs a CAD 2,000 payment",
+      "category": "agent",
+      "refs": [
+        "OWASP-LLM01",
+        "OWASP-LLM06"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "obeyed injection: executed CAD 2,000"
+        },
+        "rar_static": {
+          "blocked": true,
+          "detail": "denied by static max amount"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "DENY ['ACTION_NOT_AUTHORIZED', 'MONTHLY_LIMIT_EXCEEDED']"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 490
+    },
+    {
+      "id": "in_mandate_malicious",
+      "title": "HONEST CASE: malicious or mistaken payment that stays inside the mandate",
+      "category": "limitation",
+      "refs": [
+        "OWASP-LLM09"
+      ],
+      "expected_gap": true,
+      "results": {
+        "scope_only": {
+          "blocked": false,
+          "detail": "executed"
+        },
+        "rar_static": {
+          "blocked": false,
+          "detail": "executed"
+        },
+        "kym": {
+          "blocked": false,
+          "detail": "HTTP 201: executed. A wrong-but-in-mandate action is NOT detectable by mandate enforcement."
+        }
+      },
+      "note": "ACCEPTED LIMITATION. Mitigations are outside mandate enforcement: tighter limits, approval thresholds, customer notification, behavioural risk models.",
+      "error": null,
+      "ms": 231
+    },
+    {
+      "id": "delegation_escalation",
+      "title": "Parent agent delegates more authority than it holds",
+      "category": "delegation",
+      "refs": [
+        "STRIDE:E"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "no delegation record exists; agents share bearer tokens"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "no delegation record exists"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "HTTP 422 ['DELEGATION_EXCEEDS_PARENT']"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 224
+    },
+    {
+      "id": "ledger_tamper",
+      "title": "Edit, rehash, delete or alter evidence after the fact",
+      "category": "evidence",
+      "refs": [
+        "STRIDE:T",
+        "STRIDE:R",
+        "NIST-CSF:DE.CM"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "plain logs: no integrity evidence"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "plain logs: no integrity evidence"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "edit/rehash/delete/payload-alter detected: [True, True, True, True]"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 377
+    },
+    {
+      "id": "forged_evidence_package",
+      "title": "Forged evidence package signed with attacker keys",
+      "category": "evidence",
+      "refs": [
+        "STRIDE:S",
+        "STRIDE:T"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "verifier with pinned keys: ok=False; verifier trusting embedded keys: ok=True (why trusted keys must be obtained out of band)"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 288
+    },
+    {
+      "id": "sparql_dos",
+      "title": "Hostile SPARQL query (cartesian explosion)",
+      "category": "availability",
+      "refs": [
+        "OWASP-API4"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "hostile cartesian query terminated after 2.1s; service still answers"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 2359
+    },
+    {
+      "id": "unauth_flood",
+      "title": "Unauthenticated flood tries to bloat the signed ledger",
+      "category": "availability",
+      "refs": [
+        "STRIDE:D",
+        "OWASP-API4"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "naive logging would append one record per request (300)"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "300 junk requests wrote 60 signed events (cap 60/min); ledger intact=True"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 659
+    },
+    {
+      "id": "client_auth_bruteforce",
+      "title": "Client-secret guessing against the OAuth endpoints",
+      "category": "credential",
+      "refs": [
+        "STRIDE:S",
+        "OWASP-API2"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "20 attempts answered 401 then lockout 429 (limit 20/min/IP)"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 807
+    },
+    {
+      "id": "path_traversal",
+      "title": "Path traversal via agent identifier into the key store",
+      "category": "injection",
+      "refs": [
+        "OWASP-API8",
+        "CWE-22"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "HTTP 422; no file written outside the key store"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 4
+    },
+    {
+      "id": "cross_customer",
+      "title": "Customer B reads or revokes customer A's mandate",
+      "category": "authorization",
+      "refs": [
+        "OWASP-API1"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "another customer got [403, 403]"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 219
+    },
+    {
+      "id": "malformed_input",
+      "title": "Overflowing, float and wrong-typed payloads",
+      "category": "robustness",
+      "refs": [
+        "OWASP-API4",
+        "OWASP-API8"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "status codes [400, 400, 400, 400] (no 5xx, nothing executed)"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 220
+    },
+    {
+      "id": "session_forgery",
+      "title": "Forge an admin session using the formerly public constant secret",
+      "category": "authentication",
+      "refs": [
+        "OWASP-API2"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "session forged with the previously public constant secret: HTTP 401"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 3
+    },
+    {
+      "id": "production_fail_closed",
+      "title": "Demo authentication and reset must fail closed outside KYM_ENV=demo",
+      "category": "configuration",
+      "refs": [
+        "OWASP-API8"
+      ],
+      "expected_gap": false,
+      "results": {
+        "scope_only": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "rar_static": {
+          "blocked": null,
+          "detail": "n/a"
+        },
+        "kym": {
+          "blocked": true,
+          "detail": "KYM_ENV=production: login 403, reset 503, API 503 (demo auth fails closed)"
+        }
+      },
+      "note": null,
+      "error": null,
+      "ms": 5
+    }
+  ],
+  "summary": {
+    "scope_only": {
+      "blocked": 0,
+      "applicable": 10
+    },
+    "rar_static": {
+      "blocked": 3,
+      "applicable": 10
+    },
+    "kym": {
+      "blocked": 22,
+      "applicable": 22
+    },
+    "kym_not_blocked": [
+      "in_mandate_malicious"
+    ],
+    "errors": [],
+    "total_attacks": 23,
+    "kym_blocked_all": 22
+  },
+  "method": "Same real access token; baselines are deliberately simple models. Results are measured, not asserted."
+}

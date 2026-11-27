@@ -4,7 +4,7 @@ API_DIR := apps/api
 export PYTHONPATH := $(API_DIR)
 export PYTHONWARNINGS := ignore
 
-.PHONY: help install install-web demo api web seed reset-demo migrate test test-unit test-e2e lint verify-ledger benchmark scenarios schema openapi clean
+.PHONY: llms-full redteam help install install-web demo api web seed reset-demo migrate test test-unit test-e2e lint verify-ledger benchmark scenarios schema openapi clean
 
 help:
 	@echo "make install       - create .venv and install backend dependencies"
@@ -12,6 +12,7 @@ help:
 	@echo "make test          - backend tests (unit, integration, security, property-based)"
 	@echo "make test-e2e      - Playwright end-to-end tests (needs make demo running)"
 	@echo "make scenarios     - run demonstration scenarios A-M headless"
+	@echo "make redteam       - 23 attacks vs scope-only, OAuth+static-RAR and KYM; writes docs/redteam/latest.md"
 	@echo "make verify-ledger - verify the evidence ledger hash chain, signatures and checkpoints"
 	@echo "make benchmark     - measure authorization latency (p50/p95/p99)"
 	@echo "make reset-demo    - delete the local demo database and re-seed"
@@ -54,6 +55,12 @@ test-e2e:
 
 scenarios:
 	$(PY) -m kym.cli scenarios
+
+redteam:
+	$(PY) -m kym.cli redteam
+
+llms-full:
+	python3 scripts/build_llms_full.py
 
 verify-ledger:
 	$(PY) -m kym.cli verify-ledger

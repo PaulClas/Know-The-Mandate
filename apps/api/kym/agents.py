@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import secrets
 import uuid
 
@@ -40,7 +41,12 @@ def jwk_thumbprint(jwk: dict) -> str:
     return b64u(hashlib.sha256(json.dumps({k: jwk[k] for k in members}, separators=(",", ":"), sort_keys=True).encode()).digest())
 
 
+AGENT_ID_RE = re.compile(r"^agent_[a-z0-9_]{2,60}$")
+
+
 def _ec_pem_path(agent_id: str):
+    if not AGENT_ID_RE.match(agent_id):  # the id becomes part of a file name: block path traversal
+        raise AgentError("invalid agent id")
     config.ensure_dirs()
     return config.DATA_DIR / "keys" / f"agent-{agent_id}.pem"
 
@@ -116,6 +122,8 @@ def register(s, declared: dict, *, actor_id: str, agent_id: str | None = None, c
     if bad:
         raise AgentError(f"unknown capabilities: {bad}")
     agent_id = agent_id or f"agent_{uuid.uuid4().hex[:10]}"
+    if not AGENT_ID_RE.match(agent_id):
+        raise AgentError("agent_id must match ^agent_[a-z0-9_]{2,60}$")
     if s.get(db.Agent, agent_id):
         raise AgentError("agent id already registered")
     client_id = f"client_{agent_id.removeprefix('agent_')}"

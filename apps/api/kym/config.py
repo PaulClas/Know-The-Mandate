@@ -21,7 +21,30 @@ CNL_VERSION = "1.0.0"
 BUDGET_TZ_DEFAULT = "America/Toronto"
 ACCESS_TOKEN_TTL_SECONDS = 300
 PUBLIC_BASE_URL = os.environ.get("KYM_PUBLIC_BASE_URL", "")  # set when behind a proxy so DPoP htu matches
-DEMO_SESSION_SECRET = os.environ.get("KYM_DEMO_SESSION_SECRET", "demo-only-session-secret-do-not-use-in-production")
+ENV = os.environ.get("KYM_ENV", "demo")  # "demo" enables no-password sessions and destructive reset; anything else fails closed
+RATE_LIMIT_PER_MIN = int(os.environ.get("KYM_RATE_LIMIT_PER_MIN", "1200"))
+FAILED_AUTH_PER_MIN = int(os.environ.get("KYM_FAILED_AUTH_PER_MIN", "20"))
+REJECT_EVENTS_PER_MIN = int(os.environ.get("KYM_REJECT_EVENTS_PER_MIN", "60"))
+_LEGACY_DEFAULT_SECRET = "demo-only-session-secret-do-not-use-in-production"
+
+
+def is_demo() -> bool:
+    return ENV == "demo"
+
+
+def session_secret() -> str:
+    """Per-install random secret (file, mode 0600) unless explicitly configured. Never a constant shipped in source."""
+    import secrets as _secrets
+
+    env = os.environ.get("KYM_DEMO_SESSION_SECRET")
+    if env and env != _LEGACY_DEFAULT_SECRET:
+        return env
+    ensure_dirs()
+    p = DATA_DIR / "keys" / "session-secret"
+    if not p.exists():
+        p.write_text(_secrets.token_hex(32))
+        p.chmod(0o600)
+    return p.read_text().strip()
 
 PACKAGES = ROOT / "packages"
 POLICIES = ROOT / "policies"

@@ -6,10 +6,10 @@ exploration and (c) analytical SPARQL queries. It is never consulted to authoriz
 from __future__ import annotations
 
 import json
+import os
 import re
-import threading
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as FutureTimeout
+import subprocess
+import sys
 from datetime import timedelta
 from functools import lru_cache
 
@@ -27,7 +27,6 @@ PROV = Namespace("http://www.w3.org/ns/prov#")
 ODRL = Namespace("http://www.w3.org/ns/odrl/2/")
 
 ONT_DIR = config.PACKAGES / "ontology"
-_graph_lock = threading.Lock()
 
 
 @lru_cache
@@ -317,7 +316,6 @@ def registry_graph(s) -> Graph:
 
 
 _FORBIDDEN = re.compile(r"(?<![?$\w:])(SERVICE|FROM|LOAD|INSERT|DELETE|CLEAR|DROP|CREATE|COPY|MOVE|ADD|WITH)(?!\w)", re.I)
-_pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="sparql")
 
 
 class SparqlError(ValueError):
@@ -356,24 +354,15 @@ def safe_sparql(g: Graph, query: str, *, limit: int = 200, timeout: float = 5.0)
         if getattr(n, "name", "") in ("Service", "ServiceGraphPattern"):
             raise SparqlError("SERVICE (federation) is not allowed")
 
-    def run():
-        res = g.query(prepared)
-        if res.type == "ASK":
-            return {"type": "ASK", "boolean": bool(res.askAnswer), "vars": [], "rows": []}
-        vars_ = [str(v) for v in res.vars]
-        rows = []
-        for r in res:
-            rows.append({v: (None if r[v] is None else str(r[v])) for v in vars_})
-            if len(rows) >= limit:
-                break
-        return {"type": "SELECT", "vars": vars_, "rows": rows, "truncated": len(rows) >= limit}
-
-    fut = _pool.submit(run)
+    payload = json.dumps({"nt": g.serialize(format="nt"), "query": query, "limit": limit, "cpu": max(1, int(timeout))})
+    env = {**os.environ, "PYTHONPATH": os.pathsep.join(sys.path)}
     try:
-        return fut.result(timeout=timeout)
-    except FutureTimeout as e:
-        fut.cancel()
-        raise SparqlError(f"query exceeded the {timeout}s execution limit") from e
+        proc = subprocess.run([sys.executable, "-m", "kym.sparql_worker"], input=payload, capture_output=True, text=True, timeout=timeout + 3, env=env, check=False)
+    except subprocess.TimeoutExpired as e:  # subprocess.run kills the child: no leaked CPU burner, no saturated pool
+        raise SparqlError(f"query exceeded the {timeout}s execution limit and was terminated") from e
+    if proc.returncode != 0:
+        raise SparqlError("query was terminated (resource limit exceeded or execution error)")
+    return json.loads(proc.stdout)
 
 
 def sparql_examples(account_id: str = "account_001", tx_id: str = "TX") -> list[dict]:

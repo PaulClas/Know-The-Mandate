@@ -25,10 +25,12 @@ ISS = "kym-demo-session"
 
 
 def login(user_id: str) -> str:
+    if not config.is_demo():
+        raise PermissionError("demo sessions are disabled when KYM_ENV != demo; integrate OIDC with passkeys")
     if user_id not in DEMO_USERS:
         raise KeyError(user_id)
     now = int(time.time())
-    return jwt.encode({"iss": ISS, "sub": user_id, "role": DEMO_USERS[user_id]["role"], "iat": now, "exp": now + 8 * 3600}, config.DEMO_SESSION_SECRET, algorithm="HS256")
+    return jwt.encode({"iss": ISS, "sub": user_id, "role": DEMO_USERS[user_id]["role"], "iat": now, "exp": now + 8 * 3600}, config.session_secret(), algorithm="HS256")
 
 
 class User:
@@ -41,10 +43,12 @@ class User:
 
 
 def current_user(authorization: str | None = Header(default=None)) -> User:
+    if not config.is_demo():
+        raise HTTPException(503, "demo authentication disabled outside KYM_ENV=demo")
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(401, "demo session required (POST /api/session)")
     try:
-        c = jwt.decode(authorization.split(None, 1)[1], config.DEMO_SESSION_SECRET, algorithms=["HS256"], issuer=ISS)
+        c = jwt.decode(authorization.split(None, 1)[1], config.session_secret(), algorithms=["HS256"], issuer=ISS)
     except jwt.PyJWTError as e:
         raise HTTPException(401, "invalid demo session") from e
     return User(c["sub"], c["role"])

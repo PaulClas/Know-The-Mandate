@@ -1,6 +1,6 @@
 import { expect, test } from "./helpers";
 
-const ROUTES = ["/", "/agents", "/studio", "/portal", "/delegation", "/playground", "/sandbox", "/scenarios", "/transactions", "/ledger", "/disputes", "/ontology", "/standards"];
+const ROUTES = ["/", "/agents", "/studio", "/portal", "/delegation", "/playground", "/sandbox", "/scenarios", "/transactions", "/ledger", "/disputes", "/ontology", "/standards", "/about", "/proof"];
 
 for (const route of ROUTES) {
   test(`page ${route} renders without runtime errors`, async ({ page }) => {

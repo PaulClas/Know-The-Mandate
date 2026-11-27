@@ -222,3 +222,8 @@ Replace demo agent keys with platform-attested workload identity: SPIFFE/SPIRE, 
 10. Encryption at rest, field-level redaction and retention policies for evidence.
 11. Dependency pinning, SBOM, signed builds, vulnerability management.
 12. Independent penetration testing, red-teaming of prompt-injection paths and legal review of the regulatory mapping.
+
+
+## Addendum (2026-11-26): implementation review
+
+A code-level review against this model found and fixed 15 weaknesses (evidence verification trusting embedded keys, unauthenticated ledger flooding, scrypt under the global write lock, unkillable SPARQL, path traversal, constant session secret, and others) and recorded 21 open or accepted items. See [../security/security-review.md](../security/security-review.md), the [risk register](../risk/risk-register.md) and the executable [red-team results](../redteam/latest.md). Mitigation tags in this document describe the *design*; the review document is authoritative for the *implementation* status.

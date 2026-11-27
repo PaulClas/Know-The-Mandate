@@ -158,6 +158,7 @@ export const api = {
 
   scenarios: () => get<unknown>("/api/scenarios").then((x) => list<ScenarioMeta>(x, "scenarios")),
   runScenario: (id: string) => post<ScenarioRun>(`/api/scenarios/${id}/run`),
+  redteamRun: () => post<RedteamReport>("/api/redteam/run"),
   resetDemo: () => post<Record<string, unknown>>("/api/demo/reset"),
 
   standards: () => get<unknown>("/api/standards").then((x) => list<StandardItem>(x, "standards", "items")),
@@ -165,6 +166,10 @@ export const api = {
   complianceControls: (jurisdiction: string) =>
     get<unknown>(`/api/compliance/controls${qs({ jurisdiction })}`).then((x) => list<ControlItem>(x, "controls", "items")),
 };
+
+export type Tier = { blocked: boolean | null; detail: string };
+export type RedteamRow = { id: string; title: string; category: string; refs: string[]; expected_gap: boolean; results: Record<string, Tier>; note: string | null; error: string | null; ms: number };
+export type RedteamReport = { generated_at: string; attacks: RedteamRow[]; method: string; summary: { scope_only: { blocked: number; applicable: number }; rar_static: { blocked: number; applicable: number }; kym: { blocked: number; applicable: number }; kym_not_blocked: string[]; errors: string[]; total_attacks: number } };
 
 export async function downloadEvidence(txId: string) {
   const r = await fetch(`/api/transactions/${txId}/evidence/download`, { headers: session.token ? { authorization: `Bearer ${session.token}` } : {} });

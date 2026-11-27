@@ -17,6 +17,12 @@ KYM is a security-sensitive proof of concept. Preserve these invariants when cha
 11. **Labelling honesty.** Simulated things stay labelled simulated (UI + docs). Do not claim a standard is implemented when only a mock exists; update `standards/standards.json` and `docs/research/standards-mapping.md` when status changes. Do not claim compliance or certification.
 12. **LLMs have no authority.** An optional LLM may only *propose* typed tool calls or CNL text (`sandbox.ToolCallProposer`); it can never issue/approve a mandate, sign, decide authorization or reach the payment engine.
 
+13. **Unauthenticated surfaces must not amplify.** Anything reachable without a valid token (`/bank`, `/oauth`, `/adapters`) must be rate limited, must not write unbounded ledger events (`security.REJECT_EVENTS`), and must not do expensive work (scrypt, SPARQL) while holding `db.WRITE_LOCK`.
+14. **Fail closed outside the demo.** `KYM_ENV != demo` disables no-password sessions, reset and red-team runs. Never ship a constant secret; the session secret is per-install (`config.session_secret`).
+15. **Verifiers pin keys.** `disputes.verify_package` must be given trusted keys by the caller; embedded keys prove only internal consistency.
+16. **Identifiers are validated at the boundary** (`schemas.ID_RE`, `agents.AGENT_ID_RE`) because they become file names and RDF IRIs. Money is capped (`money.MAX_MINOR`).
+17. **Keep the proof honest.** `redteam.py` compares KYM with scope-only and OAuth+static-RAR baselines. Do not weaken a baseline to flatter KYM (`tests/security/test_redteam.py` pins expectations) and do not remove the documented honest gap (`in_mandate_malicious`). Add attacks KYM fails rather than hiding them. When counts change, update `README.md`, `docs/faq.md`, `llms.txt`, then run `make llms-full`; `tests/unit/test_docs_consistency.py` checks them.
+
 ## Module map (modular monolith, `apps/api/kym`)
 
 | Layer | Modules |
@@ -26,7 +32,8 @@ KYM is a security-sensitive proof of concept. Preserve these invariants when cha
 | Authority | `mandates` (lifecycle, delegation) · `policy` (PDP) · `risk` · `approvals` |
 | Credentials | `oauth` (sandbox AS, DPoP) · `agent_sdk` (agent-side client) |
 | Enforcement | `gateway` (PEP) · `bank` (accounts, double-entry, payment engine) |
-| Evidence | `ledger` · `disputes` · `responsibility` |
+| Evidence | `ledger` · `disputes` · `responsibility` · `redteam` (executable proof) |
+| Hardening | `security` (rate limits, headers, body cap) · `sparql_worker` (killable SPARQL child) |
 | Surface | `app` (FastAPI routes) · `adapters` (MCP/AP2) · `compliance` |
 | Demo | `seed` · `sandbox` · `scenarios` · `demo` · `cli` |
 

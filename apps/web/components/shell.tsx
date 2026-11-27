@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Bot, Building2, FileCheck2, FlaskConical, Gauge, GitBranch, Moon, Network, PlayCircle, ReceiptText, Scale, ScrollText, ShieldCheck, Sun, Swords, UserRound, Wand2 } from "lucide-react";
+import { BookOpen, Bot, Building2, Info, ShieldAlert,  FileCheck2, FlaskConical, Gauge, GitBranch, Moon, Network, PlayCircle, ReceiptText, Scale, ScrollText, ShieldCheck, Sun, Swords, UserRound, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
@@ -26,6 +26,7 @@ const NAV = [
       { href: "/playground", label: "Playground", icon: FlaskConical },
       { href: "/sandbox", label: "Agent sandbox", icon: Swords },
       { href: "/scenarios", label: "Scenarios", icon: PlayCircle },
+      { href: "/proof", label: "Prove it (red team)", icon: ShieldAlert },
       { href: "/transactions", label: "Transactions", icon: ReceiptText },
     ],
   },
@@ -41,6 +42,7 @@ const NAV = [
     items: [
       { href: "/ontology", label: "Ontology", icon: Network },
       { href: "/standards", label: "Standards & regulation", icon: BookOpen },
+      { href: "/about", label: "About, risks & critics", icon: Info },
     ],
   },
 ];
