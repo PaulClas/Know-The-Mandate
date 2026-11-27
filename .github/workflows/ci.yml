@@ -30,7 +30,7 @@ jobs:
         env: { KYM_DATA_DIR: /tmp/kym-ci }
       - run: PYTHONPATH=apps/api .venv/bin/python -m kym.cli redteam
         env: { KYM_DATA_DIR: /tmp/kym-ci-redteam }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: matrix.python == '3.13'
         with: { name: coverage-xml, path: coverage.xml }
 
