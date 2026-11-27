@@ -7,6 +7,7 @@ date-released: 2026-11-26
 authors:
   - family-names: Clas
     given-names: Paul
+license: Apache-2.0
 repository-code: "https://github.com/PaulClas/Know-The-Mandate"
 abstract: >-
   KYM is an experimental open proof of concept in which a fictional bank (Meridian Bank) represents a customer's

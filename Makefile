@@ -4,7 +4,7 @@ API_DIR := apps/api
 export PYTHONPATH := $(API_DIR)
 export PYTHONWARNINGS := ignore
 
-.PHONY: llms-full redteam help install install-web demo api web seed reset-demo migrate test test-unit test-e2e lint verify-ledger benchmark scenarios schema openapi clean
+.PHONY: coverage reference examples audit llms-full redteam help install install-web demo api web seed reset-demo migrate test test-unit test-e2e lint verify-ledger benchmark scenarios schema openapi clean
 
 help:
 	@echo "make install       - create .venv and install backend dependencies"
@@ -16,6 +16,10 @@ help:
 	@echo "make verify-ledger - verify the evidence ledger hash chain, signatures and checkpoints"
 	@echo "make benchmark     - measure authorization latency (p50/p95/p99)"
 	@echo "make reset-demo    - delete the local demo database and re-seed"
+	@echo "make coverage     - backend tests with line+branch coverage report"
+	@echo "make examples     - run the quickstart example"
+	@echo "make reference    - regenerate docs/reference (API table, reason codes)"
+	@echo "make audit        - pip-audit the Python dependencies"
 	@echo "make lint          - ruff (backend) and tsc (frontend)"
 
 install:
@@ -46,6 +50,18 @@ demo: seed
 
 test:
 	$(PY) -m pytest tests
+
+coverage:
+	$(PY) -m pytest tests --cov --cov-report=term
+
+examples:
+	$(PY) examples/01_quickstart_bill_payment.py
+
+reference:
+	$(PY) scripts/build_reference.py
+
+audit:
+	.venv/bin/pip-audit --skip-editable
 
 test-unit:
 	$(PY) -m pytest tests/unit

@@ -1,0 +1,11 @@
+{
+  "repository": "PaulClas/Know-The-Mandate",
+  "description": "Experimental control plane + evidence ledger for financial authority delegated to AI agents: mandates, OAuth RAR/DPoP, deterministic policy enforcement, signed audit ledger. Synthetic demo.",
+  "homepage": "",
+  "topics": [
+    "ai-agents", "agentic-banking", "delegated-authority", "oauth", "rich-authorization-requests",
+    "dpop", "policy-enforcement", "open-banking", "shacl", "json-ld", "audit-log", "fastapi", "nextjs",
+    "authorization", "red-team", "kyc", "know-your-agent", "mandate"
+  ],
+  "private_vulnerability_reporting": true
+}

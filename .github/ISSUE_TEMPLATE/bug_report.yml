@@ -1,0 +1,25 @@
+name: Bug report
+description: Something does not behave as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes: { value: "Exploitable security vulnerability? Use the private advisory link on the issue chooser instead of this form." }
+  - type: textarea
+    id: what
+    attributes: { label: What happened, description: "Expected vs actual behaviour", placeholder: "Expected DENY with BENEFICIARY_NOT_AUTHORIZED, got ALLOW" }
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes: { label: Reproduction, description: "Commands, request payloads, or a failing test", render: shell }
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes: { label: Commit or version, placeholder: "git rev-parse --short HEAD" }
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Policy engine, Mandate lifecycle, OAuth sandbox, Gateway/payment engine, Evidence ledger, CNL compiler, Ontology/SHACL/SPARQL, Web UI, Docs, Docker/CI, Other]
+  - type: textarea
+    id: env
+    attributes: { label: Environment, description: "OS, Python, Node, Docker versions; SQLite or PostgreSQL" }

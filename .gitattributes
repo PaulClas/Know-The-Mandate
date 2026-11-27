@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.pem binary
+llms-full.txt linguist-generated=true
+docs/specifications/openapi.json linguist-generated=true
+docs/redteam/latest.* linguist-generated=true
+packages/mandate-schema/mandate.schema.json linguist-generated=true
+apps/web/package-lock.json linguist-generated=true

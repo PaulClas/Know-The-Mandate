@@ -2,11 +2,21 @@
 
 **Bank the agent. Verify the mandate. Govern the execution. Record the evidence.**
 
+[![CI](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/ci.yml/badge.svg)](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/ci.yml)
+[![Security checks](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/security.yml/badge.svg)](https://github.com/PaulClas/Know-The-Mandate/actions/workflows/security.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
+[![Status: experimental](https://img.shields.io/badge/status-experimental%20PoC-orange.svg)](#security-limitations-read-before-drawing-conclusions)
+[![Data: synthetic only](https://img.shields.io/badge/data-synthetic%20only-lightgrey.svg)](#the-idea)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+
 > **The agent proposes. The mandate authorizes. The bank enforces. The ledger remembers.**
 
 **KYM (Know Your Mandate) is an experimental framework that lets a bank represent, enforce and prove the financial authority a customer has delegated to an AI agent.** The customer's authority is captured as a *mandate*, checked deterministically on every request (even when the agent holds a valid OAuth token), and recorded in a signed, hash-chained evidence ledger. It runs locally with no paid services, API keys, real credentials or external AI.
 
 > ⚠️ **Synthetic demo. Not compliant, certified, audited or production-ready.** All customers, accounts, agents, KYC and "sanctions" data are fictional. Authentication, signing keys and approvals use clearly labelled sandbox mechanisms. Nothing here is legal advice or a claim of conformance with any law, regulation or standard. KYM is **not** related to "Know Your Meme".
+
+**Contents:** [At a glance](#at-a-glance-for-people-and-ai-assistants) · [The idea](#the-idea) · [Quickstart](#quickstart) · [What is built](#what-is-built) · [Philosophy](#philosophy-in-brief) · [Risks](#risks-and-disclosures) · [Prove it](#prove-it-or-break-it) · [Run it](#run-it) · [Test evidence](#test-evidence-recorded-from-actual-runs) · [Standards](#standards-implemented-vs-simulated-vs-mapped) · [Security limitations](#security-limitations-read-before-drawing-conclusions) · [Documentation](#documentation) · [Contributing](#contributing) · [Security policy](#security-policy) · [Citing](#citing-kym) · [License](#license)
 
 ## At a glance (for people and AI assistants)
 
@@ -30,6 +40,26 @@ Traditional controls answer *who is the customer* (KYC), *is this really that en
 4. **Financial execution** — did the money move, and was it within the mandate? (payment engine + evidence ledger)
 
 A valid access token never implies an authorized financial operation. **Scenario C** shows it: the agent holds a perfectly valid `payments.initiate` token, OAuth verification passes, mandate verification fails, the payment is denied.
+
+## Quickstart
+
+```bash
+git clone https://github.com/PaulClas/Know-The-Mandate.git && cd Know-The-Mandate
+make install
+PYTHONPATH=apps/api .venv/bin/python examples/01_quickstart_bill_payment.py
+```
+
+```text
+mandate mdt_… v1 is ACTIVE (digest sha256:…)
+agent holds a valid token with scope: balances.read payments.initiate
+
+  CAD   85.00 -> beneficiary_hydro_quebec   HTTP 201  decision=ALLOW
+  CAD  180.00 -> beneficiary_hydro_quebec   HTTP 202  decision=REQUIRE_HUMAN_APPROVAL
+  CAD  300.00 -> beneficiary_hydro_quebec   HTTP 403  decision=DENY  ['TRANSACTION_LIMIT_EXCEEDED']
+  CAD   50.00 -> beneficiary_videotron      HTTP 403  decision=DENY  ['BENEFICIARY_NOT_AUTHORIZED']
+```
+
+Same agent, same valid OAuth token, four different outcomes: the **mandate** decides, not the token. More: [getting started](docs/getting-started.md), [examples](examples/README.md), `make scenarios` (A–M), `make redteam` (23 attacks).
 
 ## What is built
 
@@ -84,7 +114,7 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 * API docs (OpenAPI/Swagger): http://127.0.0.1:8000/docs — static copy in [docs/specifications/openapi.json](docs/specifications/openapi.json)
 * UI: http://localhost:3000
 * Everything else: `make test`, `make scenarios`, `make verify-ledger`, `make benchmark`, `make reset-demo`, `make lint` (see `make help`).
-* Docker: `docker compose up --build` (API + PostgreSQL + UI, localhost-bound, demo secrets from `.env.example`). The Compose stack itself has **not been run in the authoring environment** (the Docker daemon could not pull images); the API code path was verified instead by running the Alembic migration and all scenarios against a local PostgreSQL 14 server.
+* Docker: `docker compose up --build` (PostgreSQL 16 + API + UI, localhost-bound, demo secrets from `.env.example`). **Verified end to end on 2026-11-27**: the stack built and started, scenarios A–M passed through the containerised API on PostgreSQL 16, the red-team run gave 0/10, 3/10 and 22/22, and the web container proxied the API. Details in [docs/deployment.md](docs/deployment.md).
 
 ### Demo accounts and roles (no passwords — demo sessions only)
 
@@ -103,16 +133,16 @@ make demo           # migrates + seeds synthetic data, starts API :8000 and UI :
 * **10-minute technical walkthrough:** [docs/specifications/walkthrough-10-min.md](docs/specifications/walkthrough-10-min.md)
 * One-click scenarios A–M in the UI (`/scenarios`) or `make scenarios`.
 
-## Test evidence (recorded from actual runs on 2026-11-26)
+## Test evidence (recorded from actual runs)
 
 | Suite | Result |
 |---|---|
-| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **208 passed, 0 failed** |
+| `make test` — unit, property-based (Hypothesis), integration, security, red-team regression, docs-consistency | **213 passed, 0 failed**; line + branch coverage **82%** (`make coverage`, [how to read it](docs/testing.md)) |
 | `make scenarios` — scenarios A–M against the real engine (SQLite), run three times in a row on one database | **13/13 passed each time**; `make verify-ledger` afterwards: 767 events, 8 checkpoints, chain intact |
-| Same 13 scenarios + Alembic migration against **PostgreSQL 14** | **13/13 passed** |
+| Same 13 scenarios + Alembic migration against **PostgreSQL 14** and, through `docker compose`, **PostgreSQL 16** | **13/13 passed** on both |
 | `ruff check apps tests` | clean |
 | `make redteam` (23 attacks, 3 designs) | scope-only 0/10, OAuth + static RAR 3/10, **KYM 22/22** applicable blocked; 1 documented honest gap; 0 harness errors ([results](docs/redteam/latest.md)) |
-| Web: `tsc`, `eslint`, `next build`, Playwright (Chromium, live API) | clean; **30 passed, 0 failed** ([apps/web/README.md](apps/web/README.md)) ([apps/web/README.md](apps/web/README.md)) |
+| Web: `tsc`, `eslint`, `next build`, Playwright (Chromium, live API) | clean; **30 passed, 0 failed** ([apps/web/README.md](apps/web/README.md)) |
 | `make benchmark` (single process, SQLite, in-process ASGI client) | PDP pure evaluation p50 0.076 ms / p95 0.088 ms / p99 0.135 ms (n=20 000); full gateway payment p50 18.9 ms / p95 24.7 ms / p99 37.0 ms (n=300). Raw output: [docs/benchmarks/latest.json](docs/benchmarks/latest.json) |
 
 
@@ -148,9 +178,43 @@ packages/mandate-schema/       generated JSON Schema
 policies/            bank policy (versioned) and regulatory control mappings
 standards/           standards matrix data, AP2 mapping
 tests/               unit, integration, security (+ web e2e under apps/web/e2e)
+examples/            runnable quickstart, curl walkthrough, KYM-CNL mandate library
+scripts/             llms-full and reference generators, GitHub metadata helper
+docker/              API Dockerfile (compose file at the repository root)
+.github/             CI and security workflows, issue/PR templates, CODEOWNERS, Dependabot
 docs/                architecture, ADRs, specifications, research, threat model, regulatory mapping,
-                     security review, risk register, philosophy, FAQ, glossary, red-team results
+                     security review, risk register, philosophy, FAQ, glossary, red-team results,
+                     getting started, testing, configuration, deployment, generated API reference
+LICENSE NOTICE CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md GOVERNANCE.md ROADMAP.md CHANGELOG.md   project policies
 llms.txt / llms-full.txt / CITATION.cff / codemeta.json   machine-readable summaries for AI assistants and citation
 ```
 
 The repository layout deliberately omits empty placeholder services (`services/*`, `scenarios/*` directories): logical components live in one modular monolith with explicit module boundaries ([ADR-0001](docs/adr/0001-modular-monolith.md)).
+
+## Documentation
+
+| | |
+|---|---|
+| Start | [Getting started](docs/getting-started.md) · [Examples](examples/README.md) · [Configuration](docs/configuration.md) · [Deployment](docs/deployment.md) |
+| Reference | [HTTP API](docs/reference/api.md) · [Reason codes](docs/reference/reason-codes.md) · [Mandate spec](docs/specifications/mandate-spec.md) · [KYM-CNL](docs/specifications/kym-cnl-spec.md) · [Ledger spec](docs/specifications/evidence-ledger-spec.md) · [OpenAPI](docs/specifications/openapi.json) |
+| Understand | [FAQ](docs/faq.md) · [Glossary](docs/glossary.md) · [Philosophy and critics](docs/philosophy/README.md) · [Architecture](docs/architecture/README.md) · [ADRs](docs/adr) |
+| Trust | [Security review](docs/security/security-review.md) · [Risk register](docs/risk/risk-register.md) · [Red-team results](docs/redteam/latest.md) · [Testing](docs/testing.md) · [Benchmarks](docs/benchmarks/README.md) |
+| Project | [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Governance](GOVERNANCE.md) · [Support](SUPPORT.md) |
+
+Full index: [docs/README.md](docs/README.md).
+
+## Contributing
+
+Issues and pull requests are welcome, especially **new attacks KYM fails** and corrections to the disclosures. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md). The invariants in [AGENTS.md](AGENTS.md) apply to humans and coding assistants alike.
+
+## Security policy
+
+Please report vulnerabilities privately; see [SECURITY.md](SECURITY.md). KYM is a synthetic-data demo with sandbox security, so the [known limitations](docs/security/security-review.md) are not vulnerabilities, but novel bypasses of the mandate check are very welcome.
+
+## Citing KYM
+
+See [CITATION.cff](CITATION.cff) (GitHub shows a "Cite this repository" button) and [codemeta.json](codemeta.json). KYM is an experimental proposal, not a standard.
+
+## License
+
+[Apache License 2.0](LICENSE). See [NOTICE](NOTICE). Provided as is, without warranty; not legal, compliance or financial advice.

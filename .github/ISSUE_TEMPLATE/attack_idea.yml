@@ -1,0 +1,16 @@
+name: New attack for the red-team harness
+description: Propose an attack that KYM (or a baseline) mishandles
+labels: [security-research, redteam]
+body:
+  - type: markdown
+    attributes: { value: "Local, non-destructive attacks only. If you found an exploitable flaw, report it privately via the advisory link." }
+  - type: textarea
+    id: attack
+    attributes: { label: Attack description, description: "What does the attacker hold or control, and what do they try?" }
+    validations: { required: true }
+  - type: textarea
+    id: expect
+    attributes: { label: Expected outcome per design, description: "scope-only bank / OAuth + static RAR / KYM" }
+  - type: textarea
+    id: sketch
+    attributes: { label: Sketch of the test, render: python }

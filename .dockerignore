@@ -1,0 +1,11 @@
+.git
+.venv
+.kym-data
+.pytest_cache
+.ruff_cache
+.hypothesis
+**/__pycache__
+apps/web/node_modules
+apps/web/.next
+apps/web/test-results
+docs

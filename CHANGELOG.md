@@ -1,0 +1,31 @@
+# Changelog
+
+All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/) (0.x = experimental, anything may change).
+
+## [Unreleased]
+
+### Added
+- Apache-2.0 `LICENSE` and `NOTICE`; community files (`CONTRIBUTING`, `CODE_OF_CONDUCT`, `SECURITY`, `SUPPORT`, `GOVERNANCE`, `MAINTAINERS`, `ROADMAP`); issue/PR templates, CODEOWNERS, Dependabot, security workflow.
+- `examples/` (runnable quickstart, CNL mandate library, curl walkthrough), `docs/getting-started.md`, `docs/testing.md`, generated API and reason-code references, configuration and deployment guides.
+- Coverage measurement (`make coverage`; 82% line+branch measured), pre-commit, `.editorconfig`, `pip-audit` target.
+- CI: coverage artifact, red-team run, lint, and a Docker Compose job running `scripts/docker_smoke.py`. Security workflow: pip-audit, npm audit, gitleaks, CodeQL. Workflows have not yet run on GitHub.
+- `scripts/set_github_metadata.py` and `.github/repo-metadata.json` to apply the repository description, topics and private vulnerability reporting.
+- Tests for examples, generated references, license consistency and community-health files.
+
+### Changed
+- README: badges, contents, quickstart, documentation map, contributing, security, citation and license sections.
+- Docker Compose verified end to end (PostgreSQL 16 + API + web); `.dockerignore` files added.
+- `pyproject.toml`: license, URLs, classifiers, coverage configuration.
+
+## [0.1.0] - 2026-11-26
+
+### Added
+- Mandate ontology (OWL/Turtle), SHACL shapes, JSON-LD context; KYM-CNL controlled language and deterministic compiler; canonical mandate model and JSON Schema.
+- Deterministic policy decision point, mandate lifecycle with cascading revocation, delegation with strict attenuation.
+- Sandbox OAuth server (PAR, PKCE, RFC 9396 RAR, DPoP, introspection, revocation, token exchange); policy enforcement point and simulated open-banking gateway; double-entry payment engine requiring signed single-use decision certificates.
+- Signed hash-chained evidence ledger with checkpoints; dispute reconstruction and offline-verifiable evidence packages; responsibility mapping.
+- Web UI (13+ pages), scenarios A-M, agent sandbox, red-team harness comparing scope-only, OAuth+static-RAR and KYM (23 attacks).
+- Regulatory control mappings (CA, CA-QC, US), standards matrix, AP2 conceptual mapping, threat model, security review, risk register, philosophy, FAQ, glossary, `llms.txt`.
+
+### Security
+- Self-review fixed 15 findings (evidence verifier key pinning, ledger-flood cap, auth outside write lock, killable SPARQL, path traversal, per-install session secret, fail-closed `KYM_ENV`, and others). See [docs/security/security-review.md](docs/security/security-review.md).

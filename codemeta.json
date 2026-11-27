@@ -4,6 +4,7 @@
   "name": "KYM (Know Your Mandate)",
   "alternateName": ["Know Your Mandate", "KYM mandate framework"],
   "description": "Experimental open proof of concept for governing the financial authority a customer delegates to AI agents: a stateful, revocable mandate checked deterministically on every request, with a signed hash-chained evidence ledger. Synthetic data only; sandbox security; not production-ready or certified.",
+  "license": "https://spdx.org/licenses/Apache-2.0",
   "codeRepository": "https://github.com/PaulClas/Know-The-Mandate",
   "version": "0.1.0",
   "dateModified": "2026-11-26",

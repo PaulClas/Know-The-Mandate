@@ -3,6 +3,12 @@ name = "kym"
 version = "0.1.0"
 description = "KYM - Know Your Mandate: proof of concept for governing financial authority delegated to AI agents (experimental, synthetic data only)"
 requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+readme = "README.md"
+authors = [{ name = "Paul Clas" }]
+keywords = ["ai-agents", "authorization", "oauth", "delegated-authority", "open-banking"]
+classifiers = ["Development Status :: 2 - Pre-Alpha", "Intended Audience :: Developers", "Topic :: Security", "Topic :: Office/Business :: Financial"]
 dependencies = [
   "fastapi==0.165.0",
   "uvicorn[standard]==0.54.0",
@@ -20,7 +26,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest==9.2.0", "hypothesis==6.170.17", "ruff==0.17.6"]
+dev = ["pytest==9.2.0", "hypothesis==6.170.17", "ruff==0.17.6", "pytest-cov==7.1.0", "pip-audit==2.10.1"]
 
 [tool.pytest.ini_options]
 pythonpath = ["apps/api"]
@@ -34,3 +40,19 @@ src = ["apps/api"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
 ignore = ["E501", "B008"]
+
+[project.urls]
+Repository = "https://github.com/PaulClas/Know-The-Mandate"
+Documentation = "https://github.com/PaulClas/Know-The-Mandate/tree/main/docs"
+Issues = "https://github.com/PaulClas/Know-The-Mandate/issues"
+Changelog = "https://github.com/PaulClas/Know-The-Mandate/blob/main/CHANGELOG.md"
+
+[tool.coverage.run]
+source = ["apps/api/kym"]
+branch = true
+omit = ["apps/api/kym/cli.py", "apps/api/kym/sparql_worker.py"]  # cli and the SPARQL child process are exercised by subprocess/CLI runs, not in-process
+
+[tool.coverage.report]
+show_missing = false
+skip_empty = true
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:", "raise NotImplementedError"]

@@ -12,3 +12,8 @@ node_modules/
 test-results/
 playwright-report/
 *.egg-info/
+
+# coverage
+.coverage
+htmlcov/
+coverage.xml

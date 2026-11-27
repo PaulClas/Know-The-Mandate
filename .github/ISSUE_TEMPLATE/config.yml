@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/PaulClas/Know-The-Mandate/security/advisories/new
+    about: Do not file exploitable vulnerabilities as public issues.
+  - name: Read the FAQ and philosophy first
+    url: https://github.com/PaulClas/Know-The-Mandate/blob/main/docs/faq.md
+    about: Answers to common questions, including comparisons with OAuth RAR, AP2, MCP and OPA.

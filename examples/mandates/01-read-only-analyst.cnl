@@ -1,0 +1,6 @@
+PURPOSE personal_finance_analysis.
+PERMIT agent.finance-assistant TO READ_BALANCE ON account.chequing-001.
+PERMIT agent.finance-assistant TO READ_TRANSACTIONS ON account.chequing-001.
+PROHIBIT EXTERNAL_TRANSFER.
+PROHIBIT DELEGATION.
+EXPIRE AT {{EXPIRES_AT}}.

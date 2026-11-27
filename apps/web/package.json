@@ -2,6 +2,7 @@
   "name": "kym-web",
   "version": "0.1.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "KYM - Know Your Mandate: web frontend (experimental, synthetic demo)",
   "scripts": {
     "dev": "next dev -p 3000",

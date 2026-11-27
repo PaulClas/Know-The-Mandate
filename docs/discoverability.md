@@ -14,7 +14,7 @@ Goal: make KYM easy to find, summarize and **cite correctly**, without overstati
 ## Recommended repository settings (manual; cannot be set from code)
 * Description: "Experimental control plane + evidence ledger for financial authority delegated to AI agents (mandates, OAuth RAR/DPoP, policy enforcement, signed ledger). Synthetic demo."
 * Topics: `ai-agents`, `agentic-banking`, `delegated-authority`, `oauth`, `rich-authorization-requests`, `dpop`, `policy-enforcement`, `open-banking`, `shacl`, `json-ld`, `audit-log`, `fastapi`, `nextjs`.
-* Add a **LICENSE** (none exists yet; reuse is not permitted by default until one is chosen), a social-preview image, and a tagged release (`v0.1.0`) so citations have a stable target.
+* Apache-2.0 [LICENSE](../LICENSE) is in place. Still to do by hand: a social-preview image and a tagged release (`v0.1.0`) so citations have a stable target.
 * If published on a custom domain, set `NEXT_PUBLIC_SITE_URL` before building the web app so the sitemap and structured data use absolute URLs.
 
 ## Limits and honesty

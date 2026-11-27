@@ -1,0 +1,8 @@
+* @PaulClas
+/apps/api/kym/policy.py @PaulClas
+/apps/api/kym/gateway.py @PaulClas
+/apps/api/kym/bank.py @PaulClas
+/apps/api/kym/oauth.py @PaulClas
+/apps/api/kym/ledger.py @PaulClas
+/docs/security/ @PaulClas
+/docs/risk/ @PaulClas

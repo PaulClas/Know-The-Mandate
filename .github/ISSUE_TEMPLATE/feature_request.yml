@@ -1,0 +1,21 @@
+name: Feature request or design critique
+description: Propose a change, or challenge a design decision
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes: { label: Problem or critique, description: "What is wrong or missing? For critiques, state the strongest form of the objection." }
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes: { label: Proposal, description: "Smallest change that addresses it" }
+  - type: textarea
+    id: proof
+    attributes: { label: "How would we know it works (or fails)?", description: "A test, an attack for redteam.py, a scenario" }
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I read docs/philosophy and docs/risk and this is not already a documented limitation
+        - label: This does not require claiming compliance, certification or legal effect

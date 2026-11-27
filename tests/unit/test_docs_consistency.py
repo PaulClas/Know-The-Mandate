@@ -54,3 +54,27 @@ def test_committed_redteam_results_match_the_harness_and_claims():
 def test_every_doc_states_the_experimental_status():
     for p in ("README.md", "docs/faq.md", "llms.txt", "docs/risk/risk-register.md", "docs/philosophy/README.md"):
         assert re.search(r"experimental|synthetic", read(p), re.I), p
+
+
+def test_generated_reference_docs_are_current():
+    import runpy
+
+    paths = ("docs/reference/api.md", "docs/reference/reason-codes.md")
+    before = [read(p) for p in paths]
+    runpy.run_path(str(ROOT / "scripts" / "build_reference.py"))
+    assert [read(p) for p in paths] == before, "docs/reference was stale: run `make reference` and commit"
+
+
+def test_license_is_apache_2_and_declared_consistently():
+    assert "Apache License" in read("LICENSE") and "Version 2.0" in read("LICENSE")
+    assert 'license = "Apache-2.0"' in read("pyproject.toml")
+    assert json.loads(read("apps/web/package.json"))["license"] == "Apache-2.0"
+    assert "license: Apache-2.0" in read("CITATION.cff")
+    assert json.loads(read("codemeta.json"))["license"].endswith("Apache-2.0")
+    assert "Apache-2.0" in read("README.md")
+
+
+def test_community_health_files_exist():
+    for p in ("LICENSE", "NOTICE", "README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "SUPPORT.md", "CHANGELOG.md", "GOVERNANCE.md", "MAINTAINERS.md",
+              ".github/pull_request_template.md", ".github/CODEOWNERS", ".github/dependabot.yml", ".github/workflows/ci.yml", ".github/workflows/security.yml"):
+        assert (ROOT / p).exists(), p
